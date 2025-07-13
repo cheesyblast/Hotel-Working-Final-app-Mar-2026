@@ -590,34 +590,34 @@ async def get_guests():
                 'upcoming_bookings': 0,
                 'bookings': []
             }
-            
-            # Add booking to guest's history
-            check_in_date = booking.get('check_in_date')
-            check_out_date = booking.get('check_out_date')
-            if isinstance(check_in_date, datetime):
-                check_in_date = check_in_date.date()
-            if isinstance(check_out_date, datetime):
-                check_out_date = check_out_date.date()
-            
-            booking_info = {
-                'id': booking.get('id'),
-                'room_number': booking.get('room_number'),
-                'check_in_date': check_in_date,
-                'check_out_date': check_out_date,
-                'status': booking.get('status'),
-                'created_at': booking.get('created_at')
-            }
-            
-            guests_dict[guest_email]['bookings'].append(booking_info)
-            guests_dict[guest_email]['total_bookings'] += 1
-            
-            # Update stats based on booking status
-            if booking.get('status') == 'Completed':
-                guests_dict[guest_email]['total_stays'] += 1
-                if not guests_dict[guest_email]['last_stay'] or check_out_date > guests_dict[guest_email]['last_stay']:
-                    guests_dict[guest_email]['last_stay'] = check_out_date
-            elif booking.get('status') == 'Upcoming':
-                guests_dict[guest_email]['upcoming_bookings'] += 1
+        
+        # Add booking to guest's history
+        check_in_date = booking.get('check_in_date')
+        check_out_date = booking.get('check_out_date')
+        if isinstance(check_in_date, datetime):
+            check_in_date = check_in_date.date()
+        if isinstance(check_out_date, datetime):
+            check_out_date = check_out_date.date()
+        
+        booking_info = {
+            'id': booking.get('id'),
+            'room_number': booking.get('room_number'),
+            'check_in_date': check_in_date,
+            'check_out_date': check_out_date,
+            'status': booking.get('status'),
+            'created_at': booking.get('created_at')
+        }
+        
+        guests_dict[guest_key]['bookings'].append(booking_info)
+        guests_dict[guest_key]['total_bookings'] += 1
+        
+        # Update stats based on booking status
+        if booking.get('status') == 'Completed':
+            guests_dict[guest_key]['total_stays'] += 1
+            if not guests_dict[guest_key]['last_stay'] or check_out_date > guests_dict[guest_key]['last_stay']:
+                guests_dict[guest_key]['last_stay'] = check_out_date
+        elif booking.get('status') == 'Upcoming':
+            guests_dict[guest_key]['upcoming_bookings'] += 1
     
     # Convert dictionary to list and sort by name
     guests_list = list(guests_dict.values())
