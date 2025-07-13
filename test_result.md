@@ -214,6 +214,9 @@ backend:
     status_history:
       - working: true
         agent: "testing"
+        comment: "PASSED - Comprehensive guest aggregation testing with optional email/phone fields completed successfully with 100% success rate (6/6 tests passed). ✅ Guest Aggregation with Missing Fields: Verified guests appear even when email or phone are empty - created 4 test bookings with different field combinations (name only, name+email, name+phone, all fields). ✅ Guest Display Verification: All test guests correctly appear in /api/guests endpoint regardless of missing email/phone fields. ✅ Data Integrity: Aggregation logic correctly handles 'Not provided' values for missing fields. ✅ Unique Guest Identification: System properly creates unique guest identifiers even with missing email/phone using fallback logic (email if available, otherwise name+phone+booking_id). ✅ No Booking Skipping: Confirmed no bookings are skipped due to missing optional fields - all 38 bookings in system have corresponding guest entries. ✅ Field Handling: Empty email/phone fields correctly display as 'Not provided' in guest aggregation. The updated guest aggregation logic successfully handles bookings with optional email and phone fields as specified in the review request."
+      - working: true
+        agent: "testing"
         comment: "PASSED - Guest management endpoints working correctly. GET /api/guests returns 6 guests with complete statistics (total bookings, total stays, upcoming bookings, last stay, booking history). GET /api/guests/{email} returns detailed guest information with full booking history. Guest aggregation from bookings data working perfectly."
       - working: "NA"
         agent: "main"
