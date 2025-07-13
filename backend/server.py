@@ -556,28 +556,40 @@ async def get_guests():
     guests_dict = {}
     
     for booking in bookings:
-        guest_email = booking.get('guest_email')
+        guest_name = booking.get('guest_name')
+        guest_email = booking.get('guest_email', '')
+        guest_phone = booking.get('guest_phone', '')
+        
+        # Skip bookings without at least a guest name
+        if not guest_name:
+            continue
+            
+        # Create a unique identifier - use email if available, otherwise use name + phone
         if guest_email:
-            if guest_email not in guests_dict:
-                # Convert datetime back to date for response
-                check_in_date = booking.get('check_in_date')
-                check_out_date = booking.get('check_out_date')
-                if isinstance(check_in_date, datetime):
-                    check_in_date = check_in_date.date()
-                if isinstance(check_out_date, datetime):
-                    check_out_date = check_out_date.date()
-                
-                guests_dict[guest_email] = {
-                    'id': guest_email,  # Using email as unique identifier
-                    'name': booking.get('guest_name'),
-                    'email': guest_email,
-                    'phone': booking.get('guest_phone'),
-                    'total_bookings': 0,
-                    'total_stays': 0,
-                    'last_stay': None,
-                    'upcoming_bookings': 0,
-                    'bookings': []
-                }
+            guest_key = guest_email
+        else:
+            guest_key = f"{guest_name}_{guest_phone}_{booking.get('id', '')}"
+        
+        if guest_key not in guests_dict:
+            # Convert datetime back to date for response
+            check_in_date = booking.get('check_in_date')
+            check_out_date = booking.get('check_out_date')
+            if isinstance(check_in_date, datetime):
+                check_in_date = check_in_date.date()
+            if isinstance(check_out_date, datetime):
+                check_out_date = check_out_date.date()
+            
+            guests_dict[guest_key] = {
+                'id': guest_key,  # Using unique key as identifier
+                'name': guest_name,
+                'email': guest_email or 'Not provided',
+                'phone': guest_phone or 'Not provided',
+                'total_bookings': 0,
+                'total_stays': 0,
+                'last_stay': None,
+                'upcoming_bookings': 0,
+                'bookings': []
+            }
             
             # Add booking to guest's history
             check_in_date = booking.get('check_in_date')
