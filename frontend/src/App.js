@@ -2473,7 +2473,7 @@ const Guests = () => {
               </div>
 
               <div className="text-sm text-gray-600">
-                <p>This will download guest data for guests who had their last stay within the selected date range.</p>
+                <p>Download guest data based on the selected date range. If no guests have completed stays in the date range, you'll be offered to download all guests.</p>
               </div>
             </div>
             
