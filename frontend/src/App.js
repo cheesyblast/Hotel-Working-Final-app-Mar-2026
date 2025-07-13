@@ -2158,16 +2158,40 @@ const Guests = () => {
         return;
       }
 
-      // Filter guests based on date range (you can modify this logic based on your needs)
+      // Filter guests based on date range - include guests who have bookings in the date range
+      const startDate = new Date(downloadDateRange.startDate);
+      const endDate = new Date(downloadDateRange.endDate);
+      
       const filteredData = guests.filter(guest => {
-        if (guest.last_stay) {
+        // If guest has completed stays and last stay date is available, use it
+        if (guest.last_stay && guest.last_stay !== 'Never') {
           const lastStayDate = new Date(guest.last_stay);
-          const startDate = new Date(downloadDateRange.startDate);
-          const endDate = new Date(downloadDateRange.endDate);
           return lastStayDate >= startDate && lastStayDate <= endDate;
         }
+        
+        // For guests without completed stays, check if they have any bookings
+        // Since most guests currently show "Never" for last stay, we'll include them
+        // if they have any bookings (this can be refined based on booking dates if available)
+        if (guest.total_bookings > 0) {
+          return true; // Include all guests with bookings for now
+        }
+        
         return false;
       });
+
+      // If no guests found with date filtering, offer to download all guests
+      if (filteredData.length === 0) {
+        const downloadAll = window.confirm(
+          `No guests found with stays in the selected date range. Would you like to download all ${guests.length} guests instead?`
+        );
+        
+        if (downloadAll) {
+          filteredData.push(...guests);
+        } else {
+          alert('No guests downloaded.');
+          return;
+        }
+      }
 
       // Create CSV content
       const headers = ['Name', 'Email', 'Phone', 'Total Bookings', 'Completed Stays', 'Upcoming Bookings', 'Last Stay'];
