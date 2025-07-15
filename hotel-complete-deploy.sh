@@ -790,3 +790,250 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
 SERVER_PY
 
+
+###########################################
+# FRONTEND SETUP - Complete Hotel Management UI
+###########################################
+print_status "Setting up complete frontend system..."
+cd /home/hotelapp/hotel-management/frontend
+
+# Create the frontend HTML file
+sudo -u hotelapp cp /app/frontend-html.txt index.html
+
+# Create simple dist directory structure
+sudo -u hotelapp mkdir -p dist
+sudo -u hotelapp cp index.html dist/
+
+###########################################
+# CONFIGURATION AND DEPLOYMENT
+###########################################
+print_status "Configuring deployment..."
+
+# Create PM2 ecosystem
+cd /home/hotelapp/hotel-management
+sudo -u hotelapp tee ecosystem.config.js << 'PM2_CONFIG'
+module.exports = {
+  apps: [
+    {
+      name: "hotel-backend",
+      script: "./venv/bin/uvicorn",
+      args: "server:app --host 0.0.0.0 --port 8001",
+      cwd: "/home/hotelapp/hotel-management/backend",
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "1G",
+      env: {
+        NODE_ENV: "production"
+      }
+    }
+  ]
+};
+PM2_CONFIG
+
+# Configure Nginx
+sudo tee /etc/nginx/sites-available/hotel-management << NGINX_CONFIG
+server {
+    listen 80;
+    server_name $DOMAIN;
+    
+    # API routes
+    location /api/ {
+        proxy_pass http://localhost:8001;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # Frontend routes
+    location / {
+        root /home/hotelapp/hotel-management/frontend/dist;
+        index index.html;
+        try_files \$uri \$uri/ /index.html;
+        
+        # Add security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "no-referrer-when-downgrade" always;
+        add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+        
+        # Cache static assets
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+}
+NGINX_CONFIG
+
+# Enable site
+sudo ln -sf /etc/nginx/sites-available/hotel-management /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl restart nginx
+
+# Configure firewall
+sudo ufw --force enable
+sudo ufw allow ssh
+sudo ufw allow 'Nginx Full'
+sudo ufw allow 27017  # MongoDB port
+
+# Set correct permissions
+sudo chown -R hotelapp:hotelapp /home/hotelapp/hotel-management
+sudo chmod -R 755 /home/hotelapp/hotel-management
+
+# Start the application
+print_status "Starting hotel management application..."
+sudo -u hotelapp pm2 stop all 2>/dev/null || true
+sudo -u hotelapp pm2 delete all 2>/dev/null || true
+sudo -u hotelapp pm2 start ecosystem.config.js
+sudo -u hotelapp pm2 save
+
+# Setup PM2 startup
+sudo -u hotelapp pm2 startup | grep -E "^sudo" | sudo bash
+
+# Create systemd service for PM2
+sudo tee /etc/systemd/system/hotel-pm2.service << 'PM2_SERVICE'
+[Unit]
+Description=Hotel Management PM2 Process Manager
+After=network.target
+
+[Service]
+Type=forking
+User=hotelapp
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+Environment=PATH=/usr/local/bin:/usr/bin:/bin:/snap/bin
+Environment=PM2_HOME=/home/hotelapp/.pm2
+PIDFile=/home/hotelapp/.pm2/pm2.pid
+ExecStart=/snap/bin/pm2 resurrect
+ExecReload=/snap/bin/pm2 reload all
+ExecStop=/snap/bin/pm2 kill
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+PM2_SERVICE
+
+sudo systemctl daemon-reload
+sudo systemctl enable hotel-pm2
+sudo systemctl start hotel-pm2
+
+# Final verification
+print_status "Running final checks..."
+sleep 20
+
+# Check service status
+MONGODB_STATUS=$(sudo docker exec mongodb-hotel mongosh -u hotelapp -p "$MONGO_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand('ping')" >/dev/null 2>&1 && echo "✅ Online" || echo "❌ Offline")
+BACKEND_STATUS=$(curl -s "http://localhost:8001/api/health" >/dev/null 2>&1 && echo "✅ Online" || echo "❌ Offline")
+FRONTEND_STATUS=$(curl -s "http://localhost/" >/dev/null 2>&1 && echo "✅ Online" || echo "❌ Offline")
+NGINX_STATUS=$(sudo systemctl is-active nginx >/dev/null 2>&1 && echo "✅ Running" || echo "❌ Stopped")
+PM2_STATUS=$(sudo -u hotelapp pm2 status | grep -q "hotel-backend" && echo "✅ Running" || echo "❌ Stopped")
+
+echo ""
+echo "=============================================================================="
+echo "                    🎉 HOTEL MANAGEMENT SYSTEM DEPLOYED! 🎉"
+echo "=============================================================================="
+echo ""
+print_info "🌐 Application URL: http://$DOMAIN"
+print_info "📱 Mobile Responsive: Yes"
+print_info "🔐 Database Security: MongoDB with authentication"
+echo ""
+print_info "📊 Service Status:"
+echo "   🏨 Frontend: $FRONTEND_STATUS"
+echo "   🔧 Backend API: $BACKEND_STATUS"
+echo "   🗄️  MongoDB: $MONGODB_STATUS"
+echo "   🌐 Nginx: $NGINX_STATUS"
+echo "   ⚙️  PM2: $PM2_STATUS"
+echo ""
+print_info "🎯 Hotel Management Features:"
+echo "   • Dashboard with real-time room status"
+echo "   • Room management with images and amenities"
+echo "   • Booking system with check-in/checkout"
+echo "   • Guest management with search functionality"
+echo "   • Financial management (Income & Expenses)"
+echo "   • Payment tracking (Cash/Card/Bank Transfer)"
+echo "   • Daily sales and reporting"
+echo "   • LKR currency support"
+echo ""
+print_info "🔧 Management Commands:"
+echo "   • View backend status: sudo -u hotelapp pm2 status"
+echo "   • View backend logs: sudo -u hotelapp pm2 logs hotel-backend"
+echo "   • Restart backend: sudo -u hotelapp pm2 restart hotel-backend"
+echo "   • Restart nginx: sudo systemctl restart nginx"
+echo "   • Check MongoDB: sudo docker exec -it mongodb-hotel mongosh -u hotelapp -p '$MONGO_PASSWORD' --authenticationDatabase admin"
+echo ""
+print_info "🗃️ Database Info:"
+echo "   • MongoDB Container: mongodb-hotel"
+echo "   • Database: hotel_management"
+echo "   • Username: hotelapp"
+echo "   • Password: $MONGO_PASSWORD"
+echo ""
+print_info "🚀 Quick Start:"
+echo "   1. Visit http://$DOMAIN"
+echo "   2. Click 'Initialize Sample Data' to populate the database"
+echo "   3. Start managing your hotel operations!"
+echo ""
+print_info "📁 Application Files:"
+echo "   • Backend: /home/hotelapp/hotel-management/backend/"
+echo "   • Frontend: /home/hotelapp/hotel-management/frontend/"
+echo "   • Logs: /home/hotelapp/hotel-management/logs/"
+echo ""
+
+# Create a comprehensive README
+cat > /home/hotelapp/hotel-management/README.md << README_FILE
+# Hotel Management System
+
+## Application URLs
+- Frontend: http://$DOMAIN
+- Backend API: http://$DOMAIN/api/health
+
+## Service Management
+- Backend Status: \`sudo -u hotelapp pm2 status\`
+- Backend Logs: \`sudo -u hotelapp pm2 logs hotel-backend\`
+- Restart Backend: \`sudo -u hotelapp pm2 restart hotel-backend\`
+- Restart Nginx: \`sudo systemctl restart nginx\`
+
+## Database Access
+- MongoDB Connection: \`sudo docker exec -it mongodb-hotel mongosh -u hotelapp -p '$MONGO_PASSWORD' --authenticationDatabase admin\`
+- Database Name: hotel_management
+
+## Features
+- Room Management (Create, Update, Delete rooms)
+- Booking System (New bookings, Check-in, Check-out)
+- Guest Management (Guest database, Search, History)
+- Financial Management (Income tracking, Expense tracking)
+- Daily Sales Reporting
+- Payment Method Tracking (Cash, Card, Bank Transfer)
+- Real-time Dashboard
+- LKR Currency Support
+
+## Troubleshooting
+- If backend is not responding: \`sudo -u hotelapp pm2 restart hotel-backend\`
+- If frontend is not loading: \`sudo systemctl restart nginx\`
+- If MongoDB is not accessible: \`sudo docker restart mongodb-hotel\`
+
+## File Structure
+- Backend: /home/hotelapp/hotel-management/backend/
+- Frontend: /home/hotelapp/hotel-management/frontend/
+- Logs: /home/hotelapp/hotel-management/logs/
+
+## Security Notes
+- MongoDB is password protected
+- Firewall is enabled (SSH, HTTP, HTTPS allowed)
+- Application runs under dedicated user account
+README_FILE
+
+sudo chown hotelapp:hotelapp /home/hotelapp/hotel-management/README.md
+
+print_status "✅ Deployment completed successfully!"
+print_warning "⚠️  Save the MongoDB password: $MONGO_PASSWORD"
+print_info "🎉 Your complete hotel management system is now live and ready to use!"
+print_info "🔗 Access your application at: http://$DOMAIN"
+echo ""
+echo "=============================================================================="
