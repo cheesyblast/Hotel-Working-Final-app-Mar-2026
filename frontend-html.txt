@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Management System</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const API = '';
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [rooms, setRooms] = useState([]);
+            const [bookings, setBookings] = useState([]);
+            const [customers, setCustomers] = useState([]);
+            const [guests, setGuests] = useState([]);
+            const [expenses, setExpenses] = useState([]);
+            const [incomes, setIncomes] = useState([]);
+            const [dailySales, setDailySales] = useState([]);
+            const [financialSummary, setFinancialSummary] = useState(null);
+            const [loading, setLoading] = useState(true);
+            
+            // Modal states
+            const [showNewBooking, setShowNewBooking] = useState(false);
+            const [showNewRoom, setShowNewRoom] = useState(false);
+            const [showCheckIn, setShowCheckIn] = useState(false);
+            const [showCheckOut, setShowCheckOut] = useState(false);
+            const [showAddExpense, setShowAddExpense] = useState(false);
+            const [showAddIncome, setShowAddIncome] = useState(false);
+            
+            // Selected items
+            const [selectedBooking, setSelectedBooking] = useState(null);
+            const [selectedCustomer, setSelectedCustomer] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            
+            // Form states
+            const [bookingForm, setBookingForm] = useState({
+                guest_name: '', guest_email: '', guest_phone: '', guest_id_passport: '',
+                guest_country: '', room_number: '', check_in_date: '', check_out_date: '',
+                booking_amount: '', stay_type: 'Night Stay', additional_notes: ''
+            });
+            
+            const [roomForm, setRoomForm] = useState({
+                room_number: '', room_type: 'Double', price_per_night: '', max_occupancy: 2,
+                amenities: ['WiFi', 'AC']
+            });
+            
+            const [checkInForm, setCheckInForm] = useState({
+                advance_amount: '', notes: ''
+            });
+            
+            const [checkOutForm, setCheckOutForm] = useState({
+                additional_amount: '', discount_amount: '', payment_method: 'Cash'
+            });
+            
+            const [expenseForm, setExpenseForm] = useState({
+                description: '', amount: '', category: 'Utilities', expense_date: ''
+            });
+            
+            const [incomeForm, setIncomeForm] = useState({
+                description: '', amount: '', category: 'Restaurant', income_date: ''
+            });
+
+            const expenseCategories = ['Utilities', 'Maintenance', 'Staff', 'Food', 'Marketing', 'Other'];
+            const incomeCategories = ['Restaurant', 'Laundry', 'Spa Services', 'Events', 'Conference Room', 'Parking', 'Other Services'];
+
+            useEffect(() => {
+                fetchAllData();
+            }, []);
+
+            const fetchAllData = async () => {
+                try {
+                    const [roomsRes, bookingsRes, customersRes, guestsRes, expensesRes, incomesRes, dailySalesRes, financialRes] = await Promise.all([
+                        axios.get(`${API}/api/rooms`),
+                        axios.get(`${API}/api/bookings`),
+                        axios.get(`${API}/api/customers/checked-in`),
+                        axios.get(`${API}/api/guests`),
+                        axios.get(`${API}/api/expenses`),
+                        axios.get(`${API}/api/incomes`),
+                        axios.get(`${API}/api/daily-sales`),
+                        axios.get(`${API}/api/financial-summary`)
+                    ]);
+                    
+                    setRooms(roomsRes.data);
+                    setBookings(bookingsRes.data);
+                    setCustomers(customersRes.data);
+                    setGuests(guestsRes.data);
+                    setExpenses(expensesRes.data);
+                    setIncomes(incomesRes.data);
+                    setDailySales(dailySalesRes.data);
+                    setFinancialSummary(financialRes.data);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const formatCurrency = (amount) => {
+                return new Intl.NumberFormat('en-LK', {
+                    style: 'currency',
+                    currency: 'LKR'
+                }).format(amount);
+            };
+
+            const handleCreateBooking = async () => {
+                try {
+                    if (!bookingForm.guest_name || !bookingForm.room_number || !bookingForm.check_in_date || !bookingForm.booking_amount) {
+                        alert('Please fill required fields');
+                        return;
+                    }
+                    
+                    await axios.post(`${API}/api/bookings`, {
+                        ...bookingForm,
+                        booking_amount: parseFloat(bookingForm.booking_amount)
+                    });
+                    
+                    setShowNewBooking(false);
+                    setBookingForm({
+                        guest_name: '', guest_email: '', guest_phone: '', guest_id_passport: '',
+                        guest_country: '', room_number: '', check_in_date: '', check_out_date: '',
+                        booking_amount: '', stay_type: 'Night Stay', additional_notes: ''
+                    });
+                    fetchAllData();
+                    alert('Booking created successfully!');
+                } catch (error) {
+                    console.error('Error creating booking:', error);
+                    alert('Error creating booking: ' + (error.response?.data?.detail || error.message));
+                }
+            };
+
+            const handleCreateRoom = async () => {
+                try {
+                    if (!roomForm.room_number || !roomForm.price_per_night) {
+                        alert('Please fill required fields');
+                        return;
+                    }
+                    
+                    await axios.post(`${API}/api/rooms`, {
+                        ...roomForm,
+                        price_per_night: parseFloat(roomForm.price_per_night)
+                    });
+                    
+                    setShowNewRoom(false);
+                    setRoomForm({
+                        room_number: '', room_type: 'Double', price_per_night: '', max_occupancy: 2,
+                        amenities: ['WiFi', 'AC']
+                    });
+                    fetchAllData();
+                    alert('Room created successfully!');
+                } catch (error) {
+                    console.error('Error creating room:', error);
+                    alert('Error creating room: ' + (error.response?.data?.detail || error.message));
+                }
+            };
+
+            const handleCheckIn = async () => {
+                try {
+                    if (!selectedBooking) return;
+                    
+                    await axios.post(`${API}/api/checkin`, {
+                        booking_id: selectedBooking.id,
+                        advance_amount: parseFloat(checkInForm.advance_amount || 0),
+                        notes: checkInForm.notes
+                    });
+                    
+                    setShowCheckIn(false);
+                    setSelectedBooking(null);
+                    setCheckInForm({ advance_amount: '', notes: '' });
+                    fetchAllData();
+                    alert('Customer checked in successfully!');
+                } catch (error) {
+                    console.error('Error checking in:', error);
+                    alert('Error during check-in: ' + (error.response?.data?.detail || error.message));
+                }
+            };
+
+            const handleCheckOut = async () => {
+                try {
+                    if (!selectedCustomer) return;
+                    
+                    await axios.post(`${API}/api/checkout`, {
+                        customer_id: selectedCustomer.id,
+                        additional_amount: parseFloat(checkOutForm.additional_amount || 0),
+                        discount_amount: parseFloat(checkOutForm.discount_amount || 0),
+                        payment_method: checkOutForm.payment_method
+                    });
+                    
+                    setShowCheckOut(false);
+                    setSelectedCustomer(null);
+                    setCheckOutForm({ additional_amount: '', discount_amount: '', payment_method: 'Cash' });
+                    fetchAllData();
+                    alert('Customer checked out successfully!');
+                } catch (error) {
+                    console.error('Error checking out:', error);
+                    alert('Error during checkout: ' + (error.response?.data?.detail || error.message));
+                }
+            };
+
+            const handleAddExpense = async () => {
+                try {
+                    if (!expenseForm.description || !expenseForm.amount || !expenseForm.expense_date) {
+                        alert('Please fill required fields');
+                        return;
+                    }
+                    
+                    await axios.post(`${API}/api/expenses`, {
+                        ...expenseForm,
+                        amount: parseFloat(expenseForm.amount)
+                    });
+                    
+                    setShowAddExpense(false);
+                    setExpenseForm({ description: '', amount: '', category: 'Utilities', expense_date: '' });
+                    fetchAllData();
+                    alert('Expense added successfully!');
+                } catch (error) {
+                    console.error('Error adding expense:', error);
+                    alert('Error adding expense: ' + (error.response?.data?.detail || error.message));
+                }
+            };
+
+            const handleAddIncome = async () => {
+                try {
+                    if (!incomeForm.description || !incomeForm.amount || !incomeForm.income_date) {
+                        alert('Please fill required fields');
+                        return;
+                    }
+                    
+                    await axios.post(`${API}/api/incomes`, {
+                        ...incomeForm,
+                        amount: parseFloat(incomeForm.amount)
+                    });
+                    
+                    setShowAddIncome(false);
+                    setIncomeForm({ description: '', amount: '', category: 'Restaurant', income_date: '' });
+                    fetchAllData();
+                    alert('Income added successfully!');
+                } catch (error) {
+                    console.error('Error adding income:', error);
+                    alert('Error adding income: ' + (error.response?.data?.detail || error.message));
+                }
+            };
+
+            const initializeSampleData = async () => {
+                try {
+                    await axios.post(`${API}/api/init-data`);
+                    alert('Sample data initialized successfully!');
+                    fetchAllData();
+                } catch (error) {
+                    console.error('Error initializing sample data:', error);
+                    alert('Error initializing sample data');
+                }
+            };
+
+            const calculateCheckoutTotal = () => {
+                if (!selectedCustomer) return 0;
+                const roomCharges = selectedCustomer.room_charges || 0;
+                const advance = selectedCustomer.advance_amount || 0;
+                const additional = parseFloat(checkOutForm.additional_amount || 0);
+                const discount = parseFloat(checkOutForm.discount_amount || 0);
+                return roomCharges + additional - advance - discount;
+            };
+
+            const filteredGuests = guests.filter(guest =>
+                guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                guest.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                guest.phone.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const getAvailableRooms = () => rooms.filter(room => room.status === 'Available');
+            const getUpcomingBookings = () => bookings.filter(booking => booking.status === 'Upcoming');
+            const getOccupiedRooms = () => rooms.filter(room => room.status === 'Occupied');
+
+            if (loading) {
+                return (
+                    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+                            <p className="mt-4 text-gray-600 text-lg">Loading Hotel Management System...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-100">
+                    {/* Navigation */}
+                    <nav className="bg-white shadow-lg sticky top-0 z-40">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <div className="flex justify-between items-center h-16">
+                                <h1 className="text-xl font-bold text-gray-800">🏨 Hotel Management System</h1>
+                                <div className="flex space-x-8">
+                                    {[
+                                        { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                                        { id: 'rooms', label: 'Rooms', icon: '🏠' },
+                                        { id: 'bookings', label: 'Bookings', icon: '📅' },
+                                        { id: 'guests', label: 'Guests', icon: '👥' },
+                                        { id: 'expenses', label: 'Inc & Exp', icon: '💰' }
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                                                activeTab === tab.id 
+                                                    ? 'bg-blue-100 text-blue-700' 
+                                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            <span>{tab.icon}</span>
+                                            <span>{tab.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className="max-w-7xl mx-auto px-4 py-8">
+                        {/* Dashboard */}
+                        {activeTab === 'dashboard' && (
+                            <div className="fade-in">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
+                                    <div className="flex space-x-3">
+                                        <button
+                                            onClick={() => setShowNewBooking(true)}
+                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                        >
+                                            + New Booking
+                                        </button>
+                                        <button
+                                            onClick={initializeSampleData}
+                                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                                        >
+                                            Initialize Sample Data
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Quick Stats */}
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                    <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+                                        <h3 className="text-lg font-medium text-gray-700">Total Rooms</h3>
+                                        <p className="text-3xl font-bold text-blue-600">{rooms.length}</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+                                        <h3 className="text-lg font-medium text-gray-700">Available</h3>
+                                        <p className="text-3xl font-bold text-green-600">{getAvailableRooms().length}</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
+                                        <h3 className="text-lg font-medium text-gray-700">Occupied</h3>
+                                        <p className="text-3xl font-bold text-orange-600">{getOccupiedRooms().length}</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
+                                        <h3 className="text-lg font-medium text-gray-700">Upcoming</h3>
+                                        <p className="text-3xl font-bold text-purple-600">{getUpcomingBookings().length}</p>
+                                    </div>
+                                </div>
+
+                                {/* Room Status Overview */}
+                                <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                                    <h3 className="text-xl font-semibold mb-4">Room Status Overview</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        {rooms.map((room) => (
+                                            <div key={room.id} className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                                                room.status === 'Available' ? 'border-green-200 bg-green-50' : 
+                                                room.status === 'Occupied' ? 'border-red-200 bg-red-50' : 
+                                                'border-yellow-200 bg-yellow-50'
+                                            }`}>
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h4 className="font-medium text-gray-900">Room {room.room_number}</h4>
+                                                        <p className="text-sm text-gray-600">{room.room_type}</p>
+                                                        <p className="text-sm font-medium text-gray-800">
+                                                            {formatCurrency(room.price_per_night)}/night
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        room.status === 'Available' ? 'bg-green-100 text-green-800' :
+                                                        room.status === 'Occupied' ? 'bg-red-100 text-red-800' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {room.status}
+                                                    </span>
+                                                </div>
+                                                {room.current_guest && (
+                                                    <div className="mt-2 text-sm text-gray-600">
+                                                        Guest: {room.current_guest}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Recent Activity */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div className="bg-white rounded-lg shadow-sm">
+                                        <div className="px-6 py-4 border-b border-gray-200">
+                                            <h3 className="text-lg font-semibold text-gray-900">Upcoming Bookings</h3>
+                                        </div>
+                                        <div className="p-6">
+                                            {getUpcomingBookings().length === 0 ? (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    <p>No upcoming bookings</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {getUpcomingBookings().slice(0, 5).map((booking) => (
+                                                        <div key={booking.id} className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                                            <div>
+                                                                <h4 className="font-medium text-gray-900">{booking.guest_name}</h4>
+                                                                <p className="text-sm text-gray-600">Room {booking.room_number}</p>
+                                                                <p className="text-sm text-gray-600">{booking.check_in_date}</p>
+                                                                <p className="text-sm font-medium text-green-600">
+                                                                    {formatCurrency(booking.booking_amount)}
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedBooking(booking);
+                                                                    setShowCheckIn(true);
+                                                                }}
+                                                                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                                                            >
+                                                                Check In
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-lg shadow-sm">
+                                        <div className="px-6 py-4 border-b border-gray-200">
+                                            <h3 className="text-lg font-semibold text-gray-900">Checked-in Customers</h3>
+                                        </div>
+                                        <div className="p-6">
+                                            {customers.length === 0 ? (
+                                                <div className="text-center py-8 text-gray-500">
+                                                    <p>No checked-in customers</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {customers.map((customer) => (
+                                                        <div key={customer.id} className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                                            <div>
+                                                                <h4 className="font-medium text-gray-900">{customer.name}</h4>
+                                                                <p className="text-sm text-gray-600">Room {customer.current_room}</p>
+                                                                <p className="text-sm text-gray-600">{customer.phone || 'No phone'}</p>
+                                                                <p className="text-sm font-medium text-blue-600">
+                                                                    {formatCurrency(customer.room_charges)}
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedCustomer(customer);
+                                                                    setShowCheckOut(true);
+                                                                }}
+                                                                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition-colors"
+                                                            >
+                                                                Checkout
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Rooms Tab */}
+                        {activeTab === 'rooms' && (
+                            <div className="fade-in">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-3xl font-bold text-gray-900">Rooms Management</h2>
+                                    <button
+                                        onClick={() => setShowNewRoom(true)}
+                                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                                    >
+                                        + Add New Room
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {rooms.map((room) => (
+                                        <div key={room.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                            <img 
+                                                src={room.image_url} 
+                                                alt={`Room ${room.room_number}`}
+                                                className="w-full h-48 object-cover"
+                                            />
+                                            <div className="p-6">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <h3 className="text-lg font-semibold text-gray-900">Room {room.room_number}</h3>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                        room.status === 'Available' ? 'bg-green-100 text-green-800' :
+                                                        room.status === 'Occupied' ? 'bg-red-100 text-red-800' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {room.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-600 mb-2">{room.room_type}</p>
+                                                <p className="text-xl font-bold text-gray-900 mb-2">
+                                                    {formatCurrency(room.price_per_night)}/night
+                                                </p>
+                                                <p className="text-sm text-gray-600 mb-4">Max {room.max_occupancy} guests</p>
+                                                
+                                                <div className="flex flex-wrap gap-1 mb-4">
+                                                    {room.amenities.map((amenity, index) => (
+                                                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                                                            {amenity}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                
+                                                <div className="flex space-x-2">
+                                                    <button className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                                        Edit
+                                                    </button>
+                                                    <button className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Other tabs similar pattern... */}
+                        {/* For brevity, I'll add the remaining tabs in the next part */}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
