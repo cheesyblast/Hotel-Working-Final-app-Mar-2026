@@ -259,7 +259,77 @@ async def get_bookings(
         "total_pages": (total_count + limit - 1) // limit
     }
 
-@api_router.get("/bookings/upcoming", response_model=List[Booking])
+@api_router.get("/bookings/download")
+async def download_bookings(
+    start_date: str = "",
+    end_date: str = "",
+    status: str = ""
+):
+    """
+    Download bookings data as CSV
+    """
+    query = {}
+    
+    # Filter by date range if provided
+    if start_date and end_date:
+        try:
+            start_datetime = datetime.combine(datetime.strptime(start_date, '%Y-%m-%d').date(), datetime.min.time())
+            end_datetime = datetime.combine(datetime.strptime(end_date, '%Y-%m-%d').date(), datetime.max.time())
+            query["created_at"] = {"$gte": start_datetime, "$lte": end_datetime}
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    # Filter by status if provided
+    if status:
+        query["status"] = status
+    
+    # Get all bookings matching the criteria
+    bookings = await db.bookings.find(query).sort("created_at", -1).to_list(None)
+    
+    # Convert to CSV format
+    csv_data = []
+    headers = [
+        "Guest Name", "Email", "Phone", "ID/Passport", "Country", 
+        "Room Number", "Check-in Date", "Check-out Date", "Stay Type",
+        "Booking Amount", "Status", "Created At", "Additional Notes"
+    ]
+    csv_data.append(headers)
+    
+    for booking in bookings:
+        # Convert datetime back to date for CSV
+        check_in_date = booking.get('check_in_date')
+        check_out_date = booking.get('check_out_date')
+        created_at = booking.get('created_at')
+        
+        if isinstance(check_in_date, datetime):
+            check_in_date = check_in_date.date()
+        if isinstance(check_out_date, datetime):
+            check_out_date = check_out_date.date()
+        if isinstance(created_at, datetime):
+            created_at = created_at.strftime('%Y-%m-%d %H:%M:%S')
+        
+        row = [
+            booking.get('guest_name', ''),
+            booking.get('guest_email', ''),
+            booking.get('guest_phone', ''),
+            booking.get('guest_id_passport', ''),
+            booking.get('guest_country', ''),
+            booking.get('room_number', ''),
+            str(check_in_date) if check_in_date else '',
+            str(check_out_date) if check_out_date else '',
+            booking.get('stay_type', ''),
+            booking.get('booking_amount', 0),
+            booking.get('status', ''),
+            created_at,
+            booking.get('additional_notes', '')
+        ]
+        csv_data.append(row)
+    
+    return {
+        "data": csv_data,
+        "filename": f"bookings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    }
+
 async def get_upcoming_bookings():
     today = datetime.combine(datetime.now().date(), datetime.min.time())
     bookings = await db.bookings.find({
