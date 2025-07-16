@@ -211,9 +211,38 @@ async def update_room_status(room_id: str, status: str, guest_name: Optional[str
     return {"message": "Room status updated successfully"}
 
 # Booking Management Routes
-@api_router.get("/bookings", response_model=List[Booking])
-async def get_bookings():
-    bookings = await db.bookings.find().to_list(1000)
+@api_router.get("/bookings")
+async def get_bookings(
+    page: int = 1,
+    limit: int = 20,
+    search: str = "",
+    status: str = ""
+):
+    """
+    Get bookings with pagination and search functionality
+    """
+    skip = (page - 1) * limit
+    
+    # Build search query
+    query = {}
+    
+    if search:
+        # Search in guest name, email, phone, or room number
+        query["$or"] = [
+            {"guest_name": {"$regex": search, "$options": "i"}},
+            {"guest_email": {"$regex": search, "$options": "i"}},
+            {"guest_phone": {"$regex": search, "$options": "i"}},
+            {"room_number": {"$regex": search, "$options": "i"}}
+        ]
+    
+    if status:
+        query["status"] = status
+    
+    # Get total count for pagination
+    total_count = await db.bookings.count_documents(query)
+    
+    # Get bookings with pagination
+    bookings = await db.bookings.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     # Convert datetime back to date for response
     for booking in bookings:
@@ -222,7 +251,13 @@ async def get_bookings():
         if isinstance(booking.get('check_out_date'), datetime):
             booking['check_out_date'] = booking['check_out_date'].date()
     
-    return [Booking(**booking) for booking in bookings]
+    return {
+        "bookings": [Booking(**booking) for booking in bookings],
+        "total_count": total_count,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total_count + limit - 1) // limit
+    }
 
 @api_router.get("/bookings/upcoming", response_model=List[Booking])
 async def get_upcoming_bookings():
