@@ -332,6 +332,7 @@ async def download_bookings(
         "filename": f"bookings_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     }
 
+@api_router.get("/bookings/upcoming", response_model=List[Booking])
 async def get_upcoming_bookings():
     today = datetime.combine(datetime.now().date(), datetime.min.time())
     bookings = await db.bookings.find({
