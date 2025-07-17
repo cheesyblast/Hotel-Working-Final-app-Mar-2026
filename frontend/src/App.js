@@ -493,8 +493,8 @@ const Dashboard = () => {
                         </span>
                       </div>
                       <div className="text-sm text-green-700 space-y-1">
-                        <p><strong>Price:</strong> {formatLKR(room.price_per_night)}/night</p>
-                        <p><strong>Total Cost:</strong> {formatLKR(room.price_per_night * availabilityData.stay_duration)}</p>
+                        <p><strong>Price:</strong> LKR {room.price_per_night}/night</p>
+                        <p><strong>Total Cost:</strong> LKR {room.price_per_night * availabilityData.stay_duration}</p>
                         <p><strong>Capacity:</strong> {room.max_occupancy} guests</p>
                       </div>
                       {room.amenities && room.amenities.length > 0 && (
