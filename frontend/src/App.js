@@ -406,6 +406,145 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Room Availability Checker */}
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
+        <h3 className="text-lg font-semibold mb-4">🔍 Check Room Availability</h3>
+        <p className="text-gray-600 mb-4">Select dates to check which rooms are available for booking</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
+            <input
+              type="date"
+              value={availabilityDates.check_in_date}
+              onChange={(e) => handleDateChange('check_in_date', e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Check-out Date</label>
+            <input
+              type="date"
+              value={availabilityDates.check_out_date}
+              onChange={(e) => handleDateChange('check_out_date', e.target.value)}
+              min={availabilityDates.check_in_date || new Date().toISOString().split('T')[0]}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={checkRoomAvailability}
+              disabled={checkingAvailability || !availabilityDates.check_in_date || !availabilityDates.check_out_date}
+              className={`w-full px-4 py-2 rounded-md font-medium ${
+                checkingAvailability || !availabilityDates.check_in_date || !availabilityDates.check_out_date
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {checkingAvailability ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Checking...
+                </div>
+              ) : (
+                'Check Availability'
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Availability Results */}
+        {availabilityData && (
+          <div className="mt-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h4 className="font-semibold text-blue-800 mb-2">
+                Availability Results for {availabilityData.check_in_date} to {availabilityData.check_out_date}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-600 font-medium">Stay Duration:</span>
+                  <span className="text-blue-800 ml-1">{availabilityData.stay_duration} night{availabilityData.stay_duration !== 1 ? 's' : ''}</span>
+                </div>
+                <div>
+                  <span className="text-blue-600 font-medium">Total Rooms:</span>
+                  <span className="text-blue-800 ml-1">{availabilityData.total_rooms}</span>
+                </div>
+                <div>
+                  <span className="text-green-600 font-medium">Available Rooms:</span>
+                  <span className="text-green-800 ml-1">{availabilityData.available_rooms}</span>
+                </div>
+              </div>
+            </div>
+
+            {availabilityData.rooms.length > 0 ? (
+              <div>
+                <h5 className="font-medium text-gray-900 mb-3">Available Rooms:</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {availabilityData.rooms.map(room => (
+                    <div key={room.id} className="border border-green-300 bg-green-50 p-4 rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h6 className="font-semibold text-green-800">{room.room_number}</h6>
+                          <p className="text-sm text-green-600">{room.room_type}</p>
+                        </div>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                          Available
+                        </span>
+                      </div>
+                      <div className="text-sm text-green-700 space-y-1">
+                        <p><strong>Price:</strong> {formatLKR(room.price_per_night)}/night</p>
+                        <p><strong>Total Cost:</strong> {formatLKR(room.price_per_night * availabilityData.stay_duration)}</p>
+                        <p><strong>Capacity:</strong> {room.max_occupancy} guests</p>
+                      </div>
+                      {room.amenities && room.amenities.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-green-600 font-medium mb-1">Amenities:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {room.amenities.slice(0, 3).map((amenity, index) => (
+                              <span key={index} className="px-1 py-0.5 bg-green-100 text-green-700 text-xs rounded">
+                                {amenity}
+                              </span>
+                            ))}
+                            {room.amenities.length > 3 && (
+                              <span className="px-1 py-0.5 bg-green-100 text-green-700 text-xs rounded">
+                                +{room.amenities.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          setNewBookingData({
+                            ...newBookingData,
+                            room_number: room.room_number,
+                            check_in_date: availabilityData.check_in_date,
+                            check_out_date: availabilityData.check_out_date,
+                            booking_amount: room.price_per_night * availabilityData.stay_duration
+                          });
+                          setShowNewBookingModal(true);
+                        }}
+                        className="w-full mt-3 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                      >
+                        Book This Room
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h5 className="font-medium text-red-800 mb-2">No Rooms Available</h5>
+                <p className="text-red-600 text-sm">
+                  Sorry, no rooms are available for the selected dates. Please try different dates or contact us for assistance.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Upcoming Bookings */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Upcoming Bookings</h3>
