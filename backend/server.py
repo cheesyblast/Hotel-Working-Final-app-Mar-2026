@@ -293,12 +293,15 @@ async def check_room_availability(
         available_rooms = []
         for room in all_rooms:
             if room['room_number'] not in booked_room_numbers:
-                # Convert datetime back to date for response
-                if isinstance(room.get('check_in_date'), datetime):
-                    room['check_in_date'] = room['check_in_date'].date()
-                if isinstance(room.get('check_out_date'), datetime):
-                    room['check_out_date'] = room['check_out_date'].date()
-                available_rooms.append(room)
+                # Remove MongoDB ObjectId field and convert datetime to date
+                room_data = {k: v for k, v in room.items() if k != '_id'}
+                if isinstance(room_data.get('check_in_date'), datetime):
+                    room_data['check_in_date'] = room_data['check_in_date'].date()
+                if isinstance(room_data.get('check_out_date'), datetime):
+                    room_data['check_out_date'] = room_data['check_out_date'].date()
+                if isinstance(room_data.get('created_at'), datetime):
+                    room_data['created_at'] = room_data['created_at'].isoformat()
+                available_rooms.append(room_data)
         
         # Calculate stay duration for pricing
         stay_duration = (check_out - check_in).days
