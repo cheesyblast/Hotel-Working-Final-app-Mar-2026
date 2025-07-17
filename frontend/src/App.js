@@ -21,6 +21,14 @@ const Dashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   
+  // Room availability checker state
+  const [availabilityData, setAvailabilityData] = useState(null);
+  const [availabilityDates, setAvailabilityDates] = useState({
+    check_in_date: '',
+    check_out_date: ''
+  });
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  
   // Form states
   const [checkinData, setCheckinData] = useState({
     advance_amount: 0,
