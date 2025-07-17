@@ -212,6 +212,111 @@ async def update_room_status(room_id: str, status: str, guest_name: Optional[str
         raise HTTPException(status_code=404, detail="Room not found")
     return {"message": "Room status updated successfully"}
 
+@api_router.get("/rooms/{room_id}")
+async def get_room(room_id: str):
+    room = await db.rooms.find_one({"id": room_id})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Convert datetime back to date for response
+    if isinstance(room.get('check_in_date'), datetime):
+        room['check_in_date'] = room['check_in_date'].date()
+    if isinstance(room.get('check_out_date'), datetime):
+        room['check_out_date'] = room['check_out_date'].date()
+    
+    return Room(**room)
+
+@api_router.get("/rooms/availability/check")
+async def check_room_availability(
+    check_in_date: str,
+    check_out_date: str
+):
+    """
+    Check room availability for specific date range
+    Returns list of available rooms with their details
+    """
+    try:
+        # Parse date strings
+        check_in = datetime.strptime(check_in_date, '%Y-%m-%d').date()
+        check_out = datetime.strptime(check_out_date, '%Y-%m-%d').date()
+        
+        # Validate dates
+        if check_in >= check_out:
+            raise HTTPException(status_code=400, detail="Check-out date must be after check-in date")
+        
+        if check_in < datetime.now().date():
+            raise HTTPException(status_code=400, detail="Check-in date cannot be in the past")
+        
+        # Convert dates to datetime for database queries
+        check_in_datetime = datetime.combine(check_in, datetime.min.time())
+        check_out_datetime = datetime.combine(check_out, datetime.min.time())
+        
+        # Get all rooms
+        all_rooms = await db.rooms.find().to_list(1000)
+        
+        # Find conflicting bookings (bookings that overlap with requested dates)
+        conflicting_bookings = await db.bookings.find({
+            "$and": [
+                {"status": {"$in": ["Upcoming", "Checked-in"]}},
+                {
+                    "$or": [
+                        # Booking starts during requested period
+                        {
+                            "$and": [
+                                {"check_in_date": {"$gte": check_in_datetime}},
+                                {"check_in_date": {"$lt": check_out_datetime}}
+                            ]
+                        },
+                        # Booking ends during requested period
+                        {
+                            "$and": [
+                                {"check_out_date": {"$gt": check_in_datetime}},
+                                {"check_out_date": {"$lte": check_out_datetime}}
+                            ]
+                        },
+                        # Booking encompasses requested period
+                        {
+                            "$and": [
+                                {"check_in_date": {"$lte": check_in_datetime}},
+                                {"check_out_date": {"$gte": check_out_datetime}}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }).to_list(1000)
+        
+        # Get room numbers that are booked during the requested period
+        booked_room_numbers = {booking['room_number'] for booking in conflicting_bookings}
+        
+        # Filter available rooms
+        available_rooms = []
+        for room in all_rooms:
+            if room['room_number'] not in booked_room_numbers:
+                # Convert datetime back to date for response
+                if isinstance(room.get('check_in_date'), datetime):
+                    room['check_in_date'] = room['check_in_date'].date()
+                if isinstance(room.get('check_out_date'), datetime):
+                    room['check_out_date'] = room['check_out_date'].date()
+                available_rooms.append(room)
+        
+        # Calculate stay duration for pricing
+        stay_duration = (check_out - check_in).days
+        
+        return {
+            "check_in_date": check_in_date,
+            "check_out_date": check_out_date,
+            "stay_duration": stay_duration,
+            "total_rooms": len(all_rooms),
+            "available_rooms": len(available_rooms),
+            "rooms": available_rooms
+        }
+        
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error checking availability: {str(e)}")
+
 # Booking Management Routes
 @api_router.get("/bookings")
 async def get_bookings(
