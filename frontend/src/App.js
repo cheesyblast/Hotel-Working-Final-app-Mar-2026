@@ -80,6 +80,46 @@ const Dashboard = () => {
     }
   };
 
+  // Check room availability function
+  const checkRoomAvailability = async () => {
+    if (!availabilityDates.check_in_date || !availabilityDates.check_out_date) {
+      alert('Please select both check-in and check-out dates');
+      return;
+    }
+
+    setCheckingAvailability(true);
+    try {
+      const params = new URLSearchParams({
+        check_in_date: availabilityDates.check_in_date,
+        check_out_date: availabilityDates.check_out_date
+      });
+      
+      const response = await axios.get(`${API}/rooms/availability/check?${params}`);
+      setAvailabilityData(response.data);
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      if (error.response?.data?.detail) {
+        alert(error.response.data.detail);
+      } else {
+        alert('Error checking room availability. Please try again.');
+      }
+    } finally {
+      setCheckingAvailability(false);
+    }
+  };
+
+  // Clear availability data when dates change
+  const handleDateChange = (field, value) => {
+    setAvailabilityDates({
+      ...availabilityDates,
+      [field]: value
+    });
+    // Clear previous results when dates change
+    if (availabilityData) {
+      setAvailabilityData(null);
+    }
+  };
+
   const fetchRooms = async () => {
     try {
       const response = await axios.get(`${API}/rooms`);
