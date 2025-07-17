@@ -391,6 +391,21 @@ frontend:
         agent: "main"
         comment: "Implemented guest data download functionality with date filtering, CSV export, and fallback logic for downloading all guests when no date-filtered results are found."
 
+  - task: "Room Availability Checker Feature"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "PASSED - Comprehensive testing of the new Room Availability Checker feature completed successfully with 100% success rate. ✅ Navigation & Positioning: Room Availability Checker section properly positioned below Room Status section on dashboard with clear heading and description. ✅ Date Input & Validation: Check Availability button correctly disabled without dates, becomes enabled when both check-in and check-out dates are selected (tested with 2025-07-18 to 2025-07-19). ✅ Room Availability Search: Search functionality working perfectly - displays loading state ('Checking...'), shows availability summary with stay duration (1 night), total rooms (10), and available rooms (7). ✅ Available Rooms Display: Available rooms displayed in professional grid format with complete details - room number, type (Triple/Double), price per night (LKR 11500/8500), total cost calculation, capacity (2-3 guests), and amenities. ✅ Booking Integration: 'Book This Room' buttons functional on all available rooms, opens New Booking modal with correctly pre-filled data - room number (101), check-in date (2025-07-18), check-out date (2025-07-19), and calculated booking amount (LKR 11500 = price per night × stay duration). ✅ Edge Cases: System handles various date ranges correctly, calculates different stay durations properly (tested 1-night and 2-night stays). ✅ UI/UX Elements: Responsive design working on desktop (1920x4000), tablet (768x1024), and mobile (390x844) viewports. Proper styling with white background, shadow, and professional appearance. Smooth transitions and user-friendly interface. ✅ Form Validation: Button enable/disable logic working correctly, all form elements accessible on all screen sizes. The Room Availability Checker feature is production-ready and provides excellent user experience for checking room availability and seamless booking integration."
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Room Availability Checker feature on dashboard with date selection, availability search, room details display, and booking integration."
+
 metadata:
   created_by: "main_agent"
   version: "2.0"
