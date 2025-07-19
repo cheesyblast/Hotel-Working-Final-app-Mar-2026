@@ -317,6 +317,8 @@ async def check_room_availability(
         
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    except HTTPException:
+        raise  # Re-raise HTTPException as-is to preserve status codes
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error checking availability: {str(e)}")
 
