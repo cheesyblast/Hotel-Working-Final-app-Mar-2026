@@ -33,7 +33,8 @@ const Dashboard = () => {
   // Form states
   const [checkinData, setCheckinData] = useState({
     advance_amount: 0,
-    notes: ''
+    notes: '',
+    payment_method: 'Cash'
   });
   const [checkoutData, setCheckoutData] = useState({
     additional_amount: '',
