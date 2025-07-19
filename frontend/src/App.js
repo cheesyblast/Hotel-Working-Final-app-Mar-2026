@@ -2527,49 +2527,57 @@ const Guests = () => {
         return;
       }
 
-      // Get all customer records (checked-in guests) within the date range
-      const response = await axios.get(`${API}/customers`);
-      const allCustomers = response.data;
+      // Get all bookings and filter by date range
+      const response = await axios.get(`${API}/bookings`);
+      const allBookings = response.data.bookings || response.data;
       
-      // Filter customers based on date range (check-in dates within the selected range)
+      if (!allBookings || allBookings.length === 0) {
+        alert('No booking data found.');
+        return;
+      }
+      
+      // Filter bookings based on date range (check-in dates within the selected range)
       const startDate = new Date(downloadDateRange.startDate);
       const endDate = new Date(downloadDateRange.endDate);
       
-      const filteredCustomers = allCustomers.filter(customer => {
-        if (customer.check_in_date) {
-          const checkInDate = new Date(customer.check_in_date);
+      const filteredBookings = allBookings.filter(booking => {
+        if (booking.check_in_date) {
+          const checkInDate = new Date(booking.check_in_date);
           return checkInDate >= startDate && checkInDate <= endDate;
         }
         return false;
       });
 
-      // If no customers found with date filtering, offer to download all
-      let dataToDownload = filteredCustomers;
-      if (filteredCustomers.length === 0) {
+      // If no bookings found with date filtering, offer to download all
+      let dataToDownload = filteredBookings;
+      if (filteredBookings.length === 0) {
         const downloadAll = window.confirm(
-          `No guests found with check-ins in the selected date range (${downloadDateRange.startDate} to ${downloadDateRange.endDate}). Would you like to download all ${allCustomers.length} guest records instead?`
+          `No guest bookings found in the selected date range (${downloadDateRange.startDate} to ${downloadDateRange.endDate}). Would you like to download all ${allBookings.length} guest records instead?`
         );
         
         if (downloadAll) {
-          dataToDownload = allCustomers;
+          dataToDownload = allBookings;
         } else {
-          alert('No guests downloaded.');
+          alert('No guest data downloaded.');
           return;
         }
       }
 
-      // Prepare data for Excel export
-      const excelData = dataToDownload.map(customer => ({
-        'Guest Name': customer.name || '',
-        'Email': customer.email || '',
-        'Phone': customer.phone || '',
-        'Current Room': customer.current_room || '',
-        'Check-in Date': customer.check_in_date ? new Date(customer.check_in_date).toLocaleDateString() : '',
-        'Check-out Date': customer.check_out_date ? new Date(customer.check_out_date).toLocaleDateString() : '',
-        'Advance Amount (LKR)': customer.advance_amount || 0,
-        'Room Charges (LKR)': customer.room_charges || 0,
-        'Total Amount (LKR)': customer.total_amount || 0,
-        'Notes': customer.notes || ''
+      // Prepare data for Excel export - extract guest information from bookings
+      const excelData = dataToDownload.map(booking => ({
+        'Guest Name': booking.guest_name || '',
+        'Email': booking.guest_email || '',
+        'Phone': booking.guest_phone || '',
+        'Country': booking.country || '',
+        'Guest ID/Passport': booking.guest_id_passport || '',
+        'Room Number': booking.room_number || '',
+        'Check-in Date': booking.check_in_date ? new Date(booking.check_in_date).toLocaleDateString() : '',
+        'Check-out Date': booking.check_out_date ? new Date(booking.check_out_date).toLocaleDateString() : '',
+        'Stay Type': booking.stay_type || '',
+        'Booking Amount (LKR)': booking.booking_amount || 0,
+        'Booking Status': booking.status || '',
+        'Additional Notes': booking.additional_notes || '',
+        'Booking Created': booking.created_at ? new Date(booking.created_at).toLocaleDateString() : ''
       }));
 
       // Create Excel workbook and worksheet
@@ -2577,10 +2585,10 @@ const Guests = () => {
       const ws = XLSX.utils.json_to_sheet(excelData);
       
       // Add the worksheet to the workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Guests Data');
+      XLSX.utils.book_append_sheet(wb, ws, 'Guest Data');
       
       // Generate filename
-      const filename = `guests_${downloadDateRange.startDate}_to_${downloadDateRange.endDate}.xlsx`;
+      const filename = `guest_data_${downloadDateRange.startDate}_to_${downloadDateRange.endDate}.xlsx`;
       
       // Download the Excel file
       XLSX.writeFile(wb, filename);
@@ -2589,7 +2597,7 @@ const Guests = () => {
       alert(`Downloaded ${dataToDownload.length} guest records to Excel file`);
     } catch (error) {
       console.error('Error downloading guest data:', error);
-      alert('Error downloading guest data. Please try again.');
+      alert('Error downloading guest data: ' + (error.response?.data?.detail || error.message || 'Please try again.'));
     }
   };
 
