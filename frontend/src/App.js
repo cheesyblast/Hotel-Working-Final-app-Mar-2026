@@ -45,6 +45,7 @@ const Dashboard = () => {
     discount_amount: '',
     payment_method: 'Cash'
   });
+  const [availableRoomsForBooking, setAvailableRoomsForBooking] = useState([]);
   const [newBookingData, setNewBookingData] = useState({
     guest_name: '',
     guest_email: '',
