@@ -1851,6 +1851,7 @@ const Expenses = () => {
         await fetchIncomes();
         await fetchDailySales();
         await fetchFinancialSummary();
+        await fetchDailyFinancialSummary();
         alert('Income record deleted successfully!');
       } catch (error) {
         console.error('Error deleting income:', error);
