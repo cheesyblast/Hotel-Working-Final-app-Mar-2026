@@ -1908,28 +1908,27 @@ const Expenses = () => {
       </div>
 
       {/* Financial Summary Cards */}
-      {financialSummary && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {dailyFinancialSummary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-green-50 border border-green-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-green-800 mb-2">Total Revenue</h3>
-            <p className="text-3xl font-bold text-green-900">LKR {financialSummary.total_revenue.toFixed(2)}</p>
-            <p className="text-sm text-green-600">Current period</p>
+            <p className="text-3xl font-bold text-green-900">LKR {dailyFinancialSummary.total_revenue.toFixed(2)}</p>
+            <p className="text-sm text-green-600">Today ({new Date(dailyFinancialSummary.date).toLocaleDateString()})</p>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-red-800 mb-2">Total Expenses</h3>
-            <p className="text-3xl font-bold text-red-900">LKR {financialSummary.total_expenses.toFixed(2)}</p>
-            <p className="text-sm text-red-600">Current period</p>
+            <p className="text-3xl font-bold text-red-900">LKR {dailyFinancialSummary.total_expenses.toFixed(2)}</p>
+            <p className="text-sm text-red-600">Today ({new Date(dailyFinancialSummary.date).toLocaleDateString()})</p>
           </div>
-          <div className={`${financialSummary.net_profit >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} border rounded-lg p-6`}>
-            <h3 className={`text-lg font-semibold ${financialSummary.net_profit >= 0 ? 'text-blue-800' : 'text-orange-800'} mb-2`}>
-              Net {financialSummary.net_profit >= 0 ? 'Profit' : 'Loss'}
-            </h3>
-            <p className={`text-3xl font-bold ${financialSummary.net_profit >= 0 ? 'text-blue-900' : 'text-orange-900'}`}>
-              LKR {Math.abs(financialSummary.net_profit).toFixed(2)}
-            </p>
-            <p className={`text-sm ${financialSummary.net_profit >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-              Current period
-            </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">Cash Balance</h3>
+            <p className="text-3xl font-bold text-blue-900">LKR {dailyFinancialSummary.cash_balance.toFixed(2)}</p>
+            <p className="text-sm text-blue-600">Cash payments today</p>
+          </div>
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-purple-800 mb-2">Bank Balance</h3>
+            <p className="text-3xl font-bold text-purple-900">LKR {dailyFinancialSummary.bank_balance.toFixed(2)}</p>
+            <p className="text-sm text-purple-600">Card + Bank Transfer</p>
           </div>
         </div>
       )}
