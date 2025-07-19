@@ -391,6 +391,18 @@ frontend:
         agent: "main"
         comment: "Implemented guest data download functionality with date filtering, CSV export, and fallback logic for downloading all guests when no date-filtered results are found."
 
+  - task: "Inc & Exp Page Current Day Financial Dashboard Enhancement"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py,/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced Inc & Exp page to display current day's financial data instead of period data. Added new backend endpoint /api/daily-financial-summary that provides current day's Total Revenue, Total Expenses, Cash Balance (cash payments), and Bank Balance (card + bank transfer payments). Updated frontend to use new 4-card layout displaying real-time current day data. Bank Transfer payment method was already available in checkout modal. The page now shows live data for the current day only, with bank balance remaining consistent as requested."
+
   - task: "Room Availability Checker Modal Enhancement"
     implemented: true
     working: true
