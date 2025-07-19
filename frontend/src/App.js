@@ -2527,69 +2527,66 @@ const Guests = () => {
         return;
       }
 
-      // Filter guests based on date range - include guests who have bookings in the date range
+      // Get all customer records (checked-in guests) within the date range
+      const response = await axios.get(`${API}/customers`);
+      const allCustomers = response.data;
+      
+      // Filter customers based on date range (check-in dates within the selected range)
       const startDate = new Date(downloadDateRange.startDate);
       const endDate = new Date(downloadDateRange.endDate);
       
-      const filteredData = guests.filter(guest => {
-        // If guest has completed stays and last stay date is available, use it
-        if (guest.last_stay && guest.last_stay !== 'Never') {
-          const lastStayDate = new Date(guest.last_stay);
-          return lastStayDate >= startDate && lastStayDate <= endDate;
+      const filteredCustomers = allCustomers.filter(customer => {
+        if (customer.check_in_date) {
+          const checkInDate = new Date(customer.check_in_date);
+          return checkInDate >= startDate && checkInDate <= endDate;
         }
-        
-        // For guests without completed stays, check if they have any bookings
-        // Since most guests currently show "Never" for last stay, we'll include them
-        // if they have any bookings (this can be refined based on booking dates if available)
-        if (guest.total_bookings > 0) {
-          return true; // Include all guests with bookings for now
-        }
-        
         return false;
       });
 
-      // If no guests found with date filtering, offer to download all guests
-      if (filteredData.length === 0) {
+      // If no customers found with date filtering, offer to download all
+      let dataToDownload = filteredCustomers;
+      if (filteredCustomers.length === 0) {
         const downloadAll = window.confirm(
-          `No guests found with stays in the selected date range. Would you like to download all ${guests.length} guests instead?`
+          `No guests found with check-ins in the selected date range (${downloadDateRange.startDate} to ${downloadDateRange.endDate}). Would you like to download all ${allCustomers.length} guest records instead?`
         );
         
         if (downloadAll) {
-          filteredData.push(...guests);
+          dataToDownload = allCustomers;
         } else {
           alert('No guests downloaded.');
           return;
         }
       }
 
-      // Create CSV content
-      const headers = ['Name', 'Email', 'Phone', 'Total Bookings', 'Completed Stays', 'Upcoming Bookings', 'Last Stay'];
-      const csvContent = [
-        headers.join(','),
-        ...filteredData.map(guest => [
-          `"${guest.name}"`,
-          `"${guest.email}"`,
-          `"${guest.phone}"`,
-          guest.total_bookings,
-          guest.total_stays,
-          guest.upcoming_bookings,
-          `"${guest.last_stay || 'Never'}"`
-        ].join(','))
-      ].join('\n');
+      // Prepare data for Excel export
+      const excelData = dataToDownload.map(customer => ({
+        'Guest Name': customer.name || '',
+        'Email': customer.email || '',
+        'Phone': customer.phone || '',
+        'Current Room': customer.current_room || '',
+        'Check-in Date': customer.check_in_date ? new Date(customer.check_in_date).toLocaleDateString() : '',
+        'Check-out Date': customer.check_out_date ? new Date(customer.check_out_date).toLocaleDateString() : '',
+        'Advance Amount (LKR)': customer.advance_amount || 0,
+        'Room Charges (LKR)': customer.room_charges || 0,
+        'Total Amount (LKR)': customer.total_amount || 0,
+        'Notes': customer.notes || ''
+      }));
 
-      // Create and download file
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `guests_${downloadDateRange.startDate}_to_${downloadDateRange.endDate}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Create Excel workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      
+      // Add the worksheet to the workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Guests Data');
+      
+      // Generate filename
+      const filename = `guests_${downloadDateRange.startDate}_to_${downloadDateRange.endDate}.xlsx`;
+      
+      // Download the Excel file
+      XLSX.writeFile(wb, filename);
 
       setShowDownloadModal(false);
-      alert(`Downloaded ${filteredData.length} guest records`);
+      alert(`Downloaded ${dataToDownload.length} guest records to Excel file`);
     } catch (error) {
       console.error('Error downloading guest data:', error);
       alert('Error downloading guest data. Please try again.');
