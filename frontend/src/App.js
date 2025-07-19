@@ -22,6 +22,9 @@ const Dashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   
+  // Dropdown state for booking actions
+  const [openDropdowns, setOpenDropdowns] = useState({});
+  
   // Room availability checker state
   const [availabilityData, setAvailabilityData] = useState(null);
   const [availabilityDates, setAvailabilityDates] = useState({
