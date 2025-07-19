@@ -392,6 +392,12 @@ const Dashboard = () => {
     setShowEditBookingModal(true);
   };
 
+  const openNewBookingModal = () => {
+    // Initialize with all non-occupied rooms
+    setAvailableRoomsForBooking(getAvailableRooms());
+    setShowNewBookingModal(true);
+  };
+
   const getAvailableRooms = () => {
     // If dates are selected, we should check availability for those specific dates
     // For now, return all rooms except occupied ones
