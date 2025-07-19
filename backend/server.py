@@ -121,6 +121,7 @@ class CheckinRequest(BaseModel):
     booking_id: str
     advance_amount: float = 0.0
     notes: str = ""
+    payment_method: str = "Cash"
 
 class Expense(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
