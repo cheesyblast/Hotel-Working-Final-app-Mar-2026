@@ -1610,6 +1610,7 @@ const Expenses = () => {
   const [incomes, setIncomes] = useState([]);
   const [dailySales, setDailySales] = useState([]);
   const [financialSummary, setFinancialSummary] = useState(null);
+  const [dailyFinancialSummary, setDailyFinancialSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [showAddIncomeModal, setShowAddIncomeModal] = useState(false);
@@ -1658,6 +1659,7 @@ const Expenses = () => {
     fetchIncomes();
     fetchDailySales();
     fetchFinancialSummary();
+    fetchDailyFinancialSummary();
   }, []);
 
   const fetchExpenses = async () => {
@@ -1695,6 +1697,15 @@ const Expenses = () => {
       console.error('Error fetching financial summary:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDailyFinancialSummary = async () => {
+    try {
+      const response = await axios.get(`${API}/daily-financial-summary`);
+      setDailyFinancialSummary(response.data);
+    } catch (error) {
+      console.error('Error fetching daily financial summary:', error);
     }
   };
 
