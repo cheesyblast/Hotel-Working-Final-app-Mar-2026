@@ -391,6 +391,18 @@ frontend:
         agent: "main"
         comment: "Implemented guest data download functionality with date filtering, CSV export, and fallback logic for downloading all guests when no date-filtered results are found."
 
+  - task: "Dashboard UI Enhancements - Dropdown Actions and Booked Room Status"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced Dashboard UI with two key improvements: 1) Replaced the Actions column in Recent Upcoming Bookings table with a clean dropdown menu (three dots button) that shows Check-in, Edit, and Cancel options on click with proper icons and hover effects. Added dropdown state management with click-outside-to-close functionality. 2) Added real-time 'Booked' status for rooms that have bookings for the current day but aren't checked in yet. Booked rooms show with orange color (#orange-100 background, #orange-500 border, 🟠 icon) and display 'Check-in today' message. Updated getRoomDisplayStatus function to check for current day bookings and show appropriate status."
+
   - task: "Advance Amount Payment Method and Daily Revenue Integration"
     implemented: true
     working: true
