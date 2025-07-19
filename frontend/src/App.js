@@ -1078,61 +1078,6 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <h4 className="text-md font-medium text-gray-800 border-b pb-2">Booking Details</h4>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Room *
-                    </label>
-                    <select
-                      value={newBookingData.room_number}
-                      onChange={(e) => handleBookingFieldChange('room_number', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="">Select a room</option>
-                      {getAvailableRooms().map((room) => (
-                        <option key={room.id} value={room.room_number}>
-                          {room.room_number}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rate per Night (LKR) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newBookingData.rate_per_night}
-                      onChange={(e) => handleBookingFieldChange('rate_per_night', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter rate per night"
-                      required
-                    />
-                  </div>
-                  
-                  {/* Show calculated total */}
-                  {newBookingData.booking_amount > 0 && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <div className="text-sm font-medium text-blue-800">
-                        Total Booking Amount: LKR {newBookingData.booking_amount.toFixed(2)}
-                      </div>
-                      {newBookingData.stay_type === 'Night Stay' && newBookingData.check_in_date && newBookingData.check_out_date && (
-                        <div className="text-xs text-blue-600 mt-1">
-                          {Math.max(1, Math.ceil((new Date(newBookingData.check_out_date) - new Date(newBookingData.check_in_date)) / (1000 * 60 * 60 * 24)))} night(s) × LKR {parseFloat(newBookingData.rate_per_night || 0).toFixed(2)}
-                        </div>
-                      )}
-                      {newBookingData.stay_type === 'Short Time' && (
-                        <div className="text-xs text-blue-600 mt-1">
-                          Short time rate
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Stay Type *
@@ -1193,6 +1138,66 @@ const Dashboard = () => {
                         disabled
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500"
                       />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Room *
+                    </label>
+                    <select
+                      value={newBookingData.room_number}
+                      onChange={(e) => handleBookingFieldChange('room_number', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">Select a room</option>
+                      {(availableRoomsForBooking.length > 0 ? availableRoomsForBooking : getAvailableRooms()).map((room) => (
+                        <option key={room.id} value={room.room_number}>
+                          {room.room_number}
+                        </option>
+                      ))}
+                    </select>
+                    {newBookingData.check_in_date && availableRoomsForBooking.length === 0 && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        Select dates first to see available rooms for those dates
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rate per Night (LKR) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newBookingData.rate_per_night}
+                      onChange={(e) => handleBookingFieldChange('rate_per_night', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter rate per night"
+                      required
+                    />
+                  </div>
+                  
+                  {/* Show calculated total */}
+                  {newBookingData.booking_amount > 0 && (
+                    <div className="col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="text-sm font-medium text-blue-800">
+                        Total Booking Amount: LKR {newBookingData.booking_amount.toFixed(2)}
+                      </div>
+                      {newBookingData.stay_type === 'Night Stay' && newBookingData.check_in_date && newBookingData.check_out_date && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          {Math.max(1, Math.ceil((new Date(newBookingData.check_out_date) - new Date(newBookingData.check_in_date)) / (1000 * 60 * 60 * 24)))} night(s) × LKR {parseFloat(newBookingData.rate_per_night || 0).toFixed(2)}
+                        </div>
+                      )}
+                      {newBookingData.stay_type === 'Short Time' && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          Short time rate
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
