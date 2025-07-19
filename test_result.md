@@ -433,7 +433,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Enhanced checkout functionality with payment method selection and daily sales tracking. Backend now records all checkout transactions in daily_sales collection with payment method details. Frontend checkout modal improved with empty default values, payment method dropdown, and wider modal design. Ready for testing the enhanced checkout flow."
+    message: "Enhanced the Room Availability Checker to display results in a popup modal instead of inline display. Removed Price, total cost, Capacity and amenities details as requested by the user. The modal now shows only the essential information: room number, room type, availability status, and 'Book This Room' button. The check availability functionality remains the same but now opens a modal with the simplified room display. Ready for testing the enhanced Room Availability Checker modal."
   - agent: "testing"
     message: "BACKEND TESTING COMPLETED - All 3 backend API tasks are now fully functional and tested. Fixed critical BSON serialization issue with date objects that was preventing sample data creation. All endpoints tested successfully: health check, sample data initialization, room management, booking management, customer management, and checkout functionality. Backend API is ready for frontend integration. Comprehensive test suite created at /app/backend_test.py for future regression testing."
   - agent: "testing"
