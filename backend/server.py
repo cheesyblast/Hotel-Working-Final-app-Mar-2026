@@ -1254,6 +1254,69 @@ async def get_financial_summary(start_date: Optional[str] = None, end_date: Opti
         "period_end": end_date
     }
 
+@api_router.get("/daily-financial-summary")
+async def get_daily_financial_summary():
+    """Get current day financial summary with cash and bank balances"""
+    today = datetime.now().date()
+    start_datetime = datetime.combine(today, datetime.min.time())
+    end_datetime = datetime.combine(today, datetime.max.time())
+    
+    # Calculate today's revenue from actual daily sales
+    daily_sales = await db.daily_sales.find({
+        "date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(1000)
+    
+    total_revenue = 0
+    cash_balance = 0
+    bank_balance = 0
+    payment_method_breakdown = {}
+    
+    for sale in daily_sales:
+        sale_amount = sale.get("total_amount", 0)
+        total_revenue += sale_amount
+        
+        payment_method = sale.get("payment_method", "Cash")
+        if payment_method not in payment_method_breakdown:
+            payment_method_breakdown[payment_method] = 0
+        payment_method_breakdown[payment_method] += sale_amount
+        
+        # Cash balance = Cash payments
+        if payment_method == "Cash":
+            cash_balance += sale_amount
+        # Bank balance = Card payments + Bank Transfer payments
+        elif payment_method in ["Card", "Bank Transfer"]:
+            bank_balance += sale_amount
+    
+    # Calculate today's additional income
+    additional_incomes = await db.incomes.find({
+        "income_date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(1000)
+    
+    additional_income_total = 0
+    for income in additional_incomes:
+        additional_income_total += income.get("amount", 0)
+    
+    # Total revenue = room revenue + additional income
+    total_revenue += additional_income_total
+    
+    # Calculate today's expenses
+    expenses = await db.expenses.find({
+        "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(1000)
+    
+    total_expenses = 0
+    for expense in expenses:
+        total_expenses += expense.get("amount", 0)
+    
+    return {
+        "total_revenue": total_revenue,
+        "total_expenses": total_expenses,
+        "cash_balance": cash_balance,
+        "bank_balance": bank_balance,
+        "payment_method_breakdown": payment_method_breakdown,
+        "date": today
+    }
+
 # Test route
 @api_router.get("/")
 async def root():
