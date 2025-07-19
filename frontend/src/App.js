@@ -1729,6 +1729,7 @@ const Expenses = () => {
       // Refresh data after adding expense
       await fetchExpenses();
       await fetchFinancialSummary();
+      await fetchDailyFinancialSummary();
       alert('Expense added successfully!');
     } catch (error) {
       console.error('Error adding expense:', error);
