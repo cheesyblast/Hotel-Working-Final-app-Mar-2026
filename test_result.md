@@ -391,6 +391,18 @@ frontend:
         agent: "main"
         comment: "Implemented guest data download functionality with date filtering, CSV export, and fallback logic for downloading all guests when no date-filtered results are found."
 
+  - task: "Advance Amount Payment Method and Daily Revenue Integration"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py,/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced check-in functionality to include payment method selection for advance amounts and integrate advance amounts into daily revenue calculations. Added payment method dropdown (Cash, Card, Bank Transfer) to check-in modal. Updated CheckinRequest model to include payment_method field. Modified check-in endpoint to record advance amounts as daily sales entries when amount > 0, ensuring advance payments are included in total revenue and appropriate cash/bank balance calculations. This ensures advance amounts collected during check-in are properly reflected in the daily financial summary."
+
   - task: "Inc & Exp Page Current Day Financial Dashboard Enhancement"
     implemented: true
     working: true
