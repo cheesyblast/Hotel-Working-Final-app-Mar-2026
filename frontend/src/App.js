@@ -97,6 +97,7 @@ const Dashboard = () => {
       
       const response = await axios.get(`${API}/rooms/availability/check?${params}`);
       setAvailabilityData(response.data);
+      setShowAvailabilityModal(true);
     } catch (error) {
       console.error('Error checking availability:', error);
       if (error.response?.data?.detail) {
