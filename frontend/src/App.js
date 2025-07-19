@@ -2917,35 +2917,75 @@ const Bookings = () => {
 
   const handleDownload = async () => {
     try {
-      const params = new URLSearchParams({
-        start_date: downloadDateRange.start_date,
-        end_date: downloadDateRange.end_date,
-        status: downloadDateRange.status
-      });
+      // Build query parameters for filtering
+      const params = new URLSearchParams();
       
-      const response = await axios.get(`${API}/bookings/download?${params}`);
-      const csvData = response.data.data;
-      const filename = response.data.filename;
+      if (downloadDateRange.start_date) {
+        params.append('start_date', downloadDateRange.start_date);
+      }
+      if (downloadDateRange.end_date) {
+        params.append('end_date', downloadDateRange.end_date);
+      }
+      if (downloadDateRange.status && downloadDateRange.status !== 'All') {
+        params.append('status', downloadDateRange.status);
+      }
       
-      // Convert array to CSV string
-      const csvString = csvData.map(row => 
-        row.map(cell => `"${cell}"`).join(',')
-      ).join('\n');
+      // Fetch filtered bookings from backend
+      const response = await axios.get(`${API}/bookings?${params}`);
+      const bookingsData = response.data.bookings || response.data;
       
-      // Create and download file
-      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (!bookingsData || bookingsData.length === 0) {
+        alert('No bookings found for the selected criteria.');
+        return;
+      }
+
+      // Prepare data for Excel export
+      const excelData = bookingsData.map(booking => ({
+        'Booking ID': booking.id || '',
+        'Guest Name': booking.guest_name || '',
+        'Guest Email': booking.guest_email || '',
+        'Guest Phone': booking.guest_phone || '',
+        'Room Number': booking.room_number || '',
+        'Check-in Date': booking.check_in_date || '',
+        'Check-out Date': booking.check_out_date || '',
+        'Stay Type': booking.stay_type || '',
+        'Booking Amount (LKR)': booking.booking_amount || 0,
+        'Status': booking.status || '',
+        'Country': booking.country || '',
+        'Guest ID/Passport': booking.guest_id_passport || '',
+        'Additional Notes': booking.additional_notes || '',
+        'Created At': booking.created_at ? new Date(booking.created_at).toLocaleDateString() : ''
+      }));
+
+      // Create Excel workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      
+      // Add the worksheet to the workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Bookings Data');
+      
+      // Generate filename with filters applied
+      let filename = 'bookings';
+      if (downloadDateRange.start_date && downloadDateRange.end_date) {
+        filename += `_${downloadDateRange.start_date}_to_${downloadDateRange.end_date}`;
+      } else if (downloadDateRange.start_date) {
+        filename += `_from_${downloadDateRange.start_date}`;
+      } else if (downloadDateRange.end_date) {
+        filename += `_until_${downloadDateRange.end_date}`;
+      }
+      if (downloadDateRange.status && downloadDateRange.status !== 'All') {
+        filename += `_${downloadDateRange.status.toLowerCase()}`;
+      }
+      filename += '.xlsx';
+      
+      // Download the Excel file
+      XLSX.writeFile(wb, filename);
       
       setShowDownloadModal(false);
+      alert(`Downloaded ${bookingsData.length} booking records to Excel file`);
     } catch (error) {
       console.error('Error downloading bookings:', error);
+      alert('Error downloading bookings data. Please try again.');
     }
   };
 
