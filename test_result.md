@@ -483,7 +483,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard UI Enhancements - Dropdown Actions and Booked Room Status"
+    - "Bug Fixes - Room Availability, Booking Selection, and Amount Calculation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
