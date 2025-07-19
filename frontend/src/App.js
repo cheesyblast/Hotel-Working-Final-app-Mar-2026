@@ -189,7 +189,8 @@ const Dashboard = () => {
       await axios.post(`${API}/checkin`, {
         booking_id: selectedBooking.id,
         advance_amount: checkinData.advance_amount,
-        notes: checkinData.notes
+        notes: checkinData.notes,
+        payment_method: checkinData.payment_method
       });
       
       setShowCheckinModal(false);
