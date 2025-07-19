@@ -435,33 +435,42 @@ const Dashboard = () => {
           <h3 className="text-lg font-semibold text-gray-900">Room Status - Quick View</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {rooms.map((room) => (
-            <div
-              key={room.id}
-              className={`p-4 rounded-lg border-2 ${getRoomStatusColor(room.status)} shadow-sm hover:shadow-md transition-shadow`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-lg font-bold text-gray-900">{room.room_number}</h4>
-                <span className="text-lg">{getStatusIcon(room.status)}</span>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">{room.room_type}</p>
-              <p className={`text-sm font-medium ${
-                room.status === 'Available' ? 'text-green-700' :
-                room.status === 'Occupied' ? 'text-red-700' :
-                'text-yellow-700'
-              }`}>
-                {room.status}
-              </p>
-              {room.current_guest && (
-                <div className="mt-2 pt-2 border-t border-gray-200">
-                  <p className="text-xs text-gray-500">Guest: {room.current_guest}</p>
-                  {room.check_out_date && (
-                    <p className="text-xs text-gray-500">Out: {room.check_out_date}</p>
-                  )}
+          {rooms.map((room) => {
+            const displayStatus = getRoomDisplayStatus(room);
+            return (
+              <div
+                key={room.id}
+                className={`p-4 rounded-lg border-2 ${getRoomStatusColor(displayStatus)} shadow-sm hover:shadow-md transition-shadow`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-lg font-bold text-gray-900">{room.room_number}</h4>
+                  <span className="text-lg">{getStatusIcon(displayStatus)}</span>
                 </div>
-              )}
-            </div>
-          ))}
+                <p className="text-sm text-gray-600 mb-1">{room.room_type}</p>
+                <p className={`text-sm font-medium ${
+                  displayStatus === 'Available' ? 'text-green-700' :
+                  displayStatus === 'Occupied' ? 'text-red-700' :
+                  displayStatus === 'Booked' ? 'text-orange-700' :
+                  'text-yellow-700'
+                }`}>
+                  {displayStatus}
+                </p>
+                {room.current_guest && (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">Guest: {room.current_guest}</p>
+                    {room.check_out_date && (
+                      <p className="text-xs text-gray-500">Out: {room.check_out_date}</p>
+                    )}
+                  </div>
+                )}
+                {displayStatus === 'Booked' && (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <p className="text-xs text-orange-600 font-medium">Check-in today</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
