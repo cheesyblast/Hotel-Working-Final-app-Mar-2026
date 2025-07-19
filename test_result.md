@@ -441,7 +441,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Room Availability Checker Modal Enhancement"
+    - "Inc & Exp Page Current Day Financial Dashboard Enhancement"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
