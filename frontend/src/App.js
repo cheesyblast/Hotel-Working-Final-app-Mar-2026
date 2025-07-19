@@ -377,7 +377,31 @@ const Dashboard = () => {
   };
 
   const getAvailableRooms = () => {
+    // If dates are selected, we should check availability for those specific dates
+    // For now, return all rooms except occupied ones
+    // TODO: This should check against the room availability API for the selected dates
     return rooms.filter(room => room.status !== 'Occupied');
+  };
+
+  // Function to get available rooms for specific dates
+  const getAvailableRoomsForDates = async (checkInDate, checkOutDate) => {
+    if (!checkInDate || (newBookingData.stay_type === 'Night Stay' && !checkOutDate)) {
+      return rooms.filter(room => room.status !== 'Occupied');
+    }
+
+    try {
+      const params = new URLSearchParams({
+        check_in_date: checkInDate,
+        check_out_date: checkOutDate || checkInDate
+      });
+      
+      const response = await axios.get(`${API}/rooms/availability/check?${params}`);
+      return response.data.rooms || [];
+    } catch (error) {
+      console.error('Error checking room availability:', error);
+      // Fallback to showing all non-occupied rooms
+      return rooms.filter(room => room.status !== 'Occupied');
+    }
   };
 
   const getRoomStatusColor = (status) => {
