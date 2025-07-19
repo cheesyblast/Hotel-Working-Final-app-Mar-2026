@@ -291,7 +291,7 @@ const Dashboard = () => {
 
   const handleNewBooking = async () => {
     try {
-      // Validate required fields - only name, room, check-in date, and booking amount are required
+      // Validate required fields - only name, room, check-in date, and rate per night are required
       const requiredFields = ['guest_name', 'room_number', 'check_in_date'];
       const missingFields = requiredFields.filter(field => !newBookingData[field]);
       
@@ -300,25 +300,21 @@ const Dashboard = () => {
         missingFields.push('check_out_date');
       }
 
-      // Booking amount is required
-      if (!newBookingData.booking_amount || parseFloat(newBookingData.booking_amount) <= 0) {
-        missingFields.push('booking_amount');
+      // Rate per night is required
+      if (!newBookingData.rate_per_night || parseFloat(newBookingData.rate_per_night) <= 0) {
+        missingFields.push('rate_per_night');
       }
       
       if (missingFields.length > 0) {
-        alert('Please fill in all required fields (Name, Room, Dates, and Booking Amount)');
+        alert('Please fill in all required fields (Name, Room, Dates, and Rate per Night)');
         return;
       }
 
-      // Prepare booking data
+      // Prepare booking data - send the calculated booking_amount to backend
       const bookingData = {
-        ...newBookingData
+        ...newBookingData,
+        booking_amount: newBookingData.booking_amount // This is the calculated total
       };
-
-      // For short time, don't send checkout date (backend will set it to same day)
-      if (newBookingData.stay_type === 'Short Time') {
-        delete bookingData.check_out_date;
-      }
 
       await axios.post(`${API}/bookings`, bookingData);
       
@@ -327,19 +323,23 @@ const Dashboard = () => {
         guest_name: '',
         guest_email: '',
         guest_phone: '',
+        country: '',
         guest_id_passport: '',
-        guest_country: '',
         room_number: '',
         check_in_date: '',
         check_out_date: '',
         stay_type: 'Night Stay',
-        booking_amount: '',
+        rate_per_night: '',
+        booking_amount: 0,
         additional_notes: ''
       });
       
-      // Refresh bookings after creating new one
-      await fetchUpcomingBookings();
-      alert('Booking created successfully!');
+      // Refresh data after adding booking
+      await Promise.all([
+        fetchRooms(),
+        fetchUpcomingBookings()
+      ]);
+      alert('Booking added successfully!');
     } catch (error) {
       console.error('Error creating booking:', error);
       alert('Error creating booking. Please try again.');
