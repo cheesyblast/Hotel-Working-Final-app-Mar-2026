@@ -1821,6 +1821,7 @@ const Expenses = () => {
       await fetchIncomes();
       await fetchDailySales();
       await fetchFinancialSummary();
+      await fetchDailyFinancialSummary();
       alert('Income added successfully!');
     } catch (error) {
       console.error('Error adding income:', error);
