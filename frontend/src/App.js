@@ -1102,6 +1102,96 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Room Availability Modal */}
+      {showAvailabilityModal && availabilityData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Room Availability Results</h3>
+              <button
+                onClick={() => setShowAvailabilityModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h4 className="font-semibold text-blue-800 mb-2">
+                Availability for {availabilityData.check_in_date} to {availabilityData.check_out_date}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-600 font-medium">Stay Duration:</span>
+                  <span className="text-blue-800 ml-1">{availabilityData.stay_duration} night{availabilityData.stay_duration !== 1 ? 's' : ''}</span>
+                </div>
+                <div>
+                  <span className="text-blue-600 font-medium">Total Rooms:</span>
+                  <span className="text-blue-800 ml-1">{availabilityData.total_rooms}</span>
+                </div>
+                <div>
+                  <span className="text-green-600 font-medium">Available Rooms:</span>
+                  <span className="text-green-800 ml-1">{availabilityData.available_rooms}</span>
+                </div>
+              </div>
+            </div>
+
+            {availabilityData.rooms.length > 0 ? (
+              <div>
+                <h5 className="font-medium text-gray-900 mb-4">Available Rooms:</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {availabilityData.rooms.map(room => (
+                    <div key={room.id} className="border border-green-300 bg-green-50 p-4 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h6 className="font-semibold text-green-800 text-lg">{room.room_number}</h6>
+                          <p className="text-sm text-green-600">{room.room_type}</p>
+                        </div>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                          Available
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setNewBookingData({
+                            ...newBookingData,
+                            room_number: room.room_number,
+                            check_in_date: availabilityData.check_in_date,
+                            check_out_date: availabilityData.check_out_date,
+                            booking_amount: room.price_per_night * availabilityData.stay_duration
+                          });
+                          setShowAvailabilityModal(false);
+                          setShowNewBookingModal(true);
+                        }}
+                        className="w-full mt-3 px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors font-medium"
+                      >
+                        Book This Room
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                <h5 className="font-medium text-red-800 mb-2">No Rooms Available</h5>
+                <p className="text-red-600 text-sm">
+                  Sorry, no rooms are available for the selected dates. Please try different dates or contact us for assistance.
+                </p>
+              </div>
+            )}
+            
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setShowAvailabilityModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
