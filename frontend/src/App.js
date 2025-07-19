@@ -1059,21 +1059,37 @@ const Dashboard = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Booking Amount (LKR) *
+                      Rate per Night (LKR) *
                     </label>
                     <input
                       type="number"
                       step="0.01"
-                      value={newBookingData.booking_amount}
-                      onChange={(e) => setNewBookingData({...newBookingData, booking_amount: e.target.value})}
+                      value={newBookingData.rate_per_night}
+                      onChange={(e) => handleBookingFieldChange('rate_per_night', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter custom amount"
+                      placeholder="Enter rate per night"
                       required
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Enter the total amount you want to charge for this booking
-                    </p>
                   </div>
+                  
+                  {/* Show calculated total */}
+                  {newBookingData.booking_amount > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="text-sm font-medium text-blue-800">
+                        Total Booking Amount: LKR {newBookingData.booking_amount.toFixed(2)}
+                      </div>
+                      {newBookingData.stay_type === 'Night Stay' && newBookingData.check_in_date && newBookingData.check_out_date && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          {Math.max(1, Math.ceil((new Date(newBookingData.check_out_date) - new Date(newBookingData.check_in_date)) / (1000 * 60 * 60 * 24)))} night(s) × LKR {parseFloat(newBookingData.rate_per_night || 0).toFixed(2)}
+                        </div>
+                      )}
+                      {newBookingData.stay_type === 'Short Time' && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          Short time rate
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <div>
