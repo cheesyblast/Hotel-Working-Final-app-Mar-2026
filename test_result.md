@@ -391,6 +391,18 @@ frontend:
         agent: "main"
         comment: "Implemented guest data download functionality with date filtering, CSV export, and fallback logic for downloading all guests when no date-filtered results are found."
 
+  - task: "Room Availability Checker Modal Enhancement"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Enhanced Room Availability Checker to display results in a popup modal instead of inline. Removed Price, total cost, Capacity and amenities details as requested. Only shows room number, room type, availability status, and 'Book This Room' button. Added new modal state and modified the checkRoomAvailability function to open the modal with results."
+
   - task: "Room Availability Checker Feature"
     implemented: true
     working: true
