@@ -151,6 +151,48 @@ const Dashboard = () => {
     setOpenDropdowns({});
   };
 
+  // Calculate booking amount based on room, dates, and stay type
+  const calculateBookingAmount = (room_number, check_in_date, check_out_date, stay_type) => {
+    if (!room_number) return 0;
+    
+    const room = rooms.find(r => r.room_number === room_number);
+    if (!room) return 0;
+    
+    const pricePerNight = room.price_per_night || 500; // Default price if not set
+    
+    if (stay_type === 'Short Time') {
+      // For short time, typically charge 50% of night rate or a fixed amount
+      return pricePerNight * 0.5;
+    }
+    
+    if (stay_type === 'Night Stay' && check_in_date && check_out_date) {
+      const checkIn = new Date(check_in_date);
+      const checkOut = new Date(check_out_date);
+      const nights = Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
+      return pricePerNight * nights;
+    }
+    
+    return pricePerNight; // Default to one night
+  };
+
+  // Update booking amount when relevant fields change
+  const handleBookingFieldChange = (field, value) => {
+    const updatedData = { ...newBookingData, [field]: value };
+    
+    // Auto-calculate booking amount when room, dates, or stay type changes
+    if (['room_number', 'check_in_date', 'check_out_date', 'stay_type'].includes(field)) {
+      const calculatedAmount = calculateBookingAmount(
+        updatedData.room_number,
+        updatedData.check_in_date,
+        updatedData.check_out_date,
+        updatedData.stay_type
+      );
+      updatedData.booking_amount = calculatedAmount;
+    }
+    
+    setNewBookingData(updatedData);
+  };
+
   const fetchRooms = async () => {
     try {
       const response = await axios.get(`${API}/rooms`);
