@@ -126,6 +126,18 @@ const Dashboard = () => {
     }
   };
 
+  // Handle dropdown toggle for booking actions
+  const toggleDropdown = (bookingId) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [bookingId]: !prev[bookingId]
+    }));
+  };
+
+  const closeAllDropdowns = () => {
+    setOpenDropdowns({});
+  };
+
   const fetchRooms = async () => {
     try {
       const response = await axios.get(`${API}/rooms`);
