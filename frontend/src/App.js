@@ -1116,7 +1116,7 @@ const Dashboard = () => {
                     <input
                       type="date"
                       value={newBookingData.check_in_date}
-                      onChange={(e) => setNewBookingData({...newBookingData, check_in_date: e.target.value})}
+                      onChange={(e) => handleBookingFieldChange('check_in_date', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -1130,7 +1130,7 @@ const Dashboard = () => {
                       <input
                         type="date"
                         value={newBookingData.check_out_date}
-                        onChange={(e) => setNewBookingData({...newBookingData, check_out_date: e.target.value})}
+                        onChange={(e) => handleBookingFieldChange('check_out_date', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required={newBookingData.stay_type === 'Night Stay'}
                       />
