@@ -48,13 +48,14 @@ const Dashboard = () => {
     guest_name: '',
     guest_email: '',
     guest_phone: '',
+    country: '',
     guest_id_passport: '',
-    guest_country: '',
     room_number: '',
     check_in_date: '',
     check_out_date: '',
     stay_type: 'Night Stay',
-    booking_amount: '',
+    rate_per_night: '',
+    booking_amount: 0,
     additional_notes: ''
   });
   const [editBookingData, setEditBookingData] = useState({
