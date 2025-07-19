@@ -65,6 +65,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     initializeData();
+    
+    // Add click outside handler for dropdowns
+    const handleClickOutside = (event) => {
+      // Close dropdowns when clicking outside
+      if (!event.target.closest('.relative')) {
+        closeAllDropdowns();
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
   }, []);
 
   const initializeData = async () => {
