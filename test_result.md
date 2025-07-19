@@ -456,7 +456,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Inc & Exp Page Current Day Financial Dashboard Enhancement"
+    - "Advance Amount Payment Method and Daily Revenue Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
