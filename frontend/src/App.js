@@ -1835,6 +1835,7 @@ const Expenses = () => {
         await axios.delete(`${API}/expenses/${expenseId}`);
         await fetchExpenses();
         await fetchFinancialSummary();
+        await fetchDailyFinancialSummary();
         alert('Expense deleted successfully!');
       } catch (error) {
         console.error('Error deleting expense:', error);
