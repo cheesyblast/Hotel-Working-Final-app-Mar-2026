@@ -1052,7 +1052,7 @@ const Dashboard = () => {
                       <option value="">Select a room</option>
                       {getAvailableRooms().map((room) => (
                         <option key={room.id} value={room.room_number}>
-                          {room.room_number} - {room.room_type} (LKR {room.price_per_night}/night)
+                          {room.room_number}
                         </option>
                       ))}
                     </select>
