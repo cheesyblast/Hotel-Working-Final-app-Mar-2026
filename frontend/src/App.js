@@ -2925,24 +2925,54 @@ const Bookings = () => {
 
   const handleDownload = async () => {
     try {
-      // Build query parameters for filtering
-      const params = new URLSearchParams();
+      // Fetch all bookings first, then filter on frontend if needed
+      let apiUrl = `${API}/bookings`;
+      let queryParams = [];
       
-      if (downloadDateRange.start_date) {
-        params.append('start_date', downloadDateRange.start_date);
-      }
-      if (downloadDateRange.end_date) {
-        params.append('end_date', downloadDateRange.end_date);
-      }
-      if (downloadDateRange.status && downloadDateRange.status !== 'All') {
-        params.append('status', downloadDateRange.status);
+      // Add pagination parameter to get all bookings
+      queryParams.push('page=1');
+      queryParams.push('limit=1000'); // Get a large number of bookings
+      
+      if (queryParams.length > 0) {
+        apiUrl += '?' + queryParams.join('&');
       }
       
-      // Fetch filtered bookings from backend
-      const response = await axios.get(`${API}/bookings?${params}`);
-      const bookingsData = response.data.bookings || response.data;
+      const response = await axios.get(apiUrl);
+      let bookingsData = response.data.bookings || response.data;
       
       if (!bookingsData || bookingsData.length === 0) {
+        alert('No bookings found.');
+        return;
+      }
+
+      // Apply date filtering on frontend
+      if (downloadDateRange.start_date || downloadDateRange.end_date) {
+        bookingsData = bookingsData.filter(booking => {
+          const bookingDate = new Date(booking.check_in_date);
+          let matchesDateRange = true;
+          
+          if (downloadDateRange.start_date) {
+            const startDate = new Date(downloadDateRange.start_date);
+            matchesDateRange = matchesDateRange && bookingDate >= startDate;
+          }
+          
+          if (downloadDateRange.end_date) {
+            const endDate = new Date(downloadDateRange.end_date);
+            matchesDateRange = matchesDateRange && bookingDate <= endDate;
+          }
+          
+          return matchesDateRange;
+        });
+      }
+
+      // Apply status filtering on frontend
+      if (downloadDateRange.status && downloadDateRange.status !== 'All') {
+        bookingsData = bookingsData.filter(booking => 
+          booking.status && booking.status.toLowerCase() === downloadDateRange.status.toLowerCase()
+        );
+      }
+      
+      if (bookingsData.length === 0) {
         alert('No bookings found for the selected criteria.');
         return;
       }
@@ -2953,14 +2983,14 @@ const Bookings = () => {
         'Guest Name': booking.guest_name || '',
         'Guest Email': booking.guest_email || '',
         'Guest Phone': booking.guest_phone || '',
+        'Country': booking.country || '',
+        'Guest ID/Passport': booking.guest_id_passport || '',
         'Room Number': booking.room_number || '',
-        'Check-in Date': booking.check_in_date || '',
-        'Check-out Date': booking.check_out_date || '',
+        'Check-in Date': booking.check_in_date ? new Date(booking.check_in_date).toLocaleDateString() : '',
+        'Check-out Date': booking.check_out_date ? new Date(booking.check_out_date).toLocaleDateString() : '',
         'Stay Type': booking.stay_type || '',
         'Booking Amount (LKR)': booking.booking_amount || 0,
         'Status': booking.status || '',
-        'Country': booking.country || '',
-        'Guest ID/Passport': booking.guest_id_passport || '',
         'Additional Notes': booking.additional_notes || '',
         'Created At': booking.created_at ? new Date(booking.created_at).toLocaleDateString() : ''
       }));
@@ -2993,7 +3023,7 @@ const Bookings = () => {
       alert(`Downloaded ${bookingsData.length} booking records to Excel file`);
     } catch (error) {
       console.error('Error downloading bookings:', error);
-      alert('Error downloading bookings data. Please try again.');
+      alert('Error downloading bookings data: ' + (error.response?.data?.detail || error.message || 'Please try again.'));
     }
   };
 
