@@ -180,7 +180,7 @@ const Dashboard = () => {
 
   const handleCheckin = async (booking) => {
     setSelectedBooking(booking);
-    setCheckinData({ advance_amount: 0, notes: '' });
+    setCheckinData({ advance_amount: 0, notes: '', payment_method: 'Cash' });
     setShowCheckinModal(true);
   };
 
