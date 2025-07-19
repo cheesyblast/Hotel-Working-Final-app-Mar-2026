@@ -358,6 +358,8 @@ const Dashboard = () => {
         return 'bg-green-100 border-green-500';
       case 'Occupied':
         return 'bg-red-100 border-red-500';
+      case 'Booked':
+        return 'bg-orange-100 border-orange-500';
       case 'Reserved':
         return 'bg-yellow-100 border-yellow-500';
       default:
@@ -371,11 +373,36 @@ const Dashboard = () => {
         return '🟢';
       case 'Occupied':
         return '🔴';
+      case 'Booked':
+        return '🟠';
       case 'Reserved':
         return '🟡';
       default:
         return '⚪';
     }
+  };
+
+  // Function to get room status including booked status
+  const getRoomDisplayStatus = (room) => {
+    // If room is already Occupied, return Occupied
+    if (room.status === 'Occupied') {
+      return 'Occupied';
+    }
+    
+    // Check if room has bookings for today
+    const today = new Date().toISOString().split('T')[0];
+    const roomBookings = upcomingBookings.filter(booking => 
+      booking.room_number === room.room_number &&
+      booking.check_in_date === today
+    );
+    
+    // If there are bookings for today and room is available, mark as Booked
+    if (roomBookings.length > 0 && room.status === 'Available') {
+      return 'Booked';
+    }
+    
+    // Otherwise return the original status
+    return room.status;
   };
 
   if (loading) {
