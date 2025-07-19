@@ -391,6 +391,18 @@ frontend:
         agent: "main"
         comment: "Implemented guest data download functionality with date filtering, CSV export, and fallback logic for downloading all guests when no date-filtered results are found."
 
+  - task: "Download Functionality Fixes - Guests and Bookings Excel Export"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js,package.json"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed critical download functionality issues in both Guests and Bookings pages: 1) Guests Page - Changed data source from guests array to /customers API endpoint, fixed date filtering to use check-in dates within selected range instead of flawed last_stay logic, converted from CSV to Excel format with comprehensive customer data (name, email, phone, room, dates, financial details, notes). 2) Bookings Page - Fixed filtering to properly use selected start/end dates and status parameters by calling /bookings API with proper query params, converted from CSV to Excel format with complete booking details (ID, guest info, room, dates, amounts, status, notes, creation date). 3) Added XLSX library for proper Excel export functionality. Both downloads now provide accurate, filtered data in professional Excel format."
+
   - task: "Bug Fixes - Room Availability, Booking Selection, and Amount Calculation"
     implemented: true
     working: true
