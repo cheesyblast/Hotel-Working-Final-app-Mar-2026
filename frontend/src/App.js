@@ -151,12 +151,30 @@ const Dashboard = () => {
     setOpenDropdowns({});
   };
 
-  // Handle booking field changes (without auto-calculation of amount)
+  // Handle booking field changes with total calculation
   const handleBookingFieldChange = (field, value) => {
-    setNewBookingData({
-      ...newBookingData,
-      [field]: value
-    });
+    const updatedData = { ...newBookingData, [field]: value };
+    
+    // Calculate total booking amount when rate, dates, or stay type changes
+    if (['rate_per_night', 'check_in_date', 'check_out_date', 'stay_type'].includes(field)) {
+      const ratePerNight = parseFloat(updatedData.rate_per_night) || 0;
+      
+      if (updatedData.stay_type === 'Short Time') {
+        // For short time, use the rate as-is (single charge)
+        updatedData.booking_amount = ratePerNight;
+      } else if (updatedData.stay_type === 'Night Stay' && updatedData.check_in_date && updatedData.check_out_date) {
+        // For night stay, calculate based on number of nights
+        const checkIn = new Date(updatedData.check_in_date);
+        const checkOut = new Date(updatedData.check_out_date);
+        const nights = Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
+        updatedData.booking_amount = ratePerNight * nights;
+      } else {
+        // Default to single night if dates not set
+        updatedData.booking_amount = ratePerNight;
+      }
+    }
+    
+    setNewBookingData(updatedData);
   };
 
   const fetchRooms = async () => {
