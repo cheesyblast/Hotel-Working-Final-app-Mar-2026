@@ -349,7 +349,7 @@ const Dashboard = () => {
   };
 
   const getAvailableRooms = () => {
-    return rooms.filter(room => room.status === 'Available');
+    return rooms.filter(room => room.status === 'Available' || room.status === 'Reserved');
   };
 
   const getRoomStatusColor = (status) => {
