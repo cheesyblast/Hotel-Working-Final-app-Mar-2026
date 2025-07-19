@@ -393,12 +393,15 @@ frontend:
 
   - task: "Advance Amount Payment Method and Daily Revenue Integration"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py,/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "PASSED - Comprehensive advance amount payment method and daily revenue integration testing completed successfully with 100% success rate (9/9 tests passed). ✅ Health Check: Backend API health check endpoint working perfectly. ✅ Check-in with Payment Methods: Successfully tested check-in functionality with all three payment methods (Cash: 1500.0, Card: 1200.0, Bank Transfer: 800.0) - all advance amounts properly recorded. ✅ Daily Sales Entry Creation: Verified that advance amounts > 0 are correctly recorded as daily sales entries with proper payment method tracking. ✅ Daily Financial Summary Integration: Confirmed advance amounts are properly included in total revenue calculations with correct cash/bank balance distribution (Cash balance: 17075.0 includes Cash advances, Bank balance: 8975.0 includes Card and Bank Transfer advances). ✅ Payment Method Breakdown: Complete payment method breakdown working correctly with all three payment types properly tracked (Cash: 17075.0, Card: 7175.0, Bank Transfer: 2600.0). ✅ Zero Advance Edge Case: Verified that advance amount = 0 correctly does not create daily sale entry (sales count unchanged). ✅ End-to-End Integration: Complete workflow tested from check-in with advance payment → daily sales entry creation → daily financial summary inclusion with appropriate balance calculations. The enhanced check-in functionality with payment method selection and daily revenue integration is fully functional and production-ready."
       - working: "NA"
         agent: "main"
         comment: "Enhanced check-in functionality to include payment method selection for advance amounts and integrate advance amounts into daily revenue calculations. Added payment method dropdown (Cash, Card, Bank Transfer) to check-in modal. Updated CheckinRequest model to include payment_method field. Modified check-in endpoint to record advance amounts as daily sales entries when amount > 0, ensuring advance payments are included in total revenue and appropriate cash/bank balance calculations. This ensures advance amounts collected during check-in are properly reflected in the daily financial summary."
