@@ -448,7 +448,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Enhanced the Room Availability Checker to display results in a popup modal instead of inline display. Removed Price, total cost, Capacity and amenities details as requested by the user. The modal now shows only the essential information: room number, room type, availability status, and 'Book This Room' button. The check availability functionality remains the same but now opens a modal with the simplified room display. Ready for testing the enhanced Room Availability Checker modal."
+    message: "Enhanced the Inc & Exp page to display current day financial dashboard as requested. Created new backend endpoint /api/daily-financial-summary that provides real-time current day data: Total Revenue, Total Expenses, Cash Balance (cash payments only), and Bank Balance (card + bank transfer payments combined). Updated frontend to show 4 cards instead of 3, displaying live current day data. Bank Transfer payment method was already available in checkout modal. The page now refreshes with current day data only, providing real-time financial insights for hotel operations. Ready for testing the enhanced daily financial dashboard functionality."
   - agent: "testing"
     message: "BACKEND TESTING COMPLETED - All 3 backend API tasks are now fully functional and tested. Fixed critical BSON serialization issue with date objects that was preventing sample data creation. All endpoints tested successfully: health check, sample data initialization, room management, booking management, customer management, and checkout functionality. Backend API is ready for frontend integration. Comprehensive test suite created at /app/backend_test.py for future regression testing."
   - agent: "testing"
