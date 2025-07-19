@@ -1379,7 +1379,7 @@ const Dashboard = () => {
                             booking_amount: room.price_per_night * availabilityData.stay_duration
                           });
                           setShowAvailabilityModal(false);
-                          setShowNewBookingModal(true);
+                          openNewBookingModal();
                         }}
                         className="w-full mt-3 px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors font-medium"
                       >
