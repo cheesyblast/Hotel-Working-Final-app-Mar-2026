@@ -155,7 +155,7 @@ const Dashboard = () => {
   };
 
   // Handle booking field changes with total calculation
-  const handleBookingFieldChange = (field, value) => {
+  const handleBookingFieldChange = async (field, value) => {
     const updatedData = { ...newBookingData, [field]: value };
     
     // Calculate total booking amount when rate, dates, or stay type changes
@@ -174,6 +174,21 @@ const Dashboard = () => {
       } else {
         // Default to single night if dates not set
         updatedData.booking_amount = ratePerNight;
+      }
+    }
+    
+    // Update available rooms when dates change
+    if (['check_in_date', 'check_out_date', 'stay_type'].includes(field)) {
+      try {
+        const availableRooms = await getAvailableRoomsForDates(
+          updatedData.check_in_date,
+          updatedData.check_out_date
+        );
+        setAvailableRoomsForBooking(availableRooms);
+      } catch (error) {
+        console.error('Error updating available rooms:', error);
+        // Fallback to all non-occupied rooms
+        setAvailableRoomsForBooking(getAvailableRooms());
       }
     }
     
