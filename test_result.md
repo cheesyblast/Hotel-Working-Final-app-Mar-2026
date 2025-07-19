@@ -498,7 +498,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Bug Fixes - Room Availability, Booking Selection, and Amount Calculation"
+    - "Download Functionality Fixes - Guests and Bookings Excel Export"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
