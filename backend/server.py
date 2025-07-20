@@ -1081,6 +1081,45 @@ async def initialize_sample_data():
         expense_dict['expense_date'] = datetime.combine(expense_dict['expense_date'], datetime.min.time())
         await db.expenses.insert_one(expense_dict)
     
+    # Create default admin user if no users exist
+    existing_users = await db.users.count_documents({})
+    if existing_users == 0:
+        default_admin = User(
+            username="admin",
+            password="admin123",  # In production, this should be hashed
+            full_name="System Administrator",
+            role="Admin",
+            email="admin@hotel.com"
+        )
+        await db.users.insert_one(default_admin.dict())
+        
+        # Create sample staff user
+        sample_staff = User(
+            username="staff1",
+            password="staff123",
+            full_name="Hotel Staff",
+            role="Staff",
+            email="staff@hotel.com"
+        )
+        await db.users.insert_one(sample_staff.dict())
+    
+    # Create default settings if none exist
+    existing_settings = await db.settings.count_documents({})
+    if existing_settings == 0:
+        default_settings = Settings(
+            hotel_name="Grand Hotel Paradise",
+            hotel_contact="+94 11 234 5678",
+            hotel_address="123 Ocean View Road, Colombo 03, Sri Lanka",
+            hotel_email="info@grandhotelparadise.com",
+            hotel_phone="+94 11 234 5678",
+            currency="LKR",
+            check_in_time="14:00",
+            check_out_time="12:00",
+            default_room_rate=8000.0,
+            tax_rate=10.0
+        )
+        await db.settings.insert_one(default_settings.dict())
+    
     return {"message": "Sample data initialized successfully"}
 
 # Guest Management Routes
