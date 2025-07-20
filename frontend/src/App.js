@@ -3872,15 +3872,15 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex space-x-8">
           <Link 
             to="/" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Dashboard
@@ -3889,8 +3889,8 @@ const Navigation = () => {
             to="/rooms" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/rooms') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Rooms
@@ -3899,8 +3899,8 @@ const Navigation = () => {
             to="/guests" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/guests') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Guests
@@ -3909,8 +3909,8 @@ const Navigation = () => {
             to="/bookings" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/bookings') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Bookings
@@ -3919,8 +3919,8 @@ const Navigation = () => {
             to="/expenses" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/expenses') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Inc & Exp
@@ -3929,8 +3929,8 @@ const Navigation = () => {
             to="/reports" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/reports') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Reports
@@ -3939,8 +3939,8 @@ const Navigation = () => {
             to="/settings" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/settings') 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 dark:border-blue-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
             Settings
