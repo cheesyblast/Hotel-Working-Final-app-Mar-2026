@@ -1425,6 +1425,111 @@ const Reports = () => {
     fetchReportsData();
   }, []);
 
+  const handleDownloadDailyReport = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await axios.get(`${API}/financial-reports/daily?date=${today}`);
+      const reportData = response.data;
+      
+      // Prepare Excel data
+      const summaryData = [{
+        'Date': new Date(reportData.date).toLocaleDateString(),
+        'Room Revenue (LKR)': reportData.room_revenue,
+        'Additional Income (LKR)': reportData.additional_income,
+        'Total Revenue (LKR)': reportData.total_revenue,
+        'Total Expenses (LKR)': reportData.total_expenses,
+        'Net Profit (LKR)': reportData.net_profit
+      }];
+
+      // Create workbook with multiple sheets
+      const wb = XLSX.utils.book_new();
+      
+      // Summary sheet
+      const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Daily Summary');
+      
+      // Sales details sheet
+      if (reportData.sales_details && reportData.sales_details.length > 0) {
+        const salesData = reportData.sales_details.map(sale => ({
+          'Customer': sale.customer_name,
+          'Room': sale.room_number,
+          'Payment Method': sale.payment_method,
+          'Amount (LKR)': sale.total_amount,
+          'Date': new Date(sale.date).toLocaleDateString()
+        }));
+        const salesWs = XLSX.utils.json_to_sheet(salesData);
+        XLSX.utils.book_append_sheet(wb, salesWs, 'Sales Details');
+      }
+      
+      // Income details sheet
+      if (reportData.income_details && reportData.income_details.length > 0) {
+        const incomeData = reportData.income_details.map(income => ({
+          'Description': income.description,
+          'Category': income.category,
+          'Payment Method': income.payment_method || 'Cash',
+          'Amount (LKR)': income.amount,
+          'Date': new Date(income.income_date).toLocaleDateString()
+        }));
+        const incomeWs = XLSX.utils.json_to_sheet(incomeData);
+        XLSX.utils.book_append_sheet(wb, incomeWs, 'Income Details');
+      }
+      
+      // Expense details sheet
+      if (reportData.expense_details && reportData.expense_details.length > 0) {
+        const expenseData = reportData.expense_details.map(expense => ({
+          'Description': expense.description,
+          'Category': expense.category,
+          'Payment Method': expense.payment_method || 'Cash',
+          'Amount (LKR)': expense.amount,
+          'Date': new Date(expense.expense_date).toLocaleDateString()
+        }));
+        const expenseWs = XLSX.utils.json_to_sheet(expenseData);
+        XLSX.utils.book_append_sheet(wb, expenseWs, 'Expense Details');
+      }
+      
+      const filename = `daily_financial_report_${today}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      
+      alert('Daily financial report downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading daily report:', error);
+      alert('Error downloading daily report. Please try again.');
+    }
+  };
+
+  const handleDownloadMonthlyReport = async () => {
+    try {
+      const today = new Date();
+      const response = await axios.get(`${API}/financial-reports/monthly?year=${today.getFullYear()}&month=${today.getMonth() + 1}`);
+      const reportData = response.data;
+      
+      // Prepare Excel data
+      const summaryData = [{
+        'Month': reportData.month_name,
+        'Room Revenue (LKR)': reportData.room_revenue,
+        'Additional Income (LKR)': reportData.additional_income,
+        'Total Revenue (LKR)': reportData.total_revenue,
+        'Total Expenses (LKR)': reportData.total_expenses,
+        'Net Profit (LKR)': reportData.net_profit,
+        'Total Sales': reportData.sales_count,
+        'Total Income Entries': reportData.income_count,
+        'Total Expense Entries': reportData.expense_count
+      }];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Monthly Summary');
+      
+      const filename = `monthly_financial_report_${reportData.year}_${String(reportData.month).padStart(2, '0')}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      
+      alert('Monthly financial report downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading monthly report:', error);
+      alert('Error downloading monthly report. Please try again.');
+    }
+  };
+
   const fetchReportsData = async () => {
     try {
       const [dailyResponse, monthlyResponse, comparisonResponse] = await Promise.all([
