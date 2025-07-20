@@ -3953,6 +3953,9 @@ const Navigation = () => {
 
 // Settings Component
 const Settings = () => {
+  // Get theme from context
+  const { darkMode, toggleDarkMode } = useTheme();
+  
   // State for different sections
   const [users, setUsers] = useState([]);
   const [hotelSettings, setHotelSettings] = useState({});
@@ -3965,11 +3968,6 @@ const Settings = () => {
   const [showActivityLogs, setShowActivityLogs] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
-  // Theme state - This should ideally be in a context
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem('darkMode') === 'true'
-  );
   
   // Form states
   const [newUser, setNewUser] = useState({
@@ -3996,17 +3994,6 @@ const Settings = () => {
   useEffect(() => {
     fetchAllData();
   }, []);
-
-  useEffect(() => {
-    // Apply dark mode class to body
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('darkMode', 'true');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('darkMode', 'false');
-    }
-  }, [darkMode]);
 
   const fetchAllData = async () => {
     setLoading(true);
