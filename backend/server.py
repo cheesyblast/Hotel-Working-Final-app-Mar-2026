@@ -231,6 +231,24 @@ class ActivityLogCreate(BaseModel):
     details: dict = {}
     ip_address: str = ""
 
+# Activity logging helper function
+async def log_activity(action: str, description: str, user_name: str = "Admin", 
+                      entity_type: str = "", entity_id: str = "", details: dict = {}):
+    """Helper function to log user activities"""
+    try:
+        activity = ActivityLog(
+            action=action,
+            description=description,
+            user_name=user_name,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            details=details
+        )
+        await db.activity_logs.insert_one(activity.dict())
+    except Exception as e:
+        # Log the error but don't fail the main operation
+        print(f"Failed to log activity: {str(e)}")
+
 # Room Management Routes
 @api_router.get("/rooms", response_model=List[Room])
 async def get_rooms():
