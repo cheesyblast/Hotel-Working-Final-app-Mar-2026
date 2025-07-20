@@ -911,10 +911,10 @@ async def checkin_customer(checkin: CheckinRequest):
         current_room=booking["room_number"],
         check_in_date=booking["check_in_date"] if isinstance(booking["check_in_date"], date) else booking["check_in_date"].date(),
         check_out_date=booking["check_out_date"] if isinstance(booking["check_out_date"], date) else booking["check_out_date"].date(),
-        advance_amount=checkin.advance_amount,
+        advance_amount=advance_amount,
         notes=checkin.notes,
         room_charges=room_charges,
-        total_amount=room_charges - checkin.advance_amount
+        total_amount=room_charges - advance_amount
     )
     
     # Add customer to checked-in list
