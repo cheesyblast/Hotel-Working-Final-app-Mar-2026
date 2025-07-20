@@ -599,10 +599,10 @@ const Dashboard = () => {
 
       {/* Upcoming Bookings */}
       <div className="mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Upcoming Bookings</h3>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold text-white mb-4">Recent Upcoming Bookings</h3>
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
           {upcomingBookings.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-gray-400">
               No upcoming bookings
             </div>
           ) : (
