@@ -900,6 +900,9 @@ async def checkin_customer(checkin: CheckinRequest):
     # Use the booking amount as room charges (actual amount customer agreed to pay)
     room_charges = booking.get("booking_amount", 500.0)
     
+    # Ensure advance_amount is a valid number (handle None, empty string, etc.)
+    advance_amount = checkin.advance_amount if checkin.advance_amount is not None else 0.0
+    
     # Create customer record
     customer = Customer(
         name=booking["guest_name"],
