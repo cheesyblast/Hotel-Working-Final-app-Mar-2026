@@ -2213,25 +2213,51 @@ const Expenses = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Inc & Exp Management</h2>
-          <p className="text-gray-600">Track income, expenses and monitor financial performance</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Income & Expenses</h2>
+          <p className="text-gray-600">Financial management and reporting</p>
         </div>
-        <div className="flex space-x-3">
-          <button 
-            onClick={() => setShowAddIncomeModal(true)}
+        <div className="flex items-center space-x-4">
+          {/* View Mode Toggle */}
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('daily')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'daily' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Daily View
+            </button>
+            <button
+              onClick={() => setViewMode('monthly')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'monthly' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Monthly View
+            </button>
+          </div>
+          
+          {/* Download Buttons */}
+          <button
+            onClick={handleDownloadDailyReport}
             className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 flex items-center space-x-2"
           >
-            <span>+</span>
-            <span>Add Income</span>
+            <span>📊</span>
+            <span>Daily Report</span>
           </button>
-          <button 
-            onClick={() => setShowAddExpenseModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center space-x-2"
+          <button
+            onClick={handleDownloadMonthlyReport}
+            className="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 flex items-center space-x-2"
           >
-            <span>+</span>
-            <span>Add Expense</span>
+            <span>📈</span>
+            <span>Monthly Report</span>
           </button>
         </div>
       </div>
