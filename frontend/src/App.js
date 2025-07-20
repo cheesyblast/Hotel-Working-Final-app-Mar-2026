@@ -1589,35 +1589,60 @@ const Reports = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Reports & Analytics</h2>
           <p className="text-gray-600">Financial performance and business insights</p>
         </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setSelectedView('daily')}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              selectedView === 'daily' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Daily View
-          </button>
-          <button
-            onClick={() => setSelectedView('monthly')}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              selectedView === 'monthly' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Monthly View
-          </button>
-          <button
-            onClick={() => setSelectedView('comparison')}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              selectedView === 'comparison' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
+        <div className="flex items-center space-x-4">
+          {/* View Toggle */}
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setSelectedView('daily')}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                selectedView === 'daily' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Daily View
+            </button>
+            <button
+              onClick={() => setSelectedView('monthly')}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                selectedView === 'monthly' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Monthly View
+            </button>
+            <button
+              onClick={() => setSelectedView('comparison')}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                selectedView === 'comparison' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Comparison
+            </button>
+          </div>
+          
+          {/* Download Buttons */}
+          <div className="flex space-x-2">
+            <button
+              onClick={handleDownloadDailyReport}
+              className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 flex items-center space-x-2"
+            >
+              <span>📊</span>
+              <span>Daily Report</span>
+            </button>
+            <button
+              onClick={handleDownloadMonthlyReport}
+              className="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 flex items-center space-x-2"
+            >
+              <span>📈</span>
+              <span>Monthly Report</span>
+            </button>
+          </div>
+        </div>
+      </div>
             Comparison
           </button>
         </div>
