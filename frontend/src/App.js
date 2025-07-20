@@ -2050,6 +2050,7 @@ const Expenses = () => {
         description: '',
         amount: 0,
         category: '',
+        payment_method: 'Cash',
         expense_date: ''
       });
       
