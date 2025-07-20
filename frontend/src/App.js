@@ -2278,7 +2278,7 @@ const Expenses = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-blue-800 mb-2">Cash Balance</h3>
             <p className="text-3xl font-bold text-blue-900">LKR {dailyFinancialSummary.cash_balance.toFixed(2)}</p>
-            <p className="text-sm text-blue-600">Cash payments today</p>
+            <p className="text-sm text-blue-600">Running balance</p>
           </div>
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-purple-800 mb-2">Bank Balance</h3>
@@ -2287,6 +2287,24 @@ const Expenses = () => {
           </div>
         </div>
       )}
+
+      {/* Action Buttons */}
+      <div className="flex justify-center space-x-4 mb-8">
+        <button 
+          onClick={() => setShowAddIncomeModal(true)}
+          className="bg-green-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-green-700 flex items-center space-x-2"
+        >
+          <span>+</span>
+          <span>Add Income</span>
+        </button>
+        <button 
+          onClick={() => setShowAddExpenseModal(true)}
+          className="bg-red-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-red-700 flex items-center space-x-2"
+        >
+          <span>+</span>
+          <span>Add Expense</span>
+        </button>
+      </div>
 
       {/* Expenses Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
