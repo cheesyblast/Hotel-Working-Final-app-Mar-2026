@@ -3266,8 +3266,8 @@ const Bookings = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">All Bookings</h2>
-          <p className="text-gray-600">Manage all hotel bookings and reservations</p>
+          <h2 className="text-2xl font-bold text-white mb-2">All Bookings</h2>
+          <p className="text-gray-300">Manage all hotel bookings and reservations</p>
         </div>
         <button
           onClick={() => setShowDownloadModal(true)}
@@ -3288,14 +3288,14 @@ const Bookings = () => {
             placeholder="Search by guest name, email, phone, or room number..."
             value={searchTerm}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 bg-gray-800 border border-gray-600 text-white rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
           />
         </div>
         <div className="sm:w-48">
           <select
             value={statusFilter}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 bg-gray-800 border border-gray-600 text-white rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Status</option>
             <option value="Upcoming">Upcoming</option>
