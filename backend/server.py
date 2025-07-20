@@ -1276,65 +1276,172 @@ async def get_financial_summary(start_date: Optional[str] = None, end_date: Opti
 
 @api_router.get("/daily-financial-summary")
 async def get_daily_financial_summary():
-    """Get current day financial summary with cash and bank balances"""
+    """Get current day financial summary with running cash and bank balances"""
     today = datetime.now().date()
     start_datetime = datetime.combine(today, datetime.min.time())
     end_datetime = datetime.combine(today, datetime.max.time())
     
-    # Calculate today's revenue from actual daily sales
+    # Calculate today's revenue from daily sales
     daily_sales = await db.daily_sales.find({
         "date": {"$gte": start_datetime, "$lte": end_datetime}
     }).to_list(1000)
     
-    total_revenue = 0
-    cash_balance = 0
-    bank_balance = 0
-    payment_method_breakdown = {}
-    
-    for sale in daily_sales:
-        sale_amount = sale.get("total_amount", 0)
-        total_revenue += sale_amount
-        
-        payment_method = sale.get("payment_method", "Cash")
-        if payment_method not in payment_method_breakdown:
-            payment_method_breakdown[payment_method] = 0
-        payment_method_breakdown[payment_method] += sale_amount
-        
-        # Cash balance = Cash payments
-        if payment_method == "Cash":
-            cash_balance += sale_amount
-        # Bank balance = Card payments + Bank Transfer payments
-        elif payment_method in ["Card", "Bank Transfer"]:
-            bank_balance += sale_amount
+    today_revenue = sum(sale.get("total_amount", 0) for sale in daily_sales)
     
     # Calculate today's additional income
     additional_incomes = await db.incomes.find({
         "income_date": {"$gte": start_datetime, "$lte": end_datetime}
     }).to_list(1000)
     
-    additional_income_total = 0
-    for income in additional_incomes:
-        additional_income_total += income.get("amount", 0)
-    
-    # Total revenue = room revenue + additional income
-    total_revenue += additional_income_total
+    additional_income_total = sum(income.get("amount", 0) for income in additional_incomes)
+    total_revenue = today_revenue + additional_income_total
     
     # Calculate today's expenses
     expenses = await db.expenses.find({
         "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
     }).to_list(1000)
     
-    total_expenses = 0
-    for expense in expenses:
-        total_expenses += expense.get("amount", 0)
+    total_expenses = sum(expense.get("amount", 0) for expense in expenses)
+    
+    # Calculate running cash and bank balances (cumulative)
+    # Get all sales and income (cash inflow)
+    all_sales = await db.daily_sales.find().to_list(10000)
+    all_incomes = await db.incomes.find().to_list(10000)
+    
+    cash_balance = 0
+    bank_balance = 0
+    
+    # Add revenue to appropriate balances
+    for sale in all_sales:
+        amount = sale.get("total_amount", 0)
+        payment_method = sale.get("payment_method", "Cash")
+        if payment_method == "Cash":
+            cash_balance += amount
+        elif payment_method in ["Card", "Bank Transfer"]:
+            bank_balance += amount
+    
+    # Add additional income to cash balance (assuming cash unless specified)
+    for income in all_incomes:
+        amount = income.get("amount", 0)
+        payment_method = income.get("payment_method", "Cash")
+        if payment_method == "Cash":
+            cash_balance += amount
+        elif payment_method in ["Card", "Bank Transfer"]:
+            bank_balance += amount
+    
+    # Subtract expenses from appropriate balances
+    all_expenses = await db.expenses.find().to_list(10000)
+    for expense in all_expenses:
+        amount = expense.get("amount", 0)
+        payment_method = expense.get("payment_method", "Cash")
+        if payment_method == "Cash":
+            cash_balance -= amount
+        elif payment_method in ["Card", "Bank Transfer"]:
+            bank_balance -= amount
     
     return {
         "total_revenue": total_revenue,
         "total_expenses": total_expenses,
         "cash_balance": cash_balance,
         "bank_balance": bank_balance,
-        "payment_method_breakdown": payment_method_breakdown,
         "date": today
+    }
+
+@api_router.get("/api/financial-reports/daily")
+async def get_daily_financial_report(date: Optional[str] = None):
+    """Get financial report for a specific day"""
+    if not date:
+        report_date = datetime.now().date()
+    else:
+        report_date = datetime.strptime(date, '%Y-%m-%d').date()
+    
+    start_datetime = datetime.combine(report_date, datetime.min.time())
+    end_datetime = datetime.combine(report_date, datetime.max.time())
+    
+    # Get day's sales
+    daily_sales = await db.daily_sales.find({
+        "date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(1000)
+    
+    # Get day's income
+    incomes = await db.incomes.find({
+        "income_date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(1000)
+    
+    # Get day's expenses
+    expenses = await db.expenses.find({
+        "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(1000)
+    
+    room_revenue = sum(sale.get("total_amount", 0) for sale in daily_sales)
+    additional_income = sum(income.get("amount", 0) for income in incomes)
+    total_revenue = room_revenue + additional_income
+    total_expenses = sum(expense.get("amount", 0) for expense in expenses)
+    net_profit = total_revenue - total_expenses
+    
+    return {
+        "date": report_date,
+        "room_revenue": room_revenue,
+        "additional_income": additional_income,
+        "total_revenue": total_revenue,
+        "total_expenses": total_expenses,
+        "net_profit": net_profit,
+        "sales_details": daily_sales,
+        "income_details": incomes,
+        "expense_details": expenses
+    }
+
+@api_router.get("/api/financial-reports/monthly")
+async def get_monthly_financial_report(year: int = None, month: int = None):
+    """Get financial report for a specific month"""
+    if not year or not month:
+        today = datetime.now().date()
+        year = today.year
+        month = today.month
+    
+    # First day of the month
+    start_date = datetime(year, month, 1).date()
+    
+    # Last day of the month
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1).date() - timedelta(days=1)
+    else:
+        end_date = datetime(year, month + 1, 1).date() - timedelta(days=1)
+    
+    start_datetime = datetime.combine(start_date, datetime.min.time())
+    end_datetime = datetime.combine(end_date, datetime.max.time())
+    
+    # Get month's data
+    daily_sales = await db.daily_sales.find({
+        "date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(10000)
+    
+    incomes = await db.incomes.find({
+        "income_date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(10000)
+    
+    expenses = await db.expenses.find({
+        "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
+    }).to_list(10000)
+    
+    room_revenue = sum(sale.get("total_amount", 0) for sale in daily_sales)
+    additional_income = sum(income.get("amount", 0) for income in incomes)
+    total_revenue = room_revenue + additional_income
+    total_expenses = sum(expense.get("amount", 0) for expense in expenses)
+    net_profit = total_revenue - total_expenses
+    
+    return {
+        "year": year,
+        "month": month,
+        "month_name": start_date.strftime("%B %Y"),
+        "room_revenue": room_revenue,
+        "additional_income": additional_income,
+        "total_revenue": total_revenue,
+        "total_expenses": total_expenses,
+        "net_profit": net_profit,
+        "sales_count": len(daily_sales),
+        "income_count": len(incomes),
+        "expense_count": len(expenses)
     }
 
 # Test route
