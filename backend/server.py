@@ -128,6 +128,7 @@ class Expense(BaseModel):
     description: str
     amount: float
     category: str  # Food, Maintenance, Utilities, Staff, Marketing, etc.
+    payment_method: str = "Cash"  # Cash, Card, Bank Transfer
     expense_date: date
     created_by: str = "Admin"
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -143,6 +144,7 @@ class Income(BaseModel):
     description: str
     amount: float
     category: str  # Restaurant, Events, Laundry, Spa, Other Services, etc.
+    payment_method: str = "Cash"  # Cash, Card, Bank Transfer
     income_date: date
     created_by: str = "Admin"
     created_at: datetime = Field(default_factory=datetime.utcnow)
