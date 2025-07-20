@@ -885,13 +885,17 @@ async def checkin_customer(checkin: CheckinRequest):
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    # Check if room is available
+    # Check if room is available or has a valid booking
     room = await db.rooms.find_one({"room_number": booking["room_number"]})
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     
-    if room["status"] != "Available":
-        raise HTTPException(status_code=400, detail="Room is not available for check-in")
+    # Allow check-in if room is Available or if it has a booking (not currently occupied)
+    if room["status"] == "Occupied":
+        # Check if the current guest is different (double booking scenario)
+        if room.get("current_guest") and room.get("current_guest") != booking["guest_name"]:
+            raise HTTPException(status_code=400, detail="Room is currently occupied by another guest")
+    
     
     # Use the booking amount as room charges (actual amount customer agreed to pay)
     room_charges = booking.get("booking_amount", 500.0)
