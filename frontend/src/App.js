@@ -3913,9 +3913,6 @@ const Navigation = () => {
 
 // Settings Component
 const Settings = () => {
-  // Get theme from context
-  const { darkMode, toggleDarkMode } = useTheme();
-  
   // State for different sections
   const [users, setUsers] = useState([]);
   const [hotelSettings, setHotelSettings] = useState({});
