@@ -1403,6 +1403,20 @@ async def create_expense(expense: ExpenseCreate):
         expense_storage['expense_date'] = datetime.combine(expense_storage['expense_date'], datetime.min.time())
     
     await db.expenses.insert_one(expense_storage)
+    
+    # Log activity
+    await log_activity(
+        action="expense_added",
+        description=f"New expense added: {expense.description} - LKR {expense.amount}",
+        entity_type="expense",
+        entity_id=expense_obj.id,
+        details={
+            "description": expense.description,
+            "amount": expense.amount,
+            "category": expense.category
+        }
+    )
+    
     return expense_obj
 
 @api_router.delete("/expenses/{expense_id}")
