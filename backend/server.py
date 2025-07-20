@@ -852,6 +852,20 @@ async def checkout_customer(checkout: CheckoutRequest):
         {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
     )
     
+    # Log activity
+    await log_activity(
+        action="customer_checked_out",
+        description=f"Customer {customer.get('name', 'Unknown')} checked out from room {customer['current_room']}",
+        entity_type="checkout",
+        entity_id=checkout.customer_id,
+        details={
+            "guest_name": customer.get("name"),
+            "room_number": customer["current_room"],
+            "total_amount": total_amount,
+            "payment_method": checkout.payment_method
+        }
+    )
+    
     return {
         "message": "Customer checked out successfully",
         "billing_details": {
