@@ -2158,33 +2158,33 @@ const Expenses = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Income & Expenses</h2>
-          <p className="text-gray-600">Financial management and balance tracking</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Income & Expenses</h2>
+          <p className="text-gray-300">Financial management and balance tracking</p>
         </div>
       </div>
 
       {/* Financial Summary Cards */}
       {dailyFinancialSummary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-green-800 mb-2">Total Revenue</h3>
-            <p className="text-3xl font-bold text-green-900">LKR {dailyFinancialSummary.total_revenue.toFixed(2)}</p>
-            <p className="text-sm text-green-600">Today ({new Date(dailyFinancialSummary.date).toLocaleDateString()})</p>
+          <div className="bg-green-900 border border-green-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-green-300 mb-2">Total Revenue</h3>
+            <p className="text-3xl font-bold text-green-100">LKR {dailyFinancialSummary.total_revenue.toFixed(2)}</p>
+            <p className="text-sm text-green-400">Today ({new Date(dailyFinancialSummary.date).toLocaleDateString()})</p>
           </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Total Expenses</h3>
-            <p className="text-3xl font-bold text-red-900">LKR {dailyFinancialSummary.total_expenses.toFixed(2)}</p>
-            <p className="text-sm text-red-600">Today ({new Date(dailyFinancialSummary.date).toLocaleDateString()})</p>
+          <div className="bg-red-900 border border-red-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-300 mb-2">Total Expenses</h3>
+            <p className="text-3xl font-bold text-red-100">LKR {dailyFinancialSummary.total_expenses.toFixed(2)}</p>
+            <p className="text-sm text-red-400">Today ({new Date(dailyFinancialSummary.date).toLocaleDateString()})</p>
           </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">Cash Balance</h3>
-            <p className="text-3xl font-bold text-blue-900">LKR {dailyFinancialSummary.cash_balance.toFixed(2)}</p>
-            <p className="text-sm text-blue-600">Running balance</p>
+          <div className="bg-blue-900 border border-blue-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-300 mb-2">Cash Balance</h3>
+            <p className="text-3xl font-bold text-blue-100">LKR {dailyFinancialSummary.cash_balance.toFixed(2)}</p>
+            <p className="text-sm text-blue-400">Running balance</p>
           </div>
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-purple-800 mb-2">Bank Balance</h3>
-            <p className="text-3xl font-bold text-purple-900">LKR {dailyFinancialSummary.bank_balance.toFixed(2)}</p>
-            <p className="text-sm text-purple-600">Card + Bank Transfer</p>
+          <div className="bg-purple-900 border border-purple-700 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-purple-300 mb-2">Bank Balance</h3>
+            <p className="text-3xl font-bold text-purple-100">LKR {dailyFinancialSummary.bank_balance.toFixed(2)}</p>
+            <p className="text-sm text-purple-400">Card + Bank Transfer</p>
           </div>
         </div>
       )}
