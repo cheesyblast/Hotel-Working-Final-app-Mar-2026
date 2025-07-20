@@ -433,17 +433,20 @@ frontend:
         agent: "main"
         comment: "Fixed three critical bugs: 1) Updated getAvailableRooms() to include 'Available' and 'Reserved' status rooms, fixing the issue where New Booking modal only showed few rooms. 2) Implemented auto-calculation of booking amounts based on room price and stay duration. Added calculateBookingAmount() function and handleBookingFieldChange() handler that automatically updates booking amount when room, dates, or stay type changes. Short Time bookings charge 50% of night rate, Night Stay bookings calculate based on number of nights. Made booking amount field read-only with auto-calculation. 3) Enhanced room selection dropdown to show pricing information (LKR X/night). Room availability checker backend logic appears correct - may need further testing with actual booking data to verify date conflict detection."
 
-  - task: "Dashboard UI Enhancements - Dropdown Actions and Booked Room Status"
+  - task: "Settings Page Backend Functionality - User Management, Settings, Activity Logs"
     implemented: true
-    working: "NA"
-    file: "/app/frontend/src/App.js"
+    working: true
+    file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "PASSED - Comprehensive Settings page backend functionality testing completed successfully with 100% success rate (12/12 tests passed). ✅ User Management: All user endpoints working perfectly - GET /api/users (retrieves 2 users: admin and staff1), POST /api/users (creates new users with proper validation), DELETE /api/users/{id} (deletes users correctly with admin protection), PUT /api/users/{id}/toggle-status (activates/deactivates users properly). ✅ Settings Management: Settings endpoints working excellently - GET /api/settings (returns Grand Hotel Paradise configuration), PUT /api/settings (updates settings with activity logging). ✅ Activity Log System: Activity log functionality working perfectly - GET /api/activity-logs (returns paginated logs with proper filtering), activity logging integrated across all operations (user creation, settings updates, bookings, check-ins, expenses). ✅ Data Integrity: All operations properly logged with timestamps, user attribution, and detailed descriptions. ✅ Integration Testing: End-to-end workflow tested - create user → activity logged, update settings → activity logged, all existing operations now include proper audit trail. The Settings page backend is production-ready with comprehensive user management, settings configuration, and activity monitoring capabilities."
       - working: "NA"
         agent: "main"
-        comment: "Enhanced Dashboard UI with two key improvements: 1) Replaced the Actions column in Recent Upcoming Bookings table with a clean dropdown menu (three dots button) that shows Check-in, Edit, and Cancel options on click with proper icons and hover effects. Added dropdown state management with click-outside-to-close functionality. 2) Added real-time 'Booked' status for rooms that have bookings for the current day but aren't checked in yet. Booked rooms show with orange color (#orange-100 background, #orange-500 border, 🟠 icon) and display 'Check-in today' message. Updated getRoomDisplayStatus function to check for current day bookings and show appropriate status."
+        comment: "Implemented comprehensive Settings page backend functionality including: 1) User Management system with CRUD operations for users (create, read, delete, toggle status), role-based access (Admin, Manager, Staff), and password management. 2) Hotel Settings management with configurable hotel information (name, contact, address, email), operational settings (check-in/out times, default rates, tax rates, currency), and settings update tracking. 3) Activity Log system with automatic logging of all user activities (booking creation, check-ins, checkouts, expense/income management), paginated log retrieval with filtering options, and comprehensive audit trail with timestamps and user attribution. 4) Enhanced existing endpoints with activity logging for complete system monitoring."
 
   - task: "Advance Amount Payment Method and Daily Revenue Integration"
     implemented: true
