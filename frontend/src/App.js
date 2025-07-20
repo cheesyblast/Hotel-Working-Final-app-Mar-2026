@@ -748,21 +748,21 @@ const Dashboard = () => {
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {checkedInCustomers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-50">
+                    <tr key={customer.id} className="hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                        <div className="text-sm font-medium text-white">{customer.name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.current_room}</div>
+                        <div className="text-sm text-white">{customer.current_room}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.check_in_date}</div>
+                        <div className="text-sm text-white">{customer.check_in_date}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.check_out_date}</div>
+                        <div className="text-sm text-white">{customer.check_out_date}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.phone}</div>
+                        <div className="text-sm text-white">{customer.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
