@@ -326,7 +326,7 @@ def main():
     print("TEST SCENARIO 1: Check-in with advance amount")
     print("="*50)
     
-    booking_success, booking1 = create_test_booking("103", "Rajesh Kumar", 8500.0)
+    booking_success, booking1 = create_test_booking("204", "Rajesh Kumar", 11000.0)
     if booking_success:
         checkin1_result = test_checkin_with_advance_amount(
             booking1, 1000.0, "Check-in with 1000 LKR advance amount"
@@ -340,7 +340,7 @@ def main():
     print("TEST SCENARIO 2: Check-in with zero advance amount")
     print("="*50)
     
-    booking_success, booking2 = create_test_booking("201", "Priya Sharma", 12000.0)
+    booking_success, booking2 = create_test_booking("205", "Priya Sharma", 8000.0)
     if booking_success:
         checkin2_result = test_checkin_with_advance_amount(
             booking2, 0.0, "Check-in with 0 LKR advance amount"
@@ -354,7 +354,7 @@ def main():
     print("TEST SCENARIO 3: Check-in without advance_amount field")
     print("="*50)
     
-    booking_success, booking3 = create_test_booking("202", "Anil Fernando", 11500.0)
+    booking_success, booking3 = create_test_booking("302", "Anil Fernando", 7200.0)
     if booking_success:
         checkin3_result = test_checkin_with_advance_amount(
             booking3, None, "Check-in without advance_amount field (should default to 0)"
