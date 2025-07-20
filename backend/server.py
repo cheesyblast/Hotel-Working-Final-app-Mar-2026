@@ -938,6 +938,20 @@ async def checkin_customer(checkin: CheckinRequest):
         {"$set": {"status": "Checked-in"}}
     )
     
+    # Log activity
+    await log_activity(
+        action="customer_checked_in",
+        description=f"Customer {booking['guest_name']} checked in to room {booking['room_number']}",
+        entity_type="checkin",
+        entity_id=customer.id,
+        details={
+            "guest_name": booking["guest_name"],
+            "room_number": booking["room_number"],
+            "advance_amount": checkin.advance_amount,
+            "payment_method": checkin.payment_method
+        }
+    )
+    
     return {"message": "Customer checked in successfully", "customer": customer}
 
 @api_router.post("/cancel/{booking_id}")
