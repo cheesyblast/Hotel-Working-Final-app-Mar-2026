@@ -3911,6 +3911,668 @@ const Navigation = () => {
   );
 };
 
+// Settings Component
+const Settings = () => {
+  // State for different sections
+  const [users, setUsers] = useState([]);
+  const [hotelSettings, setHotelSettings] = useState({});
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // UI state
+  const [activeTab, setActiveTab] = useState('users'); // users, settings, logs
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const [showActivityLogs, setShowActivityLogs] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // Theme state - This should ideally be in a context
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem('darkMode') === 'true'
+  );
+  
+  // Form states
+  const [newUser, setNewUser] = useState({
+    username: '',
+    password: '',
+    full_name: '',
+    role: 'Staff',
+    email: ''
+  });
+  
+  const [settingsForm, setSettingsForm] = useState({
+    hotel_name: '',
+    hotel_contact: '',
+    hotel_address: '',
+    hotel_email: '',
+    hotel_phone: '',
+    currency: 'LKR',
+    check_in_time: '14:00',
+    check_out_time: '12:00',
+    default_room_rate: 5000,
+    tax_rate: 0
+  });
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  useEffect(() => {
+    // Apply dark mode class to body
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchUsers(),
+        fetchSettings(),
+        fetchActivityLogs()
+      ]);
+    } catch (error) {
+      console.error('Error fetching settings data:', error);
+    }
+    setLoading(false);
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users`);
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setHotelSettings(response.data);
+      setSettingsForm(response.data);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  const fetchActivityLogs = async (page = 1) => {
+    try {
+      const response = await axios.get(`${API}/activity-logs?page=${page}&limit=20`);
+      setActivityLogs(response.data.logs);
+      setCurrentPage(response.data.page);
+      setTotalPages(response.data.total_pages);
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+    }
+  };
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/users`, newUser);
+      setNewUser({ username: '', password: '', full_name: '', role: 'Staff', email: '' });
+      setShowCreateUserModal(false);
+      fetchUsers();
+      alert('User created successfully!');
+    } catch (error) {
+      alert('Error creating user: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await axios.delete(`${API}/users/${userId}`);
+        fetchUsers();
+        alert('User deleted successfully!');
+      } catch (error) {
+        alert('Error deleting user: ' + (error.response?.data?.detail || error.message));
+      }
+    }
+  };
+
+  const handleToggleUserStatus = async (userId) => {
+    try {
+      await axios.put(`${API}/users/${userId}/toggle-status`);
+      fetchUsers();
+    } catch (error) {
+      alert('Error updating user status: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleUpdateSettings = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/settings`, settingsForm);
+      setHotelSettings(settingsForm);
+      alert('Settings updated successfully!');
+    } catch (error) {
+      alert('Error updating settings: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-300 rounded mb-4"></div>
+          <div className="h-64 bg-gray-300 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`container mx-auto px-4 py-8 ${darkMode ? 'dark' : ''}`}>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-300">Manage users, configure hotel settings, and view activity logs</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="mb-6">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'users'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            User Management
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'settings'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Hotel Settings
+          </button>
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'logs'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Activity Logs
+          </button>
+        </nav>
+      </div>
+
+      {/* User Management Tab */}
+      {activeTab === 'users' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">User Management</h2>
+              <button
+                onClick={() => setShowCreateUserModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                + Add New User
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-gray-700">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Username</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Full Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                  {users.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{user.username}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 dark:text-white">{user.full_name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          user.role === 'Admin' 
+                            ? 'bg-red-100 text-red-800' 
+                            : user.role === 'Manager'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 dark:text-white">{user.email || 'N/A'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          user.is_active 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                        <button
+                          onClick={() => handleToggleUserStatus(user.id)}
+                          className={`px-3 py-1 rounded ${
+                            user.is_active 
+                              ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                              : 'bg-green-500 text-white hover:bg-green-600'
+                          } transition-colors`}
+                        >
+                          {user.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        {user.username !== 'admin' && (
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {users.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  No users found. Create your first user to get started.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hotel Settings Tab */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Hotel Settings</h2>
+            
+            <form onSubmit={handleUpdateSettings} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Hotel Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Hotel Name
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.hotel_name}
+                    onChange={(e) => setSettingsForm({...settingsForm, hotel_name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Enter hotel name"
+                  />
+                </div>
+
+                {/* Hotel Contact */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Contact Number
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.hotel_contact}
+                    onChange={(e) => setSettingsForm({...settingsForm, hotel_contact: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Enter contact number"
+                  />
+                </div>
+
+                {/* Hotel Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Hotel Email
+                  </label>
+                  <input
+                    type="email"
+                    value={settingsForm.hotel_email}
+                    onChange={(e) => setSettingsForm({...settingsForm, hotel_email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Enter hotel email"
+                  />
+                </div>
+
+                {/* Currency */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Currency
+                  </label>
+                  <select
+                    value={settingsForm.currency}
+                    onChange={(e) => setSettingsForm({...settingsForm, currency: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="LKR">Sri Lankan Rupee (LKR)</option>
+                    <option value="USD">US Dollar (USD)</option>
+                    <option value="EUR">Euro (EUR)</option>
+                    <option value="GBP">British Pound (GBP)</option>
+                  </select>
+                </div>
+
+                {/* Check-in Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Check-in Time
+                  </label>
+                  <input
+                    type="time"
+                    value={settingsForm.check_in_time}
+                    onChange={(e) => setSettingsForm({...settingsForm, check_in_time: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                {/* Check-out Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Check-out Time
+                  </label>
+                  <input
+                    type="time"
+                    value={settingsForm.check_out_time}
+                    onChange={(e) => setSettingsForm({...settingsForm, check_out_time: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                {/* Default Room Rate */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Default Room Rate ({settingsForm.currency})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={settingsForm.default_room_rate}
+                    onChange={(e) => setSettingsForm({...settingsForm, default_room_rate: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Enter default room rate"
+                  />
+                </div>
+
+                {/* Tax Rate */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tax Rate (%)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={settingsForm.tax_rate}
+                    onChange={(e) => setSettingsForm({...settingsForm, tax_rate: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Enter tax rate percentage"
+                  />
+                </div>
+              </div>
+
+              {/* Hotel Address - Full Width */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Hotel Address
+                </label>
+                <textarea
+                  value={settingsForm.hotel_address}
+                  onChange={(e) => setSettingsForm({...settingsForm, hotel_address: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  rows="3"
+                  placeholder="Enter hotel address"
+                />
+              </div>
+
+              {/* Theme Toggle */}
+              <div className="border-t dark:border-gray-600 pt-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Appearance</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Toggle between light and dark theme</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleDarkMode}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      darkMode ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        darkMode ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Update Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Activity Logs Tab */}
+      {activeTab === 'logs' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Activity Logs</h2>
+              <button
+                onClick={() => setShowActivityLogs(!showActivityLogs)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                {showActivityLogs ? 'Hide Logs' : 'Show Logs'}
+              </button>
+            </div>
+            
+            {showActivityLogs && (
+              <div className="space-y-4">
+                {activityLogs.length > 0 ? (
+                  <>
+                    <div className="space-y-3">
+                      {activityLogs.map((log, index) => (
+                        <div key={index} className="border dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  log.action.includes('created') || log.action.includes('added')
+                                    ? 'bg-green-100 text-green-800'
+                                    : log.action.includes('deleted') || log.action.includes('cancelled')
+                                    ? 'bg-red-100 text-red-800'
+                                    : log.action.includes('updated') || log.action.includes('checked')
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {log.action.replace('_', ' ').toUpperCase()}
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {log.user_name}
+                                </span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                  {new Date(log.timestamp).toLocaleString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{log.description}</p>
+                              {log.entity_type && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  Entity: {log.entity_type}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center space-x-2 mt-6">
+                        <button
+                          onClick={() => fetchActivityLogs(currentPage - 1)}
+                          disabled={currentPage <= 1}
+                          className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          Previous
+                        </button>
+                        
+                        <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        
+                        <button
+                          onClick={() => fetchActivityLogs(currentPage + 1)}
+                          disabled={currentPage >= totalPages}
+                          className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    No activity logs found.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateUserModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Create New User</h3>
+            
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Username *
+                </label>
+                <input
+                  type="text"
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter username"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={newUser.full_name}
+                  onChange={(e) => setNewUser({...newUser, full_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Role
+                </label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="Staff">Staff</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter email (optional)"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateUserModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Create User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Main App Component
 function App() {
   return (
