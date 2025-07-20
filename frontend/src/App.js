@@ -549,9 +549,9 @@ const Dashboard = () => {
       </div>
 
       {/* Room Availability Checker */}
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <h3 className="text-lg font-semibold mb-4">🔍 Check Room Availability</h3>
-        <p className="text-gray-600 mb-4">Select dates to check which rooms are available for booking</p>
+      <div className="bg-gray-800 p-6 rounded-lg shadow mb-8">
+        <h3 className="text-lg font-semibold text-white mb-4">🔍 Check Room Availability</h3>
+        <p className="text-gray-300 mb-4">Select dates to check which rooms are available for booking</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
