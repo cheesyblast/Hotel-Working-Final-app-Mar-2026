@@ -1607,7 +1607,7 @@ const Reports = () => {
               className={`px-4 py-2 rounded-md text-sm font-medium ${
                 selectedView === 'monthly' 
                   ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
               Monthly View
@@ -1617,7 +1617,7 @@ const Reports = () => {
               className={`px-4 py-2 rounded-md text-sm font-medium ${
                 selectedView === 'comparison' 
                   ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
               Comparison
