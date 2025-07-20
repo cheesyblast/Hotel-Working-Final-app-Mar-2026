@@ -1550,4 +1550,16 @@ info "Status check script created at: /home/hotelapp/hotel-management/check-stat
 info "Run it anytime with: bash /home/hotelapp/hotel-management/check-status.sh"
 
 log "All done! Your hotel management system is ready to use! 🏨✨"
+
+log "========================================"
+log "LATEST FEATURES INCLUDED:"
+log "========================================"
+info "✅ Dashboard: Room availability checker with date-specific filtering"
+info "✅ Bookings: Enhanced room selection, auto-calculation, Excel download"  
+info "✅ Guests: Excel export with proper date filtering"
+info "✅ Financial Management: Running cash/bank balances, payment tracking"
+info "✅ Expenses & Income: Payment method selection affects balances"
+info "✅ Reports: Daily and monthly financial reports with Excel export"
+info "✅ UI Enhancements: Dropdown actions, real-time status updates"
+log "========================================"
 EOF
