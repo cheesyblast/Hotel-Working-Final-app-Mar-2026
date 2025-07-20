@@ -1901,6 +1901,83 @@ const Expenses = () => {
     income_date: ''
   });
 
+  const expenseCategories = [
+    'Utilities',
+    'Maintenance', 
+    'Staff',
+    'Food',
+    'Marketing',
+    'Other'
+  ];
+
+  const incomeCategories = [
+    'Restaurant',
+    'Laundry',
+    'Spa Services',
+    'Events',
+    'Conference Room',
+    'Parking',
+    'Internet Services',
+    'Other Services'
+  ];
+
+  const paymentMethods = ['Cash', 'Card', 'Bank Transfer'];
+
+  useEffect(() => {
+    fetchExpenses();
+    fetchIncomes();
+    fetchDailySales();
+    fetchFinancialSummary();
+    fetchDailyFinancialSummary();
+  }, []);
+
+  const fetchExpenses = async () => {
+    try {
+      const response = await axios.get(`${API}/expenses`);
+      setExpenses(response.data);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    }
+  };
+
+  const fetchIncomes = async () => {
+    try {
+      const response = await axios.get(`${API}/incomes`);
+      setIncomes(response.data);
+    } catch (error) {
+      console.error('Error fetching incomes:', error);
+    }
+  };
+
+  const fetchDailySales = async () => {
+    try {
+      const response = await axios.get(`${API}/daily-sales`);
+      setDailySales(response.data);
+    } catch (error) {
+      console.error('Error fetching daily sales:', error);
+    }
+  };
+
+  const fetchFinancialSummary = async () => {
+    try {
+      const response = await axios.get(`${API}/financial-summary`);
+      setFinancialSummary(response.data);
+    } catch (error) {
+      console.error('Error fetching financial summary:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDailyFinancialSummary = async () => {
+    try {
+      const response = await axios.get(`${API}/daily-financial-summary`);
+      setDailyFinancialSummary(response.data);
+    } catch (error) {
+      console.error('Error fetching daily financial summary:', error);
+    }
+  };
+
   const handleAddExpense = async () => {
     try {
       if (!expenseData.description || !expenseData.amount || !expenseData.category || !expenseData.expense_date) {
