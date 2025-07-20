@@ -2531,6 +2531,7 @@ const Expenses = () => {
                   value={expenseData.category}
                   onChange={(e) => setExpenseData({...expenseData, category: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 >
                   <option value="">Select category</option>
                   {expenseCategories.map((category) => (
@@ -2539,6 +2540,25 @@ const Expenses = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Method *
+                </label>
+                <select
+                  value={expenseData.payment_method}
+                  onChange={(e) => setExpenseData({...expenseData, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  {paymentMethods.map(method => (
+                    <option key={method} value={method}>{method}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  This will deduct from {expenseData.payment_method === 'Cash' ? 'Cash Balance' : 'Bank Balance'}
+                </p>
               </div>
               
               <div>
