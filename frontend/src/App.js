@@ -2759,8 +2759,8 @@ const Guests = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Guests</h2>
-          <p className="text-gray-600">Manage guest information and booking history</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Guests</h2>
+          <p className="text-gray-300">Manage guest information and booking history</p>
         </div>
         <button
           onClick={() => setShowDownloadModal(true)}
@@ -2779,22 +2779,22 @@ const Guests = () => {
             placeholder="Search guests by name, email, or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 pl-10 bg-gray-800 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <span className="text-gray-400">🔍</span>
           </div>
         </div>
         {searchQuery && (
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-300">
             Showing {filteredGuests.length} result(s) for "{searchQuery}"
           </p>
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
         {filteredGuests.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
+          <div className="p-6 text-center text-gray-400">
             {searchQuery ? `No guests found matching "${searchQuery}"` : 'No guests found'}
           </div>
         ) : (
