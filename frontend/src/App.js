@@ -3348,24 +3348,24 @@ const Bookings = () => {
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {bookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-gray-50">
+                    <tr key={booking.id} className="hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{booking.guest_name}</div>
+                        <div className="text-sm font-medium text-white">{booking.guest_name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{booking.guest_email || 'N/A'}</div>
+                        <div className="text-sm text-white">{booking.guest_email || 'N/A'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{booking.guest_phone || 'N/A'}</div>
+                        <div className="text-sm text-white">{booking.guest_phone || 'N/A'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{booking.room_number}</div>
+                        <div className="text-sm text-white">{booking.room_number}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{booking.check_in_date}</div>
+                        <div className="text-sm text-white">{booking.check_in_date}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{booking.check_out_date}</div>
+                        <div className="text-sm text-white">{booking.check_out_date}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status)}`}>
@@ -3373,7 +3373,7 @@ const Bookings = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-white">
                           {new Intl.NumberFormat('en-US', {
                             style: 'currency',
                             currency: 'LKR'
@@ -3381,7 +3381,7 @@ const Bookings = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-white">
                           {new Date(booking.created_at).toLocaleDateString()}
                         </div>
                       </td>
