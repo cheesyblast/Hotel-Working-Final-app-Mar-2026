@@ -924,16 +924,16 @@ async def checkin_customer(checkin: CheckinRequest):
     await db.customers.insert_one(customer_dict)
     
     # Record advance amount as daily sale if amount > 0
-    if checkin.advance_amount > 0:
+    if advance_amount > 0:
         advance_sale = DailySale(
             customer_name=booking["guest_name"],
             room_number=booking["room_number"],
             payment_method=checkin.payment_method,
             room_charges=0.0,  # This is advance, not room charge
-            additional_charges=checkin.advance_amount,  # Record as additional charge
+            additional_charges=advance_amount,  # Record as additional charge
             discount_amount=0.0,
             advance_amount=0.0,  # Already being paid, so no advance for this sale
-            total_amount=checkin.advance_amount,
+            total_amount=advance_amount,
             date=datetime.now().date()
         )
         
