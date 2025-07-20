@@ -1454,6 +1454,20 @@ async def create_income(income: IncomeCreate):
         income_storage['income_date'] = datetime.combine(income_storage['income_date'], datetime.min.time())
     
     await db.incomes.insert_one(income_storage)
+    
+    # Log activity
+    await log_activity(
+        action="income_added",
+        description=f"New income added: {income.description} - LKR {income.amount}",
+        entity_type="income",
+        entity_id=income_obj.id,
+        details={
+            "description": income.description,
+            "amount": income.amount,
+            "category": income.category
+        }
+    )
+    
     return income_obj
 
 @api_router.delete("/incomes/{income_id}")
