@@ -3587,8 +3587,8 @@ const Rooms = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Rooms</h2>
-          <p className="text-gray-600">Manage hotel rooms and their details</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Rooms</h2>
+          <p className="text-gray-300">Manage hotel rooms and their details</p>
         </div>
         <button 
           onClick={() => setShowAddRoomModal(true)}
@@ -3600,7 +3600,7 @@ const Rooms = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {rooms.map((room) => (
-          <div key={room.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div key={room.id} className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
             <div className="relative">
               <img 
                 src={room.image_url} 
@@ -3612,12 +3612,12 @@ const Rooms = () => {
               </div>
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Room {room.room_number}</h3>
-              <p className="text-sm text-gray-600 mb-2">{room.room_type}</p>
-              <p className="text-lg font-bold text-gray-900 mb-2">LKR {room.price_per_night}/night</p>
-              <p className="text-sm text-gray-600 mb-2">Max Occupancy: {room.max_occupancy}</p>
+              <h3 className="text-lg font-semibold text-white mb-1">Room {room.room_number}</h3>
+              <p className="text-sm text-gray-300 mb-2">{room.room_type}</p>
+              <p className="text-lg font-bold text-white mb-2">LKR {room.price_per_night}/night</p>
+              <p className="text-sm text-gray-300 mb-2">Max Occupancy: {room.max_occupancy}</p>
               <div className="mb-4">
-                <p className="text-sm text-gray-600">Amenities: {room.amenities?.join(', ')}</p>
+                <p className="text-sm text-gray-300">Amenities: {room.amenities?.join(', ')}</p>
               </div>
               <div className="flex space-x-2">
                 <button
