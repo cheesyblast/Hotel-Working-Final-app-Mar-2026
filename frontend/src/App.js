@@ -1646,8 +1646,8 @@ const Reports = () => {
 
       {selectedView === 'daily' && (
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Income & Expenses (Last 7 Days)</h3>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-white mb-4">Daily Income & Expenses (Last 7 Days)</h3>
+          <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
