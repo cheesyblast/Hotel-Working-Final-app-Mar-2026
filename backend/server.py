@@ -249,6 +249,175 @@ async def log_activity(action: str, description: str, user_name: str = "Admin",
         # Log the error but don't fail the main operation
         print(f"Failed to log activity: {str(e)}")
 
+# User Management Routes
+@api_router.get("/users", response_model=List[User])
+async def get_users():
+    """Get all users (excluding passwords)"""
+    users = await db.users.find().to_list(1000)
+    # Remove passwords from response
+    for user in users:
+        user.pop('password', None)
+    return [User(**{**user, 'password': '***'}) for user in users]
+
+@api_router.post("/users", response_model=User)
+async def create_user(user: UserCreate):
+    """Create a new user"""
+    # Check if username already exists
+    existing_user = await db.users.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    user_obj = User(**user.dict())
+    user_dict = user_obj.dict()
+    await db.users.insert_one(user_dict)
+    
+    # Log activity
+    await log_activity(
+        action="user_created",
+        description=f"New user '{user.username}' created with role '{user.role}'",
+        entity_type="user",
+        entity_id=user_obj.id
+    )
+    
+    # Return user without password
+    user_dict.pop('password', None)
+    return User(**{**user_dict, 'password': '***'})
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str):
+    """Delete a user"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Log activity
+    await log_activity(
+        action="user_deleted",
+        description=f"User '{user.get('username', 'Unknown')}' deleted",
+        entity_type="user",
+        entity_id=user_id
+    )
+    
+    return {"message": "User deleted successfully"}
+
+@api_router.put("/users/{user_id}/toggle-status")
+async def toggle_user_status(user_id: str):
+    """Toggle user active/inactive status"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_status = not user.get('is_active', True)
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"is_active": new_status}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Log activity
+    await log_activity(
+        action="user_status_changed",
+        description=f"User '{user.get('username', 'Unknown')}' {'activated' if new_status else 'deactivated'}",
+        entity_type="user",
+        entity_id=user_id
+    )
+    
+    return {"message": f"User {'activated' if new_status else 'deactivated'} successfully"}
+
+# Settings Management Routes
+@api_router.get("/settings")
+async def get_settings():
+    """Get hotel settings"""
+    settings = await db.settings.find_one()
+    if not settings:
+        # Create default settings if none exist
+        default_settings = Settings()
+        await db.settings.insert_one(default_settings.dict())
+        return default_settings
+    return Settings(**settings)
+
+@api_router.put("/settings")
+async def update_settings(settings_update: SettingsUpdate):
+    """Update hotel settings"""
+    # Get current settings or create default
+    current_settings = await db.settings.find_one()
+    if not current_settings:
+        current_settings = Settings().dict()
+        await db.settings.insert_one(current_settings)
+    
+    # Update only provided fields
+    update_data = {k: v for k, v in settings_update.dict().items() if v is not None}
+    update_data['updated_at'] = datetime.utcnow()
+    
+    result = await db.settings.update_one(
+        {"id": current_settings.get('id', current_settings.get('_id'))},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        # If no match, create new settings
+        new_settings = Settings(**update_data)
+        await db.settings.insert_one(new_settings.dict())
+    
+    # Log activity
+    updated_fields = list(update_data.keys())
+    await log_activity(
+        action="settings_updated",
+        description=f"Hotel settings updated: {', '.join(updated_fields)}",
+        entity_type="settings",
+        details=update_data
+    )
+    
+    return {"message": "Settings updated successfully"}
+
+# Activity Log Routes
+@api_router.get("/activity-logs")
+async def get_activity_logs(
+    page: int = 1,
+    limit: int = 50,
+    action: str = "",
+    user_name: str = "",
+    entity_type: str = ""
+):
+    """Get activity logs with pagination and filtering"""
+    skip = (page - 1) * limit
+    
+    # Build query
+    query = {}
+    if action:
+        query["action"] = {"$regex": action, "$options": "i"}
+    if user_name:
+        query["user_name"] = {"$regex": user_name, "$options": "i"}
+    if entity_type:
+        query["entity_type"] = entity_type
+    
+    # Get total count for pagination
+    total_count = await db.activity_logs.count_documents(query)
+    
+    # Get logs with pagination
+    logs = await db.activity_logs.find(query).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "logs": [ActivityLog(**log) for log in logs],
+        "total_count": total_count,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total_count + limit - 1) // limit
+    }
+
+@api_router.post("/activity-logs")
+async def create_activity_log(log: ActivityLogCreate):
+    """Create a new activity log entry"""
+    activity = ActivityLog(**log.dict())
+    await db.activity_logs.insert_one(activity.dict())
+    return {"message": "Activity logged successfully"}
+
 # Room Management Routes
 @api_router.get("/rooms", response_model=List[Room])
 async def get_rooms():
