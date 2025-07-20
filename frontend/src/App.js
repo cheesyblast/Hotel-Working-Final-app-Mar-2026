@@ -3946,6 +3946,7 @@ function App() {
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
       </BrowserRouter>
