@@ -164,6 +164,73 @@ class FinancialSummary(BaseModel):
     period_start: date
     period_end: date
 
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    password: str  # In real app, this should be hashed
+    full_name: str
+    role: str = "Staff"  # Admin, Manager, Staff
+    email: str = ""
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_login: Optional[datetime] = None
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    full_name: str
+    role: str = "Staff"
+    email: str = ""
+
+class Settings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    hotel_name: str = "Hotel Management System"
+    hotel_contact: str = ""
+    hotel_address: str = ""
+    hotel_email: str = ""
+    hotel_phone: str = ""
+    currency: str = "LKR"
+    check_in_time: str = "14:00"
+    check_out_time: str = "12:00"
+    default_room_rate: float = 5000.0
+    tax_rate: float = 0.0
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: str = "Admin"
+
+class SettingsUpdate(BaseModel):
+    hotel_name: Optional[str] = None
+    hotel_contact: Optional[str] = None
+    hotel_address: Optional[str] = None
+    hotel_email: Optional[str] = None
+    hotel_phone: Optional[str] = None
+    currency: Optional[str] = None
+    check_in_time: Optional[str] = None
+    check_out_time: Optional[str] = None
+    default_room_rate: Optional[float] = None
+    tax_rate: Optional[float] = None
+
+class ActivityLog(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    action: str  # "created_booking", "checked_in", "checked_out", "added_expense", etc.
+    description: str
+    user_name: str = "Admin"
+    user_id: str = ""
+    entity_type: str = ""  # "booking", "room", "expense", "income", etc.
+    entity_id: str = ""
+    details: dict = {}  # Additional context data
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    ip_address: str = ""
+
+class ActivityLogCreate(BaseModel):
+    action: str
+    description: str
+    user_name: str = "Admin"
+    user_id: str = ""
+    entity_type: str = ""
+    entity_id: str = ""
+    details: dict = {}
+    ip_address: str = ""
+
 # Room Management Routes
 @api_router.get("/rooms", response_model=List[Room])
 async def get_rooms():
