@@ -4531,41 +4531,44 @@ const Settings = () => {
 
 // Main App Component
 function App() {
+  // Set dark mode on app load
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
+
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <BrowserRouter>
-          {/* Header */}
-          <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="text-2xl">🏨</div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hotel Management System</h1>
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Welcome, Admin</div>
+    <div className="min-h-screen bg-gray-900">
+      <BrowserRouter>
+        {/* Header */}
+        <header className="bg-gray-800 shadow-sm border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">🏨</div>
+                <h1 className="text-2xl font-bold text-white">Hotel Management System</h1>
               </div>
+              <div className="text-sm text-gray-400">Welcome, Admin</div>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Navigation */}
-          <Navigation />
+        {/* Navigation */}
+        <Navigation />
 
-          {/* Main Content */}
-          <main className="dark:bg-gray-900">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/rooms" element={<Rooms />} />
-              <Route path="/guests" element={<Guests />} />
-              <Route path="/bookings" element={<Bookings />} />
-              <Route path="/expenses" element={<Expenses />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/settings" element={<Settings />} />
-            </Routes>
-          </main>
-        </BrowserRouter>
-      </div>
-    </ThemeProvider>
+        {/* Main Content */}
+        <main className="bg-gray-900">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/rooms" element={<Rooms />} />
+            <Route path="/guests" element={<Guests />} />
+            <Route path="/bookings" element={<Bookings />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </BrowserRouter>
+    </div>
   );
 }
 
