@@ -3895,6 +3895,16 @@ const Navigation = () => {
           >
             Reports
           </Link>
+          <Link 
+            to="/settings" 
+            className={`px-3 py-2 rounded-md text-sm font-medium ${
+              isActive('/settings') 
+                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Settings
+          </Link>
         </div>
       </div>
     </nav>
