@@ -742,6 +742,21 @@ async def create_booking(booking: BookingCreate):
         booking_storage['check_out_date'] = datetime.combine(booking_storage['check_out_date'], datetime.min.time())
     
     await db.bookings.insert_one(booking_storage)
+    
+    # Log activity
+    await log_activity(
+        action="booking_created",
+        description=f"New booking created for {booking.guest_name} in room {booking.room_number}",
+        entity_type="booking",
+        entity_id=booking_obj.id,
+        details={
+            "guest_name": booking.guest_name,
+            "room_number": booking.room_number,
+            "booking_amount": booking.booking_amount,
+            "stay_type": booking.stay_type
+        }
+    )
+    
     return booking_obj
 
 @api_router.put("/bookings/{booking_id}")
