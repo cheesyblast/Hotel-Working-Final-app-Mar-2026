@@ -4582,10 +4582,32 @@ const Settings = () => {
 
 // Main App Component
 function App() {
+  const [hotelSettings, setHotelSettings] = useState({
+    hotel_name: 'Hotel Management System',
+    hotel_logo: '',
+  });
+
   // Set dark mode on app load
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
+
+  // Fetch hotel settings for header
+  useEffect(() => {
+    fetchHotelSettings();
+  }, []);
+
+  const fetchHotelSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setHotelSettings({
+        hotel_name: response.data.hotel_name || 'Hotel Management System',
+        hotel_logo: response.data.hotel_logo || '',
+      });
+    } catch (error) {
+      console.error('Error fetching hotel settings:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900">
