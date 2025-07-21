@@ -3222,21 +3222,24 @@ const Bookings = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, [currentPage, statusFilter]); // Removed searchTerm from dependencies
+  }, []); // Initial load only
 
   useEffect(() => {
-    // Separate effect for search with debouncing
+    if (currentPage !== 1 || statusFilter !== '') {
+      fetchBookings();
+    }
+  }, [currentPage, statusFilter]);
+
+  useEffect(() => {
     if (searchTerm.trim() === '') {
-      fetchBookings(); // Immediate load for empty search
+      fetchBookings(1, '', statusFilter); // Reset search
     } else {
       const delayedSearch = setTimeout(() => {
-        setCurrentPage(1); // Reset to first page when searching
-        fetchBookings();
+        fetchBookings(1, searchTerm, statusFilter); // Search with reset to page 1
       }, 300);
-
       return () => clearTimeout(delayedSearch);
     }
-  }, [searchTerm]); // Only search term changes trigger this
+  }, [searchTerm]);
 
   const fetchBookings = async (pageParam = currentPage, searchParam = searchTerm, statusParam = statusFilter) => {
     if (loading) return; // Prevent multiple simultaneous requests
