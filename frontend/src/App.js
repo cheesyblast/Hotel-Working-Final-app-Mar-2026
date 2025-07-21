@@ -3221,18 +3221,22 @@ const Bookings = () => {
   });
 
   useEffect(() => {
-    // Only debounce when there's a search term, not for initial load
+    fetchBookings();
+  }, [currentPage, statusFilter]); // Removed searchTerm from dependencies
+
+  useEffect(() => {
+    // Separate effect for search with debouncing
     if (searchTerm.trim() === '') {
-      fetchBookings(); // Immediate load for initial/empty search
+      fetchBookings(); // Immediate load for empty search
     } else {
-      // Debounce the search to prevent too many API calls
       const delayedSearch = setTimeout(() => {
+        setCurrentPage(1); // Reset to first page when searching
         fetchBookings();
-      }, 300); // Reduced to 300ms for better responsiveness
+      }, 300);
 
       return () => clearTimeout(delayedSearch);
     }
-  }, [currentPage, searchTerm, statusFilter]);
+  }, [searchTerm]); // Only search term changes trigger this
 
   const fetchBookings = async () => {
     if (loading) return; // Prevent multiple simultaneous requests
