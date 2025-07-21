@@ -3242,8 +3242,6 @@ const Bookings = () => {
   }, [searchTerm]);
 
   const fetchBookings = async (pageParam = currentPage, searchParam = searchTerm, statusParam = statusFilter) => {
-    if (loading) return; // Prevent multiple simultaneous requests
-    
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -3253,10 +3251,7 @@ const Bookings = () => {
         status: statusParam || ''
       });
       
-      console.log('Fetching bookings with params:', params.toString()); // Debug log
-      
       const response = await axios.get(`${API}/bookings?${params}`);
-      console.log('Bookings response received:', response.data.bookings?.length || 0, 'bookings'); // Debug log
       
       setBookings(response.data.bookings || []);
       setTotalPages(response.data.total_pages || 1);
