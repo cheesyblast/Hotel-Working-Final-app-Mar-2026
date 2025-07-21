@@ -4617,8 +4617,16 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="text-2xl">🏨</div>
-                <h1 className="text-2xl font-bold text-white">Hotel Management System</h1>
+                {hotelSettings.hotel_logo ? (
+                  <img 
+                    src={hotelSettings.hotel_logo} 
+                    alt="Hotel Logo"
+                    className="h-8 w-8 object-contain bg-white rounded"
+                  />
+                ) : (
+                  <div className="text-2xl">🏨</div>
+                )}
+                <h1 className="text-2xl font-bold text-white">{hotelSettings.hotel_name}</h1>
               </div>
               <div className="text-sm text-gray-400">Welcome, Admin</div>
             </div>
