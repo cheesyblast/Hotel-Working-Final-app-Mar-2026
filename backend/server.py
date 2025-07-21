@@ -185,6 +185,7 @@ class UserCreate(BaseModel):
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     hotel_name: str = "Hotel Management System"
+    hotel_logo: str = ""  # Base64 encoded logo
     hotel_contact: str = ""
     hotel_address: str = ""
     hotel_email: str = ""
