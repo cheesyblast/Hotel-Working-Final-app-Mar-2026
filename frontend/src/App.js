@@ -3221,7 +3221,12 @@ const Bookings = () => {
   });
 
   useEffect(() => {
-    fetchBookings();
+    // Debounce the search to prevent too many API calls
+    const delayedSearch = setTimeout(() => {
+      fetchBookings();
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(delayedSearch);
   }, [currentPage, searchTerm, statusFilter]);
 
   const fetchBookings = async () => {
