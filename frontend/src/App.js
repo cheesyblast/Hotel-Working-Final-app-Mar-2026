@@ -1698,10 +1698,10 @@ const Reports = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{day.bookings_count}</div>
+                        <div className="text-sm text-white">{day.bookings_count}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{day.expenses_count}</div>
+                        <div className="text-sm text-white">{day.expenses_count}</div>
                       </td>
                     </tr>
                   ))}
@@ -1715,8 +1715,8 @@ const Reports = () => {
       {/* Monthly Reports View */}
       {selectedView === 'monthly' && (
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Performance Data</h3>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-white mb-4">Monthly Performance Data</h3>
+          <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
