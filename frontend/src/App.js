@@ -3937,6 +3937,7 @@ const Settings = () => {
   
   const [settingsForm, setSettingsForm] = useState({
     hotel_name: '',
+    hotel_logo: '',
     hotel_contact: '',
     hotel_address: '',
     hotel_email: '',
@@ -3951,6 +3952,22 @@ const Settings = () => {
   useEffect(() => {
     fetchAllData();
   }, []);
+
+  const handleLogoUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('Logo file size should be less than 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSettingsForm({...settingsForm, hotel_logo: e.target.result});
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const fetchAllData = async () => {
     setLoading(true);
