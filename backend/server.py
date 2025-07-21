@@ -599,10 +599,17 @@ async def get_bookings(
     
     if search:
         # Search in guest name, email, phone, or room number
+        # Handle null values by also checking for field existence
         query["$or"] = [
             {"guest_name": {"$regex": search, "$options": "i"}},
-            {"guest_email": {"$regex": search, "$options": "i"}},
-            {"guest_phone": {"$regex": search, "$options": "i"}},
+            {"$and": [
+                {"guest_email": {"$exists": True, "$ne": None, "$ne": ""}},
+                {"guest_email": {"$regex": search, "$options": "i"}}
+            ]},
+            {"$and": [
+                {"guest_phone": {"$exists": True, "$ne": None, "$ne": ""}},
+                {"guest_phone": {"$regex": search, "$options": "i"}}
+            ]},
             {"room_number": {"$regex": search, "$options": "i"}}
         ]
     
