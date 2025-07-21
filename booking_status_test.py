@@ -47,7 +47,7 @@ def test_create_booking_with_upcoming_status():
             "guest_phone": "+1-555-0123",
             "guest_id_passport": "P123456789",
             "guest_country": "USA",
-            "room_number": "103",
+            "room_number": "101",
             "check_in_date": tomorrow.strftime('%Y-%m-%d'),
             "check_out_date": day_after.strftime('%Y-%m-%d'),
             "stay_type": "Night Stay",
