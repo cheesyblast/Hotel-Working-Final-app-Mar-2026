@@ -1783,7 +1783,7 @@ async def get_daily_financial_report(date: Optional[str] = None):
         "expense_details": expenses
     }
 
-@api_router.get("/api/financial-reports/monthly")
+@api_router.get("/financial-reports/monthly")
 async def get_monthly_financial_report(year: int = None, month: int = None):
     """Get financial report for a specific month"""
     if not year or not month:
