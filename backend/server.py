@@ -846,6 +846,16 @@ async def checkout_customer(checkout: CheckoutRequest):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Customer not found")
     
+    # Update corresponding booking status to "Completed"
+    await db.bookings.update_one(
+        {
+            "guest_name": customer.get('name'),
+            "room_number": customer.get('current_room'),
+            "status": "Checked-in"
+        },
+        {"$set": {"status": "Completed"}}
+    )
+    
     # Update room status to available
     await db.rooms.update_one(
         {"room_number": customer["current_room"]},
