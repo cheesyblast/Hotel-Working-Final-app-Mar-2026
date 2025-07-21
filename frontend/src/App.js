@@ -4198,16 +4198,50 @@ const Settings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Hotel Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Hotel Name
                   </label>
                   <input
                     type="text"
                     value={settingsForm.hotel_name}
                     onChange={(e) => setSettingsForm({...settingsForm, hotel_name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                     placeholder="Enter hotel name"
                   />
+                </div>
+
+                {/* Hotel Logo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Hotel Logo
+                  </label>
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="w-full px-3 py-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                    />
+                    {settingsForm.hotel_logo && (
+                      <div className="flex items-center space-x-3 p-3 bg-gray-700 rounded-md">
+                        <img
+                          src={settingsForm.hotel_logo}
+                          alt="Hotel Logo Preview"
+                          className="w-16 h-16 object-contain bg-white rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-300">Logo preview</p>
+                          <button
+                            type="button"
+                            onClick={() => setSettingsForm({...settingsForm, hotel_logo: ''})}
+                            className="text-red-400 hover:text-red-300 text-xs"
+                          >
+                            Remove logo
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Hotel Contact */}
