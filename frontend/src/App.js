@@ -232,15 +232,22 @@ const Dashboard = () => {
 
   const confirmCheckout = async () => {
     try {
-      await axios.post(`${API}/checkout`, {
+      const response = await axios.post(`${API}/checkout`, {
         customer_id: selectedCustomer.id,
         additional_amount: parseFloat(checkoutData.additional_amount) || 0,
         discount_amount: parseFloat(checkoutData.discount_amount) || 0,
         payment_method: checkoutData.payment_method
       });
       
+      // Store invoice data for printing
+      setInvoiceData({
+        customer: selectedCustomer,
+        billing: response.data.billing_details,
+        checkout_data: checkoutData
+      });
+      
       setShowCheckoutModal(false);
-      setSelectedCustomer(null);
+      setShowPrintInvoiceDialog(true);
       
       // Refresh data after checkout
       await Promise.all([
@@ -249,6 +256,7 @@ const Dashboard = () => {
       ]);
     } catch (error) {
       console.error('Error during checkout:', error);
+      alert('Error during checkout: ' + (error.response?.data?.detail || error.message));
     }
   };
 
