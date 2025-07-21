@@ -1561,6 +1561,35 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Print Invoice Dialog */}
+      {showPrintInvoiceDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-white">Checkout Complete!</h3>
+            
+            <p className="text-gray-300 mb-6">
+              Customer has been successfully checked out. Would you like to print the invoice?
+            </p>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closePrintInvoiceDialog}
+                className="px-4 py-2 text-gray-300 border border-gray-600 rounded-md hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePrintInvoice}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              >
+                <span>🖨️</span>
+                <span>Print Invoice</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
