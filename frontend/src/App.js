@@ -7,6 +7,28 @@ import * as XLSX from 'xlsx';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Real-time clock component
+const RealTimeClock = () => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="text-sm text-gray-400">
+      <div>Welcome, Admin</div>
+      <div className="text-xs">
+        {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}
+      </div>
+    </div>
+  );
+};
+
 // Dashboard Component
 const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
