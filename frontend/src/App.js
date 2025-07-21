@@ -4857,7 +4857,7 @@ function App() {
                 )}
                 <h1 className="text-2xl font-bold text-white">{hotelSettings.hotel_name}</h1>
               </div>
-              <div className="text-sm text-gray-400">Welcome, Admin</div>
+              <RealTimeClock />
             </div>
           </div>
         </header>
