@@ -200,6 +200,7 @@ class Settings(BaseModel):
 
 class SettingsUpdate(BaseModel):
     hotel_name: Optional[str] = None
+    hotel_logo: Optional[str] = None
     hotel_contact: Optional[str] = None
     hotel_address: Optional[str] = None
     hotel_email: Optional[str] = None
