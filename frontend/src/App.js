@@ -3244,19 +3244,22 @@ const Bookings = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: currentPage,
-        limit: 20,
-        search: searchTerm || '', // Ensure search term is never undefined
-        status: statusFilter || '' // Ensure status filter is never undefined
+        page: currentPage.toString(),
+        limit: '20',
+        search: searchTerm || '', 
+        status: statusFilter || ''
       });
       
+      console.log('Fetching bookings with params:', params.toString()); // Debug log
+      
       const response = await axios.get(`${API}/bookings?${params}`);
+      console.log('Bookings response:', response.data); // Debug log
+      
       setBookings(response.data.bookings || []);
       setTotalPages(response.data.total_pages || 1);
       setTotalCount(response.data.total_count || 0);
     } catch (error) {
       console.error('Error fetching bookings:', error);
-      // Reset to safe values on error
       setBookings([]);
       setTotalPages(1);
       setTotalCount(0);
