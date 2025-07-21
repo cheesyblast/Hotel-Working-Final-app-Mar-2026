@@ -67,6 +67,15 @@ const Dashboard = () => {
     check_out_date: '',
     additional_notes: ''
   });
+  const [hotelSettings, setHotelSettings] = useState({
+    hotel_name: 'Hotel Management System',
+    hotel_logo: '',
+    hotel_address: '',
+    hotel_phone: '',
+    hotel_contact: '',
+    hotel_email: '',
+    currency: 'LKR'
+  });
 
   useEffect(() => {
     initializeData();
