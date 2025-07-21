@@ -3230,21 +3230,27 @@ const Bookings = () => {
   }, [currentPage, searchTerm, statusFilter]);
 
   const fetchBookings = async () => {
+    if (loading) return; // Prevent multiple simultaneous requests
+    
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: currentPage,
         limit: 20,
-        search: searchTerm,
-        status: statusFilter
+        search: searchTerm || '', // Ensure search term is never undefined
+        status: statusFilter || '' // Ensure status filter is never undefined
       });
       
       const response = await axios.get(`${API}/bookings?${params}`);
-      setBookings(response.data.bookings);
-      setTotalPages(response.data.total_pages);
-      setTotalCount(response.data.total_count);
+      setBookings(response.data.bookings || []);
+      setTotalPages(response.data.total_pages || 1);
+      setTotalCount(response.data.total_count || 0);
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      // Reset to safe values on error
+      setBookings([]);
+      setTotalPages(1);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
