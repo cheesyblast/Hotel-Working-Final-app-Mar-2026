@@ -2801,11 +2801,16 @@ const Guests = () => {
     if (searchQuery.trim() === '') {
       setFilteredGuests(guests);
     } else {
-      const filtered = guests.filter(guest =>
-        guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.phone.includes(searchQuery)
-      );
+      const filtered = guests.filter(guest => {
+        const searchLower = searchQuery.toLowerCase();
+        const name = guest.name ? guest.name.toLowerCase() : '';
+        const email = guest.email ? guest.email.toLowerCase() : '';
+        const phone = guest.phone ? guest.phone.toString() : '';
+        
+        return name.includes(searchLower) ||
+               email.includes(searchLower) ||
+               phone.includes(searchQuery);
+      });
       setFilteredGuests(filtered);
     }
   }, [guests, searchQuery]);
