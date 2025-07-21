@@ -103,12 +103,30 @@ const Dashboard = () => {
       await Promise.all([
         fetchRooms(),
         fetchUpcomingBookings(),
-        fetchCheckedInCustomers()
+        fetchCheckedInCustomers(),
+        fetchHotelSettings()
       ]);
     } catch (error) {
       console.error('Error initializing data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHotelSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setHotelSettings({
+        hotel_name: response.data.hotel_name || 'Hotel Management System',
+        hotel_logo: response.data.hotel_logo || '',
+        hotel_address: response.data.hotel_address || '',
+        hotel_phone: response.data.hotel_phone || '',
+        hotel_contact: response.data.hotel_contact || '',
+        hotel_email: response.data.hotel_email || '',
+        currency: response.data.currency || 'LKR'
+      });
+    } catch (error) {
+      console.error('Error fetching hotel settings:', error);
     }
   };
 
