@@ -516,6 +516,121 @@ const Dashboard = () => {
     return room.status;
   };
 
+  const handlePrintInvoice = () => {
+    const printWindow = window.open('', '_blank');
+    const invoiceHTML = generateInvoiceHTML();
+    printWindow.document.write(invoiceHTML);
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.close();
+    setShowPrintInvoiceDialog(false);
+    setSelectedCustomer(null);
+  };
+
+  const generateInvoiceHTML = () => {
+    if (!invoiceData) return '';
+    
+    const { customer, billing } = invoiceData;
+    const currentDate = new Date().toLocaleString();
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice - ${customer.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+          .header { display: flex; align-items: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+          .logo { width: 80px; height: 80px; margin-right: 20px; object-fit: contain; }
+          .hotel-info h1 { margin: 0; font-size: 24px; color: #2563eb; }
+          .hotel-info p { margin: 2px 0; font-size: 14px; color: #666; }
+          .invoice-details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+          .section { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+          .section h3 { margin: 0 0 10px 0; color: #1f2937; font-size: 16px; }
+          .billing-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          .billing-table th, .billing-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+          .billing-table th { background: #f3f4f6; font-weight: 600; }
+          .total-row { font-weight: bold; background: #dbeafe; }
+          .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          ${hotelSettings.hotel_logo ? `<img src="${hotelSettings.hotel_logo}" alt="Hotel Logo" class="logo" />` : ''}
+          <div class="hotel-info">
+            <h1>${hotelSettings.hotel_name}</h1>
+            <p><strong>Address:</strong> ${hotelSettings.hotel_address || 'Hotel Address'}</p>
+            <p><strong>Phone:</strong> ${hotelSettings.hotel_phone || hotelSettings.hotel_contact || 'Contact Number'}</p>
+            <p><strong>Email:</strong> ${hotelSettings.hotel_email || 'hotel@email.com'}</p>
+          </div>
+        </div>
+
+        <h2 style="text-align: center; color: #1f2937; margin: 20px 0;">CHECKOUT INVOICE</h2>
+
+        <div class="invoice-details">
+          <div class="section">
+            <h3>Guest Information</h3>
+            <p><strong>Name:</strong> ${customer.name}</p>
+            <p><strong>Phone:</strong> ${customer.phone || 'N/A'}</p>
+            <p><strong>Room:</strong> ${customer.current_room}</p>
+            <p><strong>Check-in:</strong> ${customer.check_in_date}</p>
+            <p><strong>Check-out:</strong> ${customer.check_out_date}</p>
+          </div>
+          
+          <div class="section">
+            <h3>Invoice Details</h3>
+            <p><strong>Invoice Date:</strong> ${currentDate}</p>
+            <p><strong>Payment Method:</strong> ${billing.payment_method}</p>
+            <p><strong>Currency:</strong> ${hotelSettings.currency || 'LKR'}</p>
+          </div>
+        </div>
+
+        <table class="billing-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Amount (${hotelSettings.currency || 'LKR'})</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Room Charges</td>
+              <td>${billing.room_charges.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Additional Charges</td>
+              <td>${billing.additional_charges.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td>Advance Amount (Paid)</td>
+              <td>(${billing.advance_amount.toFixed(2)})</td>
+            </tr>
+            <tr>
+              <td>Discount</td>
+              <td>(${billing.discount_amount.toFixed(2)})</td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>Total Amount</strong></td>
+              <td><strong>${billing.total_amount.toFixed(2)}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>Thank you for choosing ${hotelSettings.hotel_name}!</p>
+          <p>This is a computer-generated invoice.</p>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  const closePrintInvoiceDialog = () => {
+    setShowPrintInvoiceDialog(false);
+    setSelectedCustomer(null);
+    setInvoiceData(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
