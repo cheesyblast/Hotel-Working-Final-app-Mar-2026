@@ -4677,6 +4677,7 @@ const Settings = () => {
       await Promise.all([
         fetchUsers(),
         fetchSettings(),
+        fetchEmailSettings(),
         fetchActivityLogs()
       ]);
     } catch (error) {
@@ -4701,6 +4702,30 @@ const Settings = () => {
       setSettingsForm(response.data);
     } catch (error) {
       console.error('Error fetching settings:', error);
+    }
+  };
+
+  const fetchEmailSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/email-settings`);
+      setEmailSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching email settings:', error);
+      // Create default settings if none exist
+      setEmailSettings({
+        provider: 'smtp',
+        smtp_host: '',
+        smtp_port: 587,
+        smtp_username: '',
+        smtp_password: '',
+        sendgrid_api_key: '',
+        aws_access_key: '',
+        aws_secret_key: '',
+        aws_region: 'us-east-1',
+        from_email: '',
+        from_name: '',
+        is_configured: false
+      });
     }
   };
 
