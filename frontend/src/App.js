@@ -1,11 +1,452 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, createContext } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from 'xlsx';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Authentication Context
+const AuthContext = createContext();
+
+// Authentication Provider
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
+  const [isSetupCompleted, setIsSetupCompleted] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
+
+  // Set axios default authorization header
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [token]);
+
+  // Check setup status on app load
+  useEffect(() => {
+    const checkSetupStatus = async () => {
+      try {
+        const response = await axios.get(`${API}/setup/status`);
+        setIsSetupCompleted(response.data.is_completed);
+      } catch (error) {
+        console.error('Error checking setup status:', error);
+      } finally {
+        setCheckingSetup(false);
+      }
+    };
+    checkSetupStatus();
+  }, []);
+
+  // Check if user is authenticated on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (token && isSetupCompleted) {
+        try {
+          const response = await axios.get(`${API}/auth/me`);
+          setUser(response.data);
+        } catch (error) {
+          console.error('Token invalid:', error);
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+    
+    if (!checkingSetup) {
+      checkAuth();
+    }
+  }, [token, isSetupCompleted, checkingSetup]);
+
+  const login = async (username, password) => {
+    try {
+      const response = await axios.post(`${API}/auth/login`, {
+        username,
+        password
+      });
+      
+      const { access_token } = response.data;
+      localStorage.setItem('token', access_token);
+      setToken(access_token);
+      
+      // Get user info
+      const userResponse = await axios.get(`${API}/auth/me`);
+      setUser(userResponse.data);
+      
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Login failed' 
+      };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      if (token) {
+        await axios.post(`${API}/auth/logout`);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  };
+
+  const completeSetup = async (setupData) => {
+    try {
+      await axios.post(`${API}/setup/complete`, setupData);
+      setIsSetupCompleted(true);
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Setup failed' 
+      };
+    }
+  };
+
+  const value = {
+    user,
+    token,
+    loading,
+    isSetupCompleted,
+    checkingSetup,
+    login,
+    logout,
+    completeSetup
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+const useAuth = () => {
+  return useContext(AuthContext);
+};
+
+// Setup Wizard Component
+const SetupWizard = () => {
+  const [formData, setFormData] = useState({
+    hotel_name: '',
+    hotel_address: '',
+    hotel_email: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { completeSetup } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const result = await completeSetup(formData);
+    
+    if (!result.success) {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome!</h1>
+          <p className="text-gray-400">Let's set up your hotel management system</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-600 text-white p-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Hotel Name
+            </label>
+            <input
+              type="text"
+              name="hotel_name"
+              value={formData.hotel_name}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Enter your hotel name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Hotel Address
+            </label>
+            <textarea
+              name="hotel_address"
+              value={formData.hotel_address}
+              onChange={handleChange}
+              required
+              rows={3}
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Enter your hotel address"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Hotel Email
+            </label>
+            <input
+              type="email"
+              name="hotel_email"
+              value={formData.hotel_email}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Enter hotel email address"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Setting up...' : 'Complete Setup'}
+          </button>
+        </form>
+
+        <div className="mt-6 p-4 bg-gray-700 rounded-lg">
+          <p className="text-sm text-gray-300 mb-2">Default admin credentials:</p>
+          <p className="text-xs text-gray-400">Username: <strong className="text-white">admin</strong></p>
+          <p className="text-xs text-gray-400">Password: <strong className="text-white">admin123</strong></p>
+          <p className="text-xs text-gray-500 mt-2">You can change these after logging in.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Login Component
+const LoginPage = () => {
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const result = await login(credentials.username, credentials.password);
+    
+    if (!result.success) {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setForgotPasswordMessage('');
+
+    try {
+      await axios.post(`${API}/auth/forgot-password`, {
+        username_or_email: forgotPasswordEmail
+      });
+      setForgotPasswordMessage('If the account exists, a new password has been sent to the registered email.');
+    } catch (error) {
+      setError(error.response?.data?.detail || 'Failed to send reset email');
+    }
+    
+    setLoading(false);
+  };
+
+  const handleChange = (e) => {
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">Forgot Password</h1>
+            <p className="text-gray-400">Enter your username or email to reset your password</p>
+          </div>
+
+          {error && (
+            <div className="bg-red-600 text-white p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
+          {forgotPasswordMessage && (
+            <div className="bg-green-600 text-white p-3 rounded-lg mb-4">
+              {forgotPasswordMessage}
+            </div>
+          )}
+
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">
+                Username or Email
+              </label>
+              <input
+                type="text"
+                value={forgotPasswordEmail}
+                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter username or email"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Sending...' : 'Send New Password'}
+            </button>
+          </form>
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => {
+                setShowForgotPassword(false);
+                setError('');
+                setForgotPasswordMessage('');
+              }}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-white mb-2">Hotel Management</h1>
+          <p className="text-gray-400">Sign in to your account</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-600 text-white p-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Username
+            </label>
+            <input
+              type="text"
+              name="username"
+              value={credentials.username}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Enter your username"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setShowForgotPassword(true)}
+            className="text-blue-400 hover:text-blue-300 text-sm"
+          >
+            Forgot Password?
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading, isSetupCompleted, checkingSetup } = useAuth();
+
+  if (checkingSetup || loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isSetupCompleted) {
+    return <SetupWizard />;
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return children;
+};
 
 // Real-time clock component
 const RealTimeClock = () => {
