@@ -794,24 +794,30 @@ async def test_email_settings(current_user: UserResponse = Depends(get_current_a
         raise HTTPException(status_code=500, detail="Failed to send test email")
 
 # User Management Routes
-@api_router.get("/users", response_model=List[User])
-async def get_users():
-    """Get all users (excluding passwords)"""
+@api_router.get("/users", response_model=List[UserResponse])
+async def get_users(current_user: UserResponse = Depends(get_current_active_admin)):
+    """Get all users (Admin only)"""
     users = await db.users.find().to_list(1000)
-    # Remove passwords from response
-    for user in users:
-        user.pop('password', None)
-    return [User(**{**user, 'password': '***'}) for user in users]
+    return [UserResponse(**user) for user in users]
 
-@api_router.post("/users", response_model=User)
-async def create_user(user: UserCreate):
-    """Create a new user"""
+@api_router.post("/users", response_model=UserResponse)
+async def create_user(user: UserCreate, current_user: UserResponse = Depends(get_current_active_admin)):
+    """Create a new user (Admin only)"""
     # Check if username already exists
     existing_user = await db.users.find_one({"username": user.username})
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
-    user_obj = User(**user.dict())
+    # Hash password
+    hashed_password = get_password_hash(user.password)
+    
+    user_obj = User(
+        username=user.username,
+        password_hash=hashed_password,
+        full_name=user.full_name,
+        role=user.role,
+        email=user.email
+    )
     user_dict = user_obj.dict()
     await db.users.insert_one(user_dict)
     
@@ -819,20 +825,23 @@ async def create_user(user: UserCreate):
     await log_activity(
         action="user_created",
         description=f"New user '{user.username}' created with role '{user.role}'",
+        user_name=current_user.username,
         entity_type="user",
         entity_id=user_obj.id
     )
     
-    # Return user without password
-    user_dict.pop('password', None)
-    return User(**{**user_dict, 'password': '***'})
+    return UserResponse(**user_dict)
 
 @api_router.delete("/users/{user_id}")
-async def delete_user(user_id: str):
-    """Delete a user"""
+async def delete_user(user_id: str, current_user: UserResponse = Depends(get_current_active_admin)):
+    """Delete a user (Admin only)"""
     user = await db.users.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent deleting admin user
+    if user.get("username") == "admin":
+        raise HTTPException(status_code=400, detail="Cannot delete admin user")
     
     result = await db.users.delete_one({"id": user_id})
     if result.deleted_count == 0:
@@ -842,6 +851,7 @@ async def delete_user(user_id: str):
     await log_activity(
         action="user_deleted",
         description=f"User '{user.get('username', 'Unknown')}' deleted",
+        user_name=current_user.username,
         entity_type="user",
         entity_id=user_id
     )
@@ -849,11 +859,15 @@ async def delete_user(user_id: str):
     return {"message": "User deleted successfully"}
 
 @api_router.put("/users/{user_id}/toggle-status")
-async def toggle_user_status(user_id: str):
-    """Toggle user active/inactive status"""
+async def toggle_user_status(user_id: str, current_user: UserResponse = Depends(get_current_active_admin)):
+    """Toggle user active/inactive status (Admin only)"""
     user = await db.users.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent deactivating admin user
+    if user.get("username") == "admin":
+        raise HTTPException(status_code=400, detail="Cannot deactivate admin user")
     
     new_status = not user.get('is_active', True)
     result = await db.users.update_one(
@@ -868,6 +882,7 @@ async def toggle_user_status(user_id: str):
     await log_activity(
         action="user_status_changed",
         description=f"User '{user.get('username', 'Unknown')}' {'activated' if new_status else 'deactivated'}",
+        user_name=current_user.username,
         entity_type="user",
         entity_id=user_id
     )
