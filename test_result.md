@@ -165,6 +165,18 @@ backend:
         agent: "main"
         comment: "Implemented forgot password functionality with /api/auth/forgot-password endpoint. System generates new random password, updates user's hashed password, and sends email with new credentials. Includes user lookup by username or email, email validation, and activity logging. Integrates with email service configuration for sending password reset emails."
 
+  - task: "Enhanced Daily and Monthly Financial Reports with Excel Download"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Successfully implemented comprehensive daily and monthly financial reports with detailed Excel downloads. Backend: Complete rewrite of /api/financial-reports/daily and /api/financial-reports/monthly endpoints to provide detailed income/expense breakdowns, guest names, categories, payment methods (Cash vs Bank), separate cash and bank balances. Fixed MongoDB ObjectID serialization issues. Frontend: Enhanced Excel download with professional multi-sheet workbooks including 📊 Summary, 💰 Income Details, 💸 Expense Details sheets. Proper column widths, structured data layout, detailed transaction information. Tested with sample data showing correct cash balance (2,100 LKR), total income (3,300 LKR), and total expenses (1,200 LKR). Both daily and monthly reports working with comprehensive detail as requested."
+
   - task: "Short Time Booking Creation Fix"
     implemented: true
     working: true
