@@ -777,21 +777,57 @@ async def update_email_settings(
     
     return {"message": "Email settings updated successfully"}
 
-@api_router.post("/email-settings/test")
-async def test_email_settings(current_user: UserResponse = Depends(get_current_active_admin)):
-    """Test email configuration (Admin only)"""
-    if not current_user.email:
-        raise HTTPException(status_code=400, detail="Admin email not configured")
-    
-    subject = "Test Email - Hotel Management System"
-    body = "This is a test email to verify your email configuration is working correctly."
-    
-    email_sent = await send_email(current_user.email, subject, body)
-    
-    if email_sent:
-        return {"message": "Test email sent successfully"}
-    else:
-        raise HTTPException(status_code=500, detail="Failed to send test email")
+@api_router.post("/admin/complete-reset")
+async def complete_database_reset(current_user: UserResponse = Depends(get_current_active_admin)):
+    """Complete database reset - Admin only (DANGEROUS OPERATION)"""
+    try:
+        # Clear all collections
+        collections_to_clear = [
+            'rooms', 'bookings', 'customers', 'expenses', 'incomes', 
+            'activity_logs', 'daily_sales', 'email_settings'
+        ]
+        
+        reset_results = {}
+        
+        for collection_name in collections_to_clear:
+            result = await db[collection_name].delete_many({})
+            reset_results[collection_name] = result.deleted_count
+        
+        # Clear users except current admin
+        users_result = await db.users.delete_many({"username": {"$ne": "admin"}})
+        reset_results['users_except_admin'] = users_result.deleted_count
+        
+        # Reset hotel settings to default but keep hotel name
+        current_settings = await db.settings.find_one()
+        hotel_name = current_settings.get('hotel_name', 'Hotel Management System') if current_settings else 'Hotel Management System'
+        
+        await db.settings.delete_many({})
+        default_settings = Settings(hotel_name=hotel_name)
+        await db.settings.insert_one(default_settings.dict())
+        reset_results['settings_reset'] = True
+        
+        # Don't clear setup_wizard - keep hotel configured
+        
+        # Log the reset activity
+        await log_activity(
+            action="complete_system_reset",
+            description=f"Complete system reset performed by admin {current_user.username}",
+            user_name=current_user.username,
+            entity_type="system",
+            details=reset_results
+        )
+        
+        return {
+            "message": "Complete system reset successful",
+            "reset_summary": reset_results,
+            "note": "Hotel settings preserved, admin account preserved, setup status preserved"
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Reset failed: {str(e)}"
+        )
 
 # User Management Routes
 @api_router.get("/users", response_model=List[UserResponse])
