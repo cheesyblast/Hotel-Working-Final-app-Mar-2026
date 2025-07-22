@@ -185,6 +185,7 @@ class ExpenseCreate(BaseModel):
     description: str
     amount: float
     category: str
+    payment_method: str = "Cash"  # Cash, Card, Bank Transfer
     expense_date: date
 
 class Income(BaseModel):
