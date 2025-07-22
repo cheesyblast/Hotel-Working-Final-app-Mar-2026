@@ -766,6 +766,10 @@ const Dashboard = () => {
 
   const confirmCheckout = async () => {
     try {
+      // Fetch latest hotel settings for invoice
+      const settingsResponse = await axios.get(`${API}/settings`);
+      const latestSettings = settingsResponse.data;
+      
       const response = await axios.post(`${API}/checkout`, {
         customer_id: selectedCustomer.id,
         additional_amount: parseFloat(checkoutData.additional_amount) || 0,
@@ -773,11 +777,12 @@ const Dashboard = () => {
         payment_method: checkoutData.payment_method
       });
       
-      // Store invoice data for printing
+      // Store invoice data for printing with latest settings
       setInvoiceData({
         customer: selectedCustomer,
         billing: response.data.billing_details,
-        checkout_data: checkoutData
+        checkout_data: checkoutData,
+        hotel_settings: latestSettings  // Include latest settings
       });
       
       setShowCheckoutModal(false);
