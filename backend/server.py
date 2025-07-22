@@ -269,6 +269,7 @@ class SetupWizardRequest(BaseModel):
     hotel_name: str
     hotel_address: str
     hotel_email: str
+    timezone: str = "UTC"  # Timezone for the hotel (e.g., "Asia/Colombo", "America/New_York")
 
 class EmailSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
