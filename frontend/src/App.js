@@ -451,6 +451,7 @@ const ProtectedRoute = ({ children }) => {
 // Real-time clock component
 const RealTimeClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -460,12 +461,26 @@ const RealTimeClock = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const handleLogout = async () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      await logout();
+    }
+  };
+
   return (
-    <div className="text-sm text-gray-400">
-      <div>Welcome, Admin</div>
-      <div className="text-xs">
-        {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}
+    <div className="flex items-center space-x-4">
+      <div className="text-sm text-gray-400">
+        <div>Welcome, {user?.full_name || user?.username || 'User'}</div>
+        <div className="text-xs">
+          {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}
+        </div>
       </div>
+      <button
+        onClick={handleLogout}
+        className="text-xs text-red-400 hover:text-red-300 bg-red-900 px-2 py-1 rounded"
+      >
+        Logout
+      </button>
     </div>
   );
 };
