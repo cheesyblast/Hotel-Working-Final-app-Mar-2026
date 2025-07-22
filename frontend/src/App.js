@@ -848,6 +848,15 @@ const Dashboard = () => {
         booking_amount: newBookingData.booking_amount // This is the calculated total
       };
 
+      // For Short Time bookings, ensure check_out_date is handled correctly
+      if (newBookingData.stay_type === 'Short Time') {
+        // For short time, don't send check_out_date - let backend handle it
+        delete bookingData.check_out_date;
+      } else if (bookingData.check_out_date === '') {
+        // Convert empty string to null for proper backend handling
+        bookingData.check_out_date = null;
+      }
+
       await axios.post(`${API}/bookings`, bookingData);
       
       setShowNewBookingModal(false);
