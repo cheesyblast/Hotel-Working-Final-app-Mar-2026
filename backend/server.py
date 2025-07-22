@@ -2357,47 +2357,121 @@ async def get_daily_financial_report(
     date: Optional[str] = None,
     current_user: UserResponse = Depends(get_current_user)
 ):
-    """Get financial report for a specific day"""
-    if not date:
-        report_date = datetime.now().date()
-    else:
-        report_date = datetime.strptime(date, '%Y-%m-%d').date()
-    
-    start_datetime = datetime.combine(report_date, datetime.min.time())
-    end_datetime = datetime.combine(report_date, datetime.max.time())
-    
-    # Get day's sales
-    daily_sales = await db.daily_sales.find({
-        "date": {"$gte": start_datetime, "$lte": end_datetime}
-    }).to_list(1000)
-    
-    # Get day's income
-    incomes = await db.incomes.find({
-        "income_date": {"$gte": start_datetime, "$lte": end_datetime}
-    }).to_list(1000)
-    
-    # Get day's expenses
-    expenses = await db.expenses.find({
-        "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
-    }).to_list(1000)
-    
-    room_revenue = sum(sale.get("total_amount", 0) for sale in daily_sales)
-    additional_income = sum(income.get("amount", 0) for income in incomes)
-    total_revenue = room_revenue + additional_income
-    total_expenses = sum(expense.get("amount", 0) for expense in expenses)
-    net_profit = total_revenue - total_expenses
-    
-    return {
-        "date": report_date,
-        "room_revenue": room_revenue,
-        "additional_income": additional_income,
-        "total_revenue": total_revenue,
-        "total_expenses": total_expenses,
-        "net_profit": net_profit,
-        "sales_details": daily_sales,
-        "income_details": incomes,
-        "expense_details": expenses
-    }
+    """Generate detailed daily financial report with Excel download"""
+    try:
+        # Parse the date or use today
+        if date:
+            target_date = datetime.strptime(date, '%Y-%m-%d').date()
+        else:
+            target_date = datetime.utcnow().date()
+        
+        # Date range for the day
+        start_datetime = datetime.combine(target_date, datetime.min.time())
+        end_datetime = datetime.combine(target_date, datetime.max.time())
+        
+        # Get all income entries for the day
+        incomes = await db.incomes.find({
+            "income_date": {"$gte": start_datetime, "$lte": end_datetime}
+        }).to_list(1000)
+        
+        # Get all expenses for the day
+        expenses = await db.expenses.find({
+            "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
+        }).to_list(1000)
+        
+        # Get all bookings checked in on this day
+        daily_bookings = await db.bookings.find({
+            "check_in_date": {"$gte": start_datetime, "$lte": end_datetime},
+            "status": {"$in": ["Checked In", "Completed"]}
+        }).to_list(1000)
+        
+        # Calculate balances
+        total_cash_income = sum(income.get("amount", 0) for income in incomes if income.get("payment_method") == "Cash")
+        total_bank_income = sum(income.get("amount", 0) for income in incomes if income.get("payment_method") in ["Card", "Bank Transfer"])
+        
+        total_cash_expenses = sum(expense.get("amount", 0) for expense in expenses if expense.get("payment_method") == "Cash")
+        total_bank_expenses = sum(expense.get("amount", 0) for expense in expenses if expense.get("payment_method") in ["Card", "Bank Transfer"])
+        
+        # Room revenue from bookings
+        room_revenue_cash = sum(booking.get("booking_amount", 0) for booking in daily_bookings if booking.get("payment_method", "Cash") == "Cash")
+        room_revenue_bank = sum(booking.get("booking_amount", 0) for booking in daily_bookings if booking.get("payment_method", "Cash") in ["Card", "Bank Transfer"])
+        
+        # Prepare detailed data for Excel
+        income_details = []
+        for income in incomes:
+            income_details.append({
+                "Date": income.get("income_date", "").strftime("%Y-%m-%d %H:%M") if income.get("income_date") else "",
+                "Guest Name": income.get("guest_name", "N/A"),
+                "Category": income.get("category", "General"),
+                "Description": income.get("description", ""),
+                "Amount (LKR)": income.get("amount", 0),
+                "Payment Method": income.get("payment_method", "Cash"),
+                "Added By": income.get("added_by", "N/A")
+            })
+        
+        # Add booking revenue to income details
+        for booking in daily_bookings:
+            income_details.append({
+                "Date": booking.get("check_in_date", "").strftime("%Y-%m-%d %H:%M") if booking.get("check_in_date") else "",
+                "Guest Name": booking.get("guest_name", "N/A"),
+                "Category": "Room Revenue",
+                "Description": f"Room {booking.get('room_number', 'N/A')} - {booking.get('stay_type', 'N/A')}",
+                "Amount (LKR)": booking.get("booking_amount", 0),
+                "Payment Method": booking.get("payment_method", "Cash"),
+                "Added By": "System (Check-in)"
+            })
+        
+        expense_details = []
+        for expense in expenses:
+            expense_details.append({
+                "Date": expense.get("expense_date", "").strftime("%Y-%m-%d %H:%M") if expense.get("expense_date") else "",
+                "Category": expense.get("category", "General"),
+                "Description": expense.get("description", ""),
+                "Amount (LKR)": expense.get("amount", 0),
+                "Payment Method": expense.get("payment_method", "Cash"),
+                "Added By": expense.get("added_by", "N/A")
+            })
+        
+        # Calculate running balances
+        cash_balance = (total_cash_income + room_revenue_cash) - total_cash_expenses
+        bank_balance = (total_bank_income + room_revenue_bank) - total_bank_expenses
+        
+        # Summary data
+        summary_data = [{
+            "Report Type": "Daily Financial Report",
+            "Date": target_date.strftime("%Y-%m-%d"),
+            "": "",
+            "INCOME SUMMARY": "",
+            "Cash Income (LKR)": total_cash_income + room_revenue_cash,
+            "Bank Income (LKR)": total_bank_income + room_revenue_bank,
+            "Total Income (LKR)": total_cash_income + total_bank_income + room_revenue_cash + room_revenue_bank,
+            " ": "",
+            "EXPENSE SUMMARY": "",
+            "Cash Expenses (LKR)": total_cash_expenses,
+            "Bank Expenses (LKR)": total_bank_expenses,
+            "Total Expenses (LKR)": total_cash_expenses + total_bank_expenses,
+            "  ": "",
+            "BALANCE SUMMARY": "",
+            "Net Cash Balance (LKR)": cash_balance,
+            "Net Bank Balance (LKR)": bank_balance,
+            "Total Net Balance (LKR)": cash_balance + bank_balance
+        }]
+        
+        return {
+            "date": target_date.strftime("%Y-%m-%d"),
+            "summary": summary_data[0],
+            "income_details": income_details,
+            "expense_details": expense_details,
+            "cash_balance": cash_balance,
+            "bank_balance": bank_balance,
+            "total_balance": cash_balance + bank_balance,
+            "total_income": total_cash_income + total_bank_income + room_revenue_cash + room_revenue_bank,
+            "total_expenses": total_cash_expenses + total_bank_expenses
+        }
+        
+    except Exception as e:
+        print(f"Daily report error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate daily report: {str(e)}")
 
 @api_router.get("/financial-reports/monthly")
 async def get_monthly_financial_report(
@@ -2405,56 +2479,127 @@ async def get_monthly_financial_report(
     month: int = None,
     current_user: UserResponse = Depends(get_current_user)
 ):
-    """Get financial report for a specific month"""
-    if not year or not month:
-        today = datetime.now().date()
-        year = today.year
-        month = today.month
-    
-    # First day of the month
-    start_date = datetime(year, month, 1).date()
-    
-    # Last day of the month
-    if month == 12:
-        end_date = datetime(year + 1, 1, 1).date() - timedelta(days=1)
-    else:
-        end_date = datetime(year, month + 1, 1).date() - timedelta(days=1)
-    
-    start_datetime = datetime.combine(start_date, datetime.min.time())
-    end_datetime = datetime.combine(end_date, datetime.max.time())
-    
-    # Get month's data
-    daily_sales = await db.daily_sales.find({
-        "date": {"$gte": start_datetime, "$lte": end_datetime}
-    }).to_list(10000)
-    
-    incomes = await db.incomes.find({
-        "income_date": {"$gte": start_datetime, "$lte": end_datetime}
-    }).to_list(10000)
-    
-    expenses = await db.expenses.find({
-        "expense_date": {"$gte": start_datetime, "$lte": end_datetime}
-    }).to_list(10000)
-    
-    room_revenue = sum(sale.get("total_amount", 0) for sale in daily_sales)
-    additional_income = sum(income.get("amount", 0) for income in incomes)
-    total_revenue = room_revenue + additional_income
-    total_expenses = sum(expense.get("amount", 0) for expense in expenses)
-    net_profit = total_revenue - total_expenses
-    
-    return {
-        "year": year,
-        "month": month,
-        "month_name": start_date.strftime("%B %Y"),
-        "room_revenue": room_revenue,
-        "additional_income": additional_income,
-        "total_revenue": total_revenue,
-        "total_expenses": total_expenses,
-        "net_profit": net_profit,
-        "sales_count": len(daily_sales),
-        "income_count": len(incomes),
-        "expense_count": len(expenses)
-    }
+    """Generate detailed monthly financial report with Excel download"""
+    try:
+        # Use current month if not specified
+        if year is None or month is None:
+            today = datetime.utcnow().date()
+            year = today.year
+            month = today.month
+        
+        # First and last day of the month
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1) - timedelta(seconds=1)
+        else:
+            end_date = datetime(year, month + 1, 1) - timedelta(seconds=1)
+        
+        # Get all income entries for the month
+        incomes = await db.incomes.find({
+            "income_date": {"$gte": start_date, "$lte": end_date}
+        }).to_list(10000)
+        
+        # Get all expenses for the month
+        expenses = await db.expenses.find({
+            "expense_date": {"$gte": start_date, "$lte": end_date}
+        }).to_list(10000)
+        
+        # Get all bookings checked in during the month
+        monthly_bookings = await db.bookings.find({
+            "check_in_date": {"$gte": start_date, "$lte": end_date},
+            "status": {"$in": ["Checked In", "Completed"]}
+        }).to_list(10000)
+        
+        # Calculate balances
+        total_cash_income = sum(income.get("amount", 0) for income in incomes if income.get("payment_method") == "Cash")
+        total_bank_income = sum(income.get("amount", 0) for income in incomes if income.get("payment_method") in ["Card", "Bank Transfer"])
+        
+        total_cash_expenses = sum(expense.get("amount", 0) for expense in expenses if expense.get("payment_method") == "Cash")
+        total_bank_expenses = sum(expense.get("amount", 0) for expense in expenses if expense.get("payment_method") in ["Card", "Bank Transfer"])
+        
+        # Room revenue from bookings
+        room_revenue_cash = sum(booking.get("booking_amount", 0) for booking in monthly_bookings if booking.get("payment_method", "Cash") == "Cash")
+        room_revenue_bank = sum(booking.get("booking_amount", 0) for booking in monthly_bookings if booking.get("payment_method", "Cash") in ["Card", "Bank Transfer"])
+        
+        # Prepare detailed data for Excel
+        income_details = []
+        for income in incomes:
+            income_details.append({
+                "Date": income.get("income_date", "").strftime("%Y-%m-%d %H:%M") if income.get("income_date") else "",
+                "Guest Name": income.get("guest_name", "N/A"),
+                "Category": income.get("category", "General"),
+                "Description": income.get("description", ""),
+                "Amount (LKR)": income.get("amount", 0),
+                "Payment Method": income.get("payment_method", "Cash"),
+                "Added By": income.get("added_by", "N/A")
+            })
+        
+        # Add booking revenue to income details
+        for booking in monthly_bookings:
+            income_details.append({
+                "Date": booking.get("check_in_date", "").strftime("%Y-%m-%d %H:%M") if booking.get("check_in_date") else "",
+                "Guest Name": booking.get("guest_name", "N/A"),
+                "Category": "Room Revenue",
+                "Description": f"Room {booking.get('room_number', 'N/A')} - {booking.get('stay_type', 'N/A')}",
+                "Amount (LKR)": booking.get("booking_amount", 0),
+                "Payment Method": booking.get("payment_method", "Cash"),
+                "Added By": "System (Check-in)"
+            })
+        
+        expense_details = []
+        for expense in expenses:
+            expense_details.append({
+                "Date": expense.get("expense_date", "").strftime("%Y-%m-%d %H:%M") if expense.get("expense_date") else "",
+                "Category": expense.get("category", "General"),
+                "Description": expense.get("description", ""),
+                "Amount (LKR)": expense.get("amount", 0),
+                "Payment Method": expense.get("payment_method", "Cash"),
+                "Added By": expense.get("added_by", "N/A")
+            })
+        
+        # Calculate running balances
+        cash_balance = (total_cash_income + room_revenue_cash) - total_cash_expenses
+        bank_balance = (total_bank_income + room_revenue_bank) - total_bank_expenses
+        
+        # Summary data
+        month_names = ["", "January", "February", "March", "April", "May", "June", 
+                      "July", "August", "September", "October", "November", "December"]
+        
+        summary_data = [{
+            "Report Type": "Monthly Financial Report",
+            "Month": f"{month_names[month]} {year}",
+            "": "",
+            "INCOME SUMMARY": "",
+            "Cash Income (LKR)": total_cash_income + room_revenue_cash,
+            "Bank Income (LKR)": total_bank_income + room_revenue_bank,
+            "Total Income (LKR)": total_cash_income + total_bank_income + room_revenue_cash + room_revenue_bank,
+            " ": "",
+            "EXPENSE SUMMARY": "",
+            "Cash Expenses (LKR)": total_cash_expenses,
+            "Bank Expenses (LKR)": total_bank_expenses,
+            "Total Expenses (LKR)": total_cash_expenses + total_bank_expenses,
+            "  ": "",
+            "BALANCE SUMMARY": "",
+            "Net Cash Balance (LKR)": cash_balance,
+            "Net Bank Balance (LKR)": bank_balance,
+            "Total Net Balance (LKR)": cash_balance + bank_balance
+        }]
+        
+        return {
+            "month": f"{month_names[month]} {year}",
+            "summary": summary_data[0],
+            "income_details": income_details,
+            "expense_details": expense_details,
+            "cash_balance": cash_balance,
+            "bank_balance": bank_balance,
+            "total_balance": cash_balance + bank_balance,
+            "total_income": total_cash_income + total_bank_income + room_revenue_cash + room_revenue_bank,
+            "total_expenses": total_cash_expenses + total_bank_expenses
+        }
+        
+    except Exception as e:
+        print(f"Monthly report error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate monthly report: {str(e)}")
 
 # Test route
 @api_router.get("/")
