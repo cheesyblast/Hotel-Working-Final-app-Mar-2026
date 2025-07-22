@@ -574,8 +574,8 @@ const Dashboard = () => {
 
   const initializeData = async () => {
     try {
-      // Initialize sample data
-      await axios.post(`${API}/init-data`);
+      // No longer auto-initialize sample data - let admin manage via reset feature
+      // await axios.post(`${API}/init-data`);
       
       // Fetch all data
       await Promise.all([
