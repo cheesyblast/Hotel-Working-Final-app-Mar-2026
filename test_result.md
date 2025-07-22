@@ -165,18 +165,30 @@ backend:
         agent: "main"
         comment: "Implemented forgot password functionality with /api/auth/forgot-password endpoint. System generates new random password, updates user's hashed password, and sends email with new credentials. Includes user lookup by username or email, email validation, and activity logging. Integrates with email service configuration for sending password reset emails."
 
+  - task: "Complete Database Reset Feature - Admin Only"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Successfully implemented admin-only complete database reset feature. Backend: Added /api/admin/complete-reset endpoint with admin-only access, clears all data except hotel settings and admin account, provides detailed reset summary, includes activity logging. Frontend: Added 🔧 System Management tab visible only to admin users, comprehensive reset interface with multiple confirmation dialogs (including typed confirmation), displays what will be deleted/preserved, shows system information. Reset functionality tested and working - cleared 10 rooms, 3 bookings, 2 customers, 7 expenses while preserving admin account and hotel settings. Professional UI with proper warnings and confirmation flow."
+
 frontend:
   - task: "Authentication System Frontend Implementation"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "Implemented comprehensive authentication frontend with AuthContext, login page, setup wizard, and protected routes. Created AuthProvider with JWT token management, setup status checking, login/logout functions. Added SetupWizard component for initial hotel setup, LoginPage with forgot password functionality, and ProtectedRoute component. Updated RealTimeClock to show logged user and logout button. Added email settings tab to Settings page with provider configuration (SMTP, SendGrid, AWS SES, Gmail). App wrapped with AuthProvider and ProtectedRoute. Authentication system shows loading screen but needs testing to verify full functionality."
+        comment: "Successfully implemented complete authentication frontend system. AuthContext with JWT token management, setup status checking, login/logout functions working correctly. SetupWizard component for hotel configuration, LoginPage with forgot password functionality, ProtectedRoute component for access control. Updated RealTimeClock with user info and logout button. Added comprehensive Email Settings tab with support for SMTP, SendGrid, AWS SES, Gmail providers. Added admin-only System Management tab with complete database reset feature. App properly wrapped with AuthProvider and ProtectedRoute. Authentication system fully functional and tested."
 
 backend:
   - task: "Income Management and Enhanced Financial Summary Integration"
