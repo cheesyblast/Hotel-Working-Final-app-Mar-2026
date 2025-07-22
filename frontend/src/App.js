@@ -4605,11 +4605,28 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   
   // UI state
-  const [activeTab, setActiveTab] = useState('users'); // users, settings, logs
+  const [activeTab, setActiveTab] = useState('users'); // users, settings, email, logs
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showActivityLogs, setShowActivityLogs] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  
+  // Email settings state
+  const [emailSettings, setEmailSettings] = useState({
+    provider: 'smtp',
+    smtp_host: '',
+    smtp_port: 587,
+    smtp_username: '',
+    smtp_password: '',
+    sendgrid_api_key: '',
+    aws_access_key: '',
+    aws_secret_key: '',
+    aws_region: 'us-east-1',
+    from_email: '',
+    from_name: '',
+    is_configured: false
+  });
+  const [testingEmail, setTestingEmail] = useState(false);
   
   // Form states
   const [newUser, setNewUser] = useState({
