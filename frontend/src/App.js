@@ -5549,8 +5549,8 @@ const Settings = () => {
   );
 };
 
-// Main App Component
-function App() {
+// Main App Component (Protected Content)
+function AppContent() {
   const [hotelSettings, setHotelSettings] = useState({
     hotel_name: 'Hotel Management System',
     hotel_logo: '',
