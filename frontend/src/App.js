@@ -137,7 +137,8 @@ const SetupWizard = () => {
   const [formData, setFormData] = useState({
     hotel_name: '',
     hotel_address: '',
-    hotel_email: ''
+    hotel_email: '',
+    timezone: 'Asia/Colombo'  // Default to Sri Lanka timezone
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
