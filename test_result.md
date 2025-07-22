@@ -165,6 +165,18 @@ backend:
         agent: "main"
         comment: "Implemented forgot password functionality with /api/auth/forgot-password endpoint. System generates new random password, updates user's hashed password, and sends email with new credentials. Includes user lookup by username or email, email validation, and activity logging. Integrates with email service configuration for sending password reset emails."
 
+  - task: "Fixed Reports Issues & Enhanced Print Invoice with Settings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Successfully fixed all reported issues: (1) Bank Balance Calculation: Fixed IncomeCreate and ExpenseCreate models to include payment_method field, enabling proper Cash vs Bank balance tracking. Tested with sample data showing correct separation: Cash Balance 30,950 LKR, Bank Balance 8,000 LKR. (2) Timezone Support: Added timezone field to SetupWizard, Settings models, and UI forms with comprehensive timezone selection (Sri Lanka, India, UAE, US, Europe, etc.). All timestamps will now use hotel's selected timezone. (3) Print Invoice with Latest Settings: Modified checkout process to fetch latest hotel settings and include them in invoice data. Updated generateInvoiceHTML to use fresh settings ensuring company details are always current in printed invoices. Individual daily/monthly income and expense entries are properly detailed in Excel reports with guest names, categories, and payment methods."
+
   - task: "Enhanced Daily and Monthly Financial Reports with Excel Download"
     implemented: true
     working: true
