@@ -5235,6 +5235,33 @@ const Settings = () => {
                   </select>
                 </div>
 
+                {/* Timezone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Hotel Timezone
+                  </label>
+                  <select
+                    value={settingsForm.timezone || 'UTC'}
+                    onChange={(e) => setSettingsForm({...settingsForm, timezone: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="Asia/Colombo">Asia/Colombo (Sri Lanka)</option>
+                    <option value="Asia/Kolkata">Asia/Kolkata (India)</option>
+                    <option value="Asia/Dubai">Asia/Dubai (UAE)</option>
+                    <option value="Asia/Singapore">Asia/Singapore</option>
+                    <option value="America/New_York">America/New_York (EST)</option>
+                    <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                    <option value="Europe/London">Europe/London (GMT)</option>
+                    <option value="Europe/Paris">Europe/Paris (CET)</option>
+                    <option value="Australia/Sydney">Australia/Sydney</option>
+                    <option value="Asia/Tokyo">Asia/Tokyo (Japan)</option>
+                    <option value="UTC">UTC</option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    All timestamps in the application will use this timezone
+                  </p>
+                </div>
+
                 {/* Check-in Time */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
