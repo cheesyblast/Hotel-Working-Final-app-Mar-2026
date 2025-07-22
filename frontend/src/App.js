@@ -1051,7 +1051,8 @@ const Dashboard = () => {
   const generateInvoiceHTML = () => {
     if (!invoiceData) return '';
     
-    const { customer, billing } = invoiceData;
+    const { customer, billing, hotel_settings } = invoiceData;
+    const settings = hotel_settings || hotelSettings; // Fallback to component settings
     const currentDate = new Date().toLocaleString();
     
     return `
@@ -1077,12 +1078,12 @@ const Dashboard = () => {
       </head>
       <body>
         <div class="header">
-          ${hotelSettings.hotel_logo ? `<img src="${hotelSettings.hotel_logo}" alt="Hotel Logo" class="logo" />` : ''}
+          ${settings.hotel_logo ? `<img src="${settings.hotel_logo}" alt="Hotel Logo" class="logo" />` : ''}
           <div class="hotel-info">
-            <h1>${hotelSettings.hotel_name}</h1>
-            <p><strong>Address:</strong> ${hotelSettings.hotel_address || 'Hotel Address'}</p>
-            <p><strong>Phone:</strong> ${hotelSettings.hotel_phone || hotelSettings.hotel_contact || 'Contact Number'}</p>
-            <p><strong>Email:</strong> ${hotelSettings.hotel_email || 'hotel@email.com'}</p>
+            <h1>${settings.hotel_name || 'Hotel Management System'}</h1>
+            <p><strong>Address:</strong> ${settings.hotel_address || 'Hotel Address'}</p>
+            <p><strong>Phone:</strong> ${settings.hotel_phone || settings.hotel_contact || 'Contact Number'}</p>
+            <p><strong>Email:</strong> ${settings.hotel_email || 'hotel@email.com'}</p>
           </div>
         </div>
 
@@ -1102,7 +1103,7 @@ const Dashboard = () => {
             <h3>Invoice Details</h3>
             <p><strong>Invoice Date:</strong> ${currentDate}</p>
             <p><strong>Payment Method:</strong> ${billing.payment_method}</p>
-            <p><strong>Currency:</strong> ${hotelSettings.currency || 'LKR'}</p>
+            <p><strong>Currency:</strong> ${settings.currency || 'LKR'}</p>
           </div>
         </div>
 
@@ -1110,7 +1111,7 @@ const Dashboard = () => {
           <thead>
             <tr>
               <th>Description</th>
-              <th>Amount (${hotelSettings.currency || 'LKR'})</th>
+              <th>Amount (${settings.currency || 'LKR'})</th>
             </tr>
           </thead>
           <tbody>
@@ -1138,7 +1139,7 @@ const Dashboard = () => {
         </table>
 
         <div class="footer">
-          <p>Thank you for choosing ${hotelSettings.hotel_name}!</p>
+          <p>Thank you for choosing ${settings.hotel_name || 'our hotel'}!</p>
           <p>This is a computer-generated invoice.</p>
         </div>
       </body>
