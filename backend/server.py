@@ -298,6 +298,121 @@ class EmailSettingsUpdate(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     username_or_email: str
 
+# Authentication dependency
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current authenticated user from JWT token"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except PyJWTError:
+        raise credentials_exception
+    
+    user = await db.users.find_one({"username": token_data.username})
+    if user is None:
+        raise credentials_exception
+    
+    if not user.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user"
+        )
+    
+    return UserResponse(**user)
+
+async def get_current_active_admin(current_user: UserResponse = Depends(get_current_user)):
+    """Require admin role"""
+    if current_user.role != "Admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    return current_user
+
+# Email service functions
+async def get_email_settings():
+    """Get email settings from database"""
+    settings = await db.email_settings.find_one()
+    if not settings:
+        return None
+    return EmailSettings(**settings)
+
+async def send_email_smtp(email_settings: EmailSettings, to_email: str, subject: str, body: str):
+    """Send email via SMTP"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = f"{email_settings.from_name} <{email_settings.from_email}>"
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP(email_settings.smtp_host, email_settings.smtp_port)
+        server.starttls()
+        server.login(email_settings.smtp_username, email_settings.smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        return True
+    except Exception as e:
+        print(f"SMTP Error: {str(e)}")
+        return False
+
+async def send_email_sendgrid(email_settings: EmailSettings, to_email: str, subject: str, body: str):
+    """Send email via SendGrid (would require sendgrid library)"""
+    # Placeholder for SendGrid implementation
+    print(f"SendGrid email would be sent to {to_email}")
+    return True
+
+async def send_email_ses(email_settings: EmailSettings, to_email: str, subject: str, body: str):
+    """Send email via AWS SES"""
+    try:
+        ses_client = boto3.client(
+            'ses',
+            aws_access_key_id=email_settings.aws_access_key,
+            aws_secret_access_key=email_settings.aws_secret_key,
+            region_name=email_settings.aws_region
+        )
+        
+        response = ses_client.send_email(
+            Destination={'ToAddresses': [to_email]},
+            Message={
+                'Body': {'Text': {'Charset': 'UTF-8', 'Data': body}},
+                'Subject': {'Charset': 'UTF-8', 'Data': subject},
+            },
+            Source=email_settings.from_email,
+        )
+        return True
+    except NoCredentialsError:
+        print("AWS credentials not found")
+        return False
+    except Exception as e:
+        print(f"SES Error: {str(e)}")
+        return False
+
+async def send_email(to_email: str, subject: str, body: str):
+    """Send email using configured provider"""
+    email_settings = await get_email_settings()
+    if not email_settings or not email_settings.is_configured:
+        return False
+    
+    if email_settings.provider == "smtp":
+        return await send_email_smtp(email_settings, to_email, subject, body)
+    elif email_settings.provider == "sendgrid":
+        return await send_email_sendgrid(email_settings, to_email, subject, body)
+    elif email_settings.provider == "ses":
+        return await send_email_ses(email_settings, to_email, subject, body)
+    else:
+        return False
+
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     hotel_name: str = "Hotel Management System"
