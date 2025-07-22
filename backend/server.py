@@ -781,7 +781,10 @@ async def update_email_settings(
 async def complete_database_reset(current_user: UserResponse = Depends(get_current_active_admin)):
     """Complete database reset - Admin only (DANGEROUS OPERATION)"""
     try:
-        # Clear all collections
+        # Get all collection names in the database
+        collection_names = await db.list_collection_names()
+        
+        # Collections to clear (all except setup_wizard)
         collections_to_clear = [
             'rooms', 'bookings', 'customers', 'expenses', 'incomes', 
             'activity_logs', 'daily_sales', 'email_settings'
@@ -789,13 +792,20 @@ async def complete_database_reset(current_user: UserResponse = Depends(get_curre
         
         reset_results = {}
         
+        # Clear specified collections completely
         for collection_name in collections_to_clear:
-            result = await db[collection_name].delete_many({})
-            reset_results[collection_name] = result.deleted_count
+            if collection_name in collection_names:
+                result = await db[collection_name].delete_many({})
+                reset_results[collection_name] = result.deleted_count
+            else:
+                reset_results[collection_name] = 0
         
         # Clear users except current admin
-        users_result = await db.users.delete_many({"username": {"$ne": "admin"}})
-        reset_results['users_except_admin'] = users_result.deleted_count
+        if 'users' in collection_names:
+            users_result = await db.users.delete_many({"username": {"$ne": "admin"}})
+            reset_results['users_except_admin'] = users_result.deleted_count
+        else:
+            reset_results['users_except_admin'] = 0
         
         # Reset hotel settings to default but keep hotel name
         current_settings = await db.settings.find_one()
@@ -820,7 +830,7 @@ async def complete_database_reset(current_user: UserResponse = Depends(get_curre
         return {
             "message": "Complete system reset successful",
             "reset_summary": reset_results,
-            "note": "Hotel settings preserved, admin account preserved, setup status preserved"
+            "note": "Hotel settings preserved, admin account preserved, setup status preserved. Auto-initialization disabled - data will only appear when manually added."
         }
         
     except Exception as e:
