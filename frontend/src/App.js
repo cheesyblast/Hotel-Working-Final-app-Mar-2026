@@ -4627,6 +4627,10 @@ const Settings = () => {
     is_configured: false
   });
   const [testingEmail, setTestingEmail] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  
+  // Get current user context
+  const { user } = useAuth();
   
   // Form states
   const [newUser, setNewUser] = useState({
