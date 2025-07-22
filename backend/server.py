@@ -482,6 +482,317 @@ async def log_activity(action: str, description: str, user_name: str = "Admin",
         # Log the error but don't fail the main operation
         print(f"Failed to log activity: {str(e)}")
 
+# Setup Wizard Routes
+@api_router.get("/setup/status")
+async def get_setup_status():
+    """Check if initial setup has been completed"""
+    setup = await db.setup_wizard.find_one()
+    if setup:
+        return {"is_completed": setup.get("is_completed", False)}
+    return {"is_completed": False}
+
+@api_router.post("/setup/complete")
+async def complete_setup(setup_request: SetupWizardRequest):
+    """Complete initial setup wizard"""
+    # Check if setup is already completed
+    existing_setup = await db.setup_wizard.find_one()
+    if existing_setup and existing_setup.get("is_completed"):
+        raise HTTPException(status_code=400, detail="Setup already completed")
+    
+    # Create/update hotel settings
+    settings_update = {
+        "hotel_name": setup_request.hotel_name,
+        "hotel_address": setup_request.hotel_address,
+        "hotel_email": setup_request.hotel_email,
+        "updated_at": datetime.utcnow()
+    }
+    
+    # Check if settings exist
+    existing_settings = await db.settings.find_one()
+    if existing_settings:
+        await db.settings.update_one(
+            {"id": existing_settings["id"]},
+            {"$set": settings_update}
+        )
+    else:
+        default_settings = Settings(**settings_update)
+        await db.settings.insert_one(default_settings.dict())
+    
+    # Create admin user
+    admin_user = User(
+        username="admin",
+        password_hash=get_password_hash("admin123"),
+        full_name="System Administrator",
+        role="Admin",
+        email=setup_request.hotel_email
+    )
+    
+    # Check if admin already exists
+    existing_admin = await db.users.find_one({"username": "admin"})
+    if existing_admin:
+        # Update admin user
+        await db.users.update_one(
+            {"username": "admin"},
+            {"$set": {
+                "password_hash": get_password_hash("admin123"),
+                "email": setup_request.hotel_email,
+                "full_name": "System Administrator"
+            }}
+        )
+    else:
+        await db.users.insert_one(admin_user.dict())
+    
+    # Mark setup as completed
+    setup_wizard = SetupWizard(
+        is_completed=True,
+        hotel_name=setup_request.hotel_name,
+        hotel_address=setup_request.hotel_address,
+        hotel_email=setup_request.hotel_email,
+        admin_created=True,
+        completed_at=datetime.utcnow()
+    )
+    
+    if existing_setup:
+        await db.setup_wizard.update_one(
+            {"id": existing_setup["id"]},
+            {"$set": setup_wizard.dict()}
+        )
+    else:
+        await db.setup_wizard.insert_one(setup_wizard.dict())
+    
+    # Log activity
+    await log_activity(
+        action="setup_completed",
+        description=f"Initial setup completed for {setup_request.hotel_name}",
+        entity_type="setup"
+    )
+    
+    return {"message": "Setup completed successfully"}
+
+# Authentication Routes
+@api_router.post("/auth/login", response_model=Token)
+async def login(user_credentials: UserLogin):
+    """User login"""
+    # Find user by username
+    user = await db.users.find_one({"username": user_credentials.username})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Verify password
+    if not verify_password(user_credentials.password, user.get("password_hash", "")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Check if user is active
+    if not user.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user"
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    
+    # Update last login
+    await db.users.update_one(
+        {"username": user_credentials.username},
+        {"$set": {"last_login": datetime.utcnow()}}
+    )
+    
+    # Log activity
+    await log_activity(
+        action="user_login",
+        description=f"User {user['username']} logged in",
+        user_name=user["username"],
+        entity_type="auth"
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@api_router.post("/auth/logout")
+async def logout(current_user: UserResponse = Depends(get_current_user)):
+    """User logout (mainly for logging purposes)"""
+    await log_activity(
+        action="user_logout",
+        description=f"User {current_user.username} logged out",
+        user_name=current_user.username,
+        entity_type="auth"
+    )
+    return {"message": "Logged out successfully"}
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: UserResponse = Depends(get_current_user)):
+    """Get current user information"""
+    return current_user
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Send new password to user's email"""
+    # Find user by username or email
+    user = await db.users.find_one({
+        "$or": [
+            {"username": request.username_or_email},
+            {"email": request.username_or_email}
+        ]
+    })
+    
+    if not user:
+        # Don't reveal if user exists or not for security
+        return {"message": "If the account exists, a new password has been sent to the registered email"}
+    
+    if not user.get("email"):
+        raise HTTPException(
+            status_code=400,
+            detail="No email associated with this account"
+        )
+    
+    # Generate new password
+    new_password = generate_random_password()
+    hashed_password = get_password_hash(new_password)
+    
+    # Update user password
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"password_hash": hashed_password}}
+    )
+    
+    # Send email
+    subject = "Password Reset - Hotel Management System"
+    body = f"""
+    Dear {user.get('full_name', user.get('username'))},
+
+    Your password has been reset. Here are your new login credentials:
+
+    Username: {user['username']}
+    New Password: {new_password}
+
+    Please login with these credentials and change your password immediately.
+
+    Best regards,
+    Hotel Management Team
+    """
+    
+    email_sent = await send_email(user["email"], subject, body)
+    
+    if email_sent:
+        # Log activity
+        await log_activity(
+            action="password_reset",
+            description=f"Password reset for user {user['username']}",
+            user_name=user["username"],
+            entity_type="auth"
+        )
+        return {"message": "New password has been sent to your email"}
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to send email. Please contact administrator."
+        )
+
+# Email Settings Routes
+@api_router.get("/email-settings")
+async def get_email_settings_api(current_user: UserResponse = Depends(get_current_active_admin)):
+    """Get email settings (Admin only)"""
+    settings = await get_email_settings()
+    if not settings:
+        return EmailSettings().dict()
+    
+    # Hide sensitive information
+    settings_dict = settings.dict()
+    if settings_dict.get("smtp_password"):
+        settings_dict["smtp_password"] = "***"
+    if settings_dict.get("sendgrid_api_key"):
+        settings_dict["sendgrid_api_key"] = "***"
+    if settings_dict.get("aws_secret_key"):
+        settings_dict["aws_secret_key"] = "***"
+    
+    return settings_dict
+
+@api_router.put("/email-settings")
+async def update_email_settings(
+    settings_update: EmailSettingsUpdate,
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Update email settings (Admin only)"""
+    # Get current settings or create default
+    current_settings = await get_email_settings()
+    if not current_settings:
+        current_settings = EmailSettings()
+    
+    # Update only provided fields
+    update_data = {k: v for k, v in settings_update.dict().items() if v is not None}
+    update_data['updated_at'] = datetime.utcnow()
+    
+    # Check if configuration is complete
+    if settings_update.provider == "smtp":
+        is_configured = all([
+            update_data.get("smtp_host") or current_settings.smtp_host,
+            update_data.get("smtp_username") or current_settings.smtp_username,
+            update_data.get("smtp_password") or current_settings.smtp_password,
+            update_data.get("from_email") or current_settings.from_email
+        ])
+    elif settings_update.provider == "sendgrid":
+        is_configured = all([
+            update_data.get("sendgrid_api_key") or current_settings.sendgrid_api_key,
+            update_data.get("from_email") or current_settings.from_email
+        ])
+    elif settings_update.provider == "ses":
+        is_configured = all([
+            update_data.get("aws_access_key") or current_settings.aws_access_key,
+            update_data.get("aws_secret_key") or current_settings.aws_secret_key,
+            update_data.get("from_email") or current_settings.from_email
+        ])
+    else:
+        is_configured = current_settings.is_configured
+    
+    update_data['is_configured'] = is_configured
+    
+    # Update or create settings
+    if current_settings.id:
+        await db.email_settings.update_one(
+            {"id": current_settings.id},
+            {"$set": update_data}
+        )
+    else:
+        new_settings = EmailSettings(**update_data)
+        await db.email_settings.insert_one(new_settings.dict())
+    
+    # Log activity
+    await log_activity(
+        action="email_settings_updated",
+        description=f"Email settings updated by {current_user.username}",
+        user_name=current_user.username,
+        entity_type="settings"
+    )
+    
+    return {"message": "Email settings updated successfully"}
+
+@api_router.post("/email-settings/test")
+async def test_email_settings(current_user: UserResponse = Depends(get_current_active_admin)):
+    """Test email configuration (Admin only)"""
+    if not current_user.email:
+        raise HTTPException(status_code=400, detail="Admin email not configured")
+    
+    subject = "Test Email - Hotel Management System"
+    body = "This is a test email to verify your email configuration is working correctly."
+    
+    email_sent = await send_email(current_user.email, subject, body)
+    
+    if email_sent:
+        return {"message": "Test email sent successfully"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send test email")
+
 # User Management Routes
 @api_router.get("/users", response_model=List[User])
 async def get_users():
