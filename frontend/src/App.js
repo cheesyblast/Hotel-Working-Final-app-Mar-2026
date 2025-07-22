@@ -2099,102 +2099,155 @@ const Reports = () => {
       const response = await axios.get(`${API}/financial-reports/daily?date=${today}`);
       const reportData = response.data;
       
-      // Prepare Excel data
-      const summaryData = [{
-        'Date': new Date(reportData.date).toLocaleDateString(),
-        'Room Revenue (LKR)': reportData.room_revenue,
-        'Additional Income (LKR)': reportData.additional_income,
-        'Total Revenue (LKR)': reportData.total_revenue,
-        'Total Expenses (LKR)': reportData.total_expenses,
-        'Net Profit (LKR)': reportData.net_profit
-      }];
-
       // Create workbook with multiple sheets
       const wb = XLSX.utils.book_new();
       
-      // Summary sheet
+      // Summary Sheet
+      const summaryData = [
+        { "DAILY FINANCIAL REPORT": `Date: ${reportData.date}`, "": "" },
+        { "DAILY FINANCIAL REPORT": "", "": "" },
+        { "DAILY FINANCIAL REPORT": "INCOME SUMMARY", "": "" },
+        { "DAILY FINANCIAL REPORT": "Cash Income (LKR)", "": reportData.summary["Cash Income (LKR)"] },
+        { "DAILY FINANCIAL REPORT": "Bank Income (LKR)", "": reportData.summary["Bank Income (LKR)"] },
+        { "DAILY FINANCIAL REPORT": "Total Income (LKR)", "": reportData.summary["Total Income (LKR)"] },
+        { "DAILY FINANCIAL REPORT": "", "": "" },
+        { "DAILY FINANCIAL REPORT": "EXPENSE SUMMARY", "": "" },
+        { "DAILY FINANCIAL REPORT": "Cash Expenses (LKR)", "": reportData.summary["Cash Expenses (LKR)"] },
+        { "DAILY FINANCIAL REPORT": "Bank Expenses (LKR)", "": reportData.summary["Bank Expenses (LKR)"] },
+        { "DAILY FINANCIAL REPORT": "Total Expenses (LKR)", "": reportData.summary["Total Expenses (LKR)"] },
+        { "DAILY FINANCIAL REPORT": "", "": "" },
+        { "DAILY FINANCIAL REPORT": "BALANCE SUMMARY", "": "" },
+        { "DAILY FINANCIAL REPORT": "Net Cash Balance (LKR)", "": reportData.cash_balance },
+        { "DAILY FINANCIAL REPORT": "Net Bank Balance (LKR)", "": reportData.bank_balance },
+        { "DAILY FINANCIAL REPORT": "Total Net Balance (LKR)", "": reportData.total_balance }
+      ];
+      
       const summaryWs = XLSX.utils.json_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, summaryWs, 'Daily Summary');
       
-      // Sales details sheet
-      if (reportData.sales_details && reportData.sales_details.length > 0) {
-        const salesData = reportData.sales_details.map(sale => ({
-          'Customer': sale.customer_name,
-          'Room': sale.room_number,
-          'Payment Method': sale.payment_method,
-          'Amount (LKR)': sale.total_amount,
-          'Date': new Date(sale.date).toLocaleDateString()
-        }));
-        const salesWs = XLSX.utils.json_to_sheet(salesData);
-        XLSX.utils.book_append_sheet(wb, salesWs, 'Sales Details');
-      }
+      // Style the summary sheet
+      summaryWs['!cols'] = [
+        { width: 30 }, // Column A
+        { width: 20 }  // Column B
+      ];
       
-      // Income details sheet
+      XLSX.utils.book_append_sheet(wb, summaryWs, '📊 Summary');
+      
+      // Income Details Sheet
       if (reportData.income_details && reportData.income_details.length > 0) {
-        const incomeData = reportData.income_details.map(income => ({
-          'Description': income.description,
-          'Category': income.category,
-          'Payment Method': income.payment_method || 'Cash',
-          'Amount (LKR)': income.amount,
-          'Date': new Date(income.income_date).toLocaleDateString()
-        }));
-        const incomeWs = XLSX.utils.json_to_sheet(incomeData);
-        XLSX.utils.book_append_sheet(wb, incomeWs, 'Income Details');
+        const incomeWs = XLSX.utils.json_to_sheet(reportData.income_details);
+        incomeWs['!cols'] = [
+          { width: 18 }, // Date
+          { width: 25 }, // Guest Name
+          { width: 15 }, // Category
+          { width: 35 }, // Description
+          { width: 15 }, // Amount
+          { width: 15 }, // Payment Method
+          { width: 20 }  // Added By
+        ];
+        XLSX.utils.book_append_sheet(wb, incomeWs, '💰 Income Details');
       }
       
-      // Expense details sheet
+      // Expense Details Sheet
       if (reportData.expense_details && reportData.expense_details.length > 0) {
-        const expenseData = reportData.expense_details.map(expense => ({
-          'Description': expense.description,
-          'Category': expense.category,
-          'Payment Method': expense.payment_method || 'Cash',
-          'Amount (LKR)': expense.amount,
-          'Date': new Date(expense.expense_date).toLocaleDateString()
-        }));
-        const expenseWs = XLSX.utils.json_to_sheet(expenseData);
-        XLSX.utils.book_append_sheet(wb, expenseWs, 'Expense Details');
+        const expenseWs = XLSX.utils.json_to_sheet(reportData.expense_details);
+        expenseWs['!cols'] = [
+          { width: 18 }, // Date
+          { width: 15 }, // Category
+          { width: 35 }, // Description
+          { width: 15 }, // Amount
+          { width: 15 }, // Payment Method
+          { width: 20 }  // Added By
+        ];
+        XLSX.utils.book_append_sheet(wb, expenseWs, '💸 Expense Details');
       }
       
-      const filename = `daily_financial_report_${today}.xlsx`;
-      XLSX.writeFile(wb, filename);
+      // Download the file
+      XLSX.writeFile(wb, `Daily_Financial_Report_${reportData.date}.xlsx`);
       
-      alert('Daily financial report downloaded successfully!');
     } catch (error) {
       console.error('Error downloading daily report:', error);
-      alert('Error downloading daily report. Please try again.');
+      alert('Error downloading daily report: ' + (error.response?.data?.detail || error.message));
     }
   };
 
   const handleDownloadMonthlyReport = async () => {
     try {
       const today = new Date();
-      const response = await axios.get(`${API}/financial-reports/monthly?year=${today.getFullYear()}&month=${today.getMonth() + 1}`);
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      
+      const response = await axios.get(`${API}/financial-reports/monthly?year=${year}&month=${month}`);
       const reportData = response.data;
       
-      // Prepare Excel data
-      const summaryData = [{
-        'Month': reportData.month_name,
-        'Room Revenue (LKR)': reportData.room_revenue,
-        'Additional Income (LKR)': reportData.additional_income,
-        'Total Revenue (LKR)': reportData.total_revenue,
-        'Total Expenses (LKR)': reportData.total_expenses,
-        'Net Profit (LKR)': reportData.net_profit,
-        'Total Sales': reportData.sales_count,
-        'Total Income Entries': reportData.income_count,
-        'Total Expense Entries': reportData.expense_count
-      }];
-
+      // Create workbook with multiple sheets
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Monthly Summary');
       
-      const filename = `monthly_financial_report_${reportData.year}_${String(reportData.month).padStart(2, '0')}.xlsx`;
-      XLSX.writeFile(wb, filename);
+      // Summary Sheet
+      const summaryData = [
+        { "MONTHLY FINANCIAL REPORT": `Month: ${reportData.month}`, "": "" },
+        { "MONTHLY FINANCIAL REPORT": "", "": "" },
+        { "MONTHLY FINANCIAL REPORT": "INCOME SUMMARY", "": "" },
+        { "MONTHLY FINANCIAL REPORT": "Cash Income (LKR)", "": reportData.summary["Cash Income (LKR)"] },
+        { "MONTHLY FINANCIAL REPORT": "Bank Income (LKR)", "": reportData.summary["Bank Income (LKR)"] },
+        { "MONTHLY FINANCIAL REPORT": "Total Income (LKR)", "": reportData.summary["Total Income (LKR)"] },
+        { "MONTHLY FINANCIAL REPORT": "", "": "" },
+        { "MONTHLY FINANCIAL REPORT": "EXPENSE SUMMARY", "": "" },
+        { "MONTHLY FINANCIAL REPORT": "Cash Expenses (LKR)", "": reportData.summary["Cash Expenses (LKR)"] },
+        { "MONTHLY FINANCIAL REPORT": "Bank Expenses (LKR)", "": reportData.summary["Bank Expenses (LKR)"] },
+        { "MONTHLY FINANCIAL REPORT": "Total Expenses (LKR)", "": reportData.summary["Total Expenses (LKR)"] },
+        { "MONTHLY FINANCIAL REPORT": "", "": "" },
+        { "MONTHLY FINANCIAL REPORT": "BALANCE SUMMARY", "": "" },
+        { "MONTHLY FINANCIAL REPORT": "Net Cash Balance (LKR)", "": reportData.cash_balance },
+        { "MONTHLY FINANCIAL REPORT": "Net Bank Balance (LKR)", "": reportData.bank_balance },
+        { "MONTHLY FINANCIAL REPORT": "Total Net Balance (LKR)", "": reportData.total_balance }
+      ];
       
-      alert('Monthly financial report downloaded successfully!');
+      const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+      
+      // Style the summary sheet
+      summaryWs['!cols'] = [
+        { width: 30 }, // Column A
+        { width: 20 }  // Column B
+      ];
+      
+      XLSX.utils.book_append_sheet(wb, summaryWs, '📊 Summary');
+      
+      // Income Details Sheet
+      if (reportData.income_details && reportData.income_details.length > 0) {
+        const incomeWs = XLSX.utils.json_to_sheet(reportData.income_details);
+        incomeWs['!cols'] = [
+          { width: 18 }, // Date
+          { width: 25 }, // Guest Name
+          { width: 15 }, // Category
+          { width: 35 }, // Description
+          { width: 15 }, // Amount
+          { width: 15 }, // Payment Method
+          { width: 20 }  // Added By
+        ];
+        XLSX.utils.book_append_sheet(wb, incomeWs, '💰 Income Details');
+      }
+      
+      // Expense Details Sheet
+      if (reportData.expense_details && reportData.expense_details.length > 0) {
+        const expenseWs = XLSX.utils.json_to_sheet(reportData.expense_details);
+        expenseWs['!cols'] = [
+          { width: 18 }, // Date
+          { width: 15 }, // Category
+          { width: 35 }, // Description
+          { width: 15 }, // Amount
+          { width: 15 }, // Payment Method
+          { width: 20 }  // Added By
+        ];
+        XLSX.utils.book_append_sheet(wb, expenseWs, '💸 Expense Details');
+      }
+      
+      // Download the file
+      const monthName = reportData.month.replace(' ', '_');
+      XLSX.writeFile(wb, `Monthly_Financial_Report_${monthName}.xlsx`);
+      
     } catch (error) {
       console.error('Error downloading monthly report:', error);
-      alert('Error downloading monthly report. Please try again.');
+      alert('Error downloading monthly report: ' + (error.response?.data?.detail || error.message));
     }
   };
 
