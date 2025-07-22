@@ -428,6 +428,7 @@ class Settings(BaseModel):
     hotel_email: str = ""
     hotel_phone: str = ""
     currency: str = "LKR"
+    timezone: str = "UTC"  # Hotel timezone for all timestamps
     check_in_time: str = "14:00"
     check_out_time: str = "12:00"
     default_room_rate: float = 5000.0
@@ -443,6 +444,7 @@ class SettingsUpdate(BaseModel):
     hotel_email: Optional[str] = None
     hotel_phone: Optional[str] = None
     currency: Optional[str] = None
+    timezone: Optional[str] = None
     check_in_time: Optional[str] = None
     check_out_time: Optional[str] = None
     default_room_rate: Optional[float] = None
