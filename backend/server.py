@@ -512,6 +512,7 @@ async def complete_setup(setup_request: SetupWizardRequest):
         "hotel_name": setup_request.hotel_name,
         "hotel_address": setup_request.hotel_address,
         "hotel_email": setup_request.hotel_email,
+        "timezone": setup_request.timezone,
         "updated_at": datetime.utcnow()
     }
     
