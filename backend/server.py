@@ -261,6 +261,7 @@ class SetupWizard(BaseModel):
     hotel_name: str = ""
     hotel_address: str = ""
     hotel_email: str = ""
+    timezone: str = "UTC"
     admin_created: bool = False
     completed_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
