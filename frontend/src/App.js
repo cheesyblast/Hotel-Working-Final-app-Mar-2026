@@ -225,6 +225,34 @@ const SetupWizard = () => {
             />
           </div>
 
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Hotel Timezone
+            </label>
+            <select
+              name="timezone"
+              value={formData.timezone}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+            >
+              <option value="Asia/Colombo">Asia/Colombo (Sri Lanka)</option>
+              <option value="Asia/Kolkata">Asia/Kolkata (India)</option>
+              <option value="Asia/Dubai">Asia/Dubai (UAE)</option>
+              <option value="Asia/Singapore">Asia/Singapore</option>
+              <option value="America/New_York">America/New_York (EST)</option>
+              <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+              <option value="Europe/London">Europe/London (GMT)</option>
+              <option value="Europe/Paris">Europe/Paris (CET)</option>
+              <option value="Australia/Sydney">Australia/Sydney</option>
+              <option value="Asia/Tokyo">Asia/Tokyo (Japan)</option>
+              <option value="UTC">UTC</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              All timestamps in the application will use this timezone
+            </p>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
