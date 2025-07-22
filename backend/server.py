@@ -2303,7 +2303,10 @@ async def get_daily_financial_summary():
     }
 
 @api_router.get("/financial-reports/daily")
-async def get_daily_financial_report(date: Optional[str] = None):
+async def get_daily_financial_report(
+    date: Optional[str] = None,
+    current_user: UserResponse = Depends(get_current_user)
+):
     """Get financial report for a specific day"""
     if not date:
         report_date = datetime.now().date()
