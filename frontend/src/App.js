@@ -4785,6 +4785,27 @@ const Settings = () => {
     }
   };
 
+  const handleSaveEmailSettings = async () => {
+    try {
+      await axios.put(`${API}/email-settings`, emailSettings);
+      await fetchEmailSettings(); // Refresh settings
+      alert('Email settings updated successfully!');
+    } catch (error) {
+      alert('Error updating email settings: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setTestingEmail(true);
+    try {
+      await axios.post(`${API}/email-settings/test`);
+      alert('Test email sent successfully! Check your inbox.');
+    } catch (error) {
+      alert('Failed to send test email: ' + (error.response?.data?.detail || error.message));
+    }
+    setTestingEmail(false);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
