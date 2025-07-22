@@ -5148,6 +5148,217 @@ const Settings = () => {
         </div>
       )}
 
+      {/* Email Settings Tab */}
+      {activeTab === 'email' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Email Configuration</h2>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleTestEmail}
+                  disabled={!emailSettings.is_configured || testingEmail}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {testingEmail ? 'Sending...' : 'Test Email'}
+                </button>
+                <button
+                  onClick={handleSaveEmailSettings}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Save Settings
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Email Provider Selection */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email Provider
+                </label>
+                <select
+                  value={emailSettings.provider}
+                  onChange={(e) => setEmailSettings({...emailSettings, provider: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="smtp">Custom SMTP</option>
+                  <option value="sendgrid">SendGrid</option>
+                  <option value="ses">AWS SES</option>
+                  <option value="gmail">Gmail SMTP</option>
+                </select>
+              </div>
+
+              {/* Common Fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  From Email
+                </label>
+                <input
+                  type="email"
+                  value={emailSettings.from_email}
+                  onChange={(e) => setEmailSettings({...emailSettings, from_email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="noreply@yourhotel.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  From Name
+                </label>
+                <input
+                  type="text"
+                  value={emailSettings.from_name}
+                  onChange={(e) => setEmailSettings({...emailSettings, from_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="Your Hotel Name"
+                />
+              </div>
+
+              {/* SMTP/Gmail Settings */}
+              {(emailSettings.provider === 'smtp' || emailSettings.provider === 'gmail') && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SMTP Host
+                    </label>
+                    <input
+                      type="text"
+                      value={emailSettings.smtp_host}
+                      onChange={(e) => setEmailSettings({...emailSettings, smtp_host: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder={emailSettings.provider === 'gmail' ? 'smtp.gmail.com' : 'mail.yourprovider.com'}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SMTP Port
+                    </label>
+                    <input
+                      type="number"
+                      value={emailSettings.smtp_port}
+                      onChange={(e) => setEmailSettings({...emailSettings, smtp_port: parseInt(e.target.value)})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="587"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SMTP Username
+                    </label>
+                    <input
+                      type="text"
+                      value={emailSettings.smtp_username}
+                      onChange={(e) => setEmailSettings({...emailSettings, smtp_username: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="username@yourprovider.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SMTP Password
+                    </label>
+                    <input
+                      type="password"
+                      value={emailSettings.smtp_password}
+                      onChange={(e) => setEmailSettings({...emailSettings, smtp_password: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder={emailSettings.smtp_password ? '••••••••' : 'Enter password'}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* SendGrid Settings */}
+              {emailSettings.provider === 'sendgrid' && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    SendGrid API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={emailSettings.sendgrid_api_key}
+                    onChange={(e) => setEmailSettings({...emailSettings, sendgrid_api_key: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder={emailSettings.sendgrid_api_key ? '••••••••' : 'SG.xxxxxxxxxxxxxxxx'}
+                  />
+                </div>
+              )}
+
+              {/* AWS SES Settings */}
+              {emailSettings.provider === 'ses' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      AWS Access Key
+                    </label>
+                    <input
+                      type="text"
+                      value={emailSettings.aws_access_key}
+                      onChange={(e) => setEmailSettings({...emailSettings, aws_access_key: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="AKIAIOSFODNN7EXAMPLE"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      AWS Secret Key
+                    </label>
+                    <input
+                      type="password"
+                      value={emailSettings.aws_secret_key}
+                      onChange={(e) => setEmailSettings({...emailSettings, aws_secret_key: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder={emailSettings.aws_secret_key ? '••••••••' : 'Enter secret key'}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      AWS Region
+                    </label>
+                    <select
+                      value={emailSettings.aws_region}
+                      onChange={(e) => setEmailSettings({...emailSettings, aws_region: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="us-east-1">US East (Virginia)</option>
+                      <option value="us-west-2">US West (Oregon)</option>
+                      <option value="eu-west-1">EU (Ireland)</option>
+                      <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Configuration Status */}
+            <div className="mt-6 p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
+              <div className="flex items-center">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  emailSettings.is_configured 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' 
+                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+                }`}>
+                  {emailSettings.is_configured ? '✓ Configured' : '⚠ Not Configured'}
+                </span>
+                <span className="ml-3 text-sm text-gray-600 dark:text-gray-300">
+                  {emailSettings.is_configured 
+                    ? 'Email service is ready to send notifications'
+                    : 'Complete the configuration to enable email notifications'
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Activity Logs Tab */}
       {activeTab === 'logs' && (
         <div className="space-y-6">
