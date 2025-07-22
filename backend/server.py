@@ -1674,7 +1674,7 @@ async def initialize_sample_data():
     if existing_users == 0:
         default_admin = User(
             username="admin",
-            password="admin123",  # In production, this should be hashed
+            password_hash=get_password_hash("admin123"),
             full_name="System Administrator",
             role="Admin",
             email="admin@hotel.com"
@@ -1684,7 +1684,7 @@ async def initialize_sample_data():
         # Create sample staff user
         sample_staff = User(
             username="staff1",
-            password="staff123",
+            password_hash=get_password_hash("staff123"),
             full_name="Hotel Staff",
             role="Staff",
             email="staff@hotel.com"
