@@ -947,7 +947,8 @@ async def get_activity_logs(
     limit: int = 50,
     action: str = "",
     user_name: str = "",
-    entity_type: str = ""
+    entity_type: str = "",
+    current_user: UserResponse = Depends(get_current_user)
 ):
     """Get activity logs with pagination and filtering"""
     skip = (page - 1) * limit
@@ -976,7 +977,7 @@ async def get_activity_logs(
     }
 
 @api_router.post("/activity-logs")
-async def create_activity_log(log: ActivityLogCreate):
+async def create_activity_log(log: ActivityLogCreate, current_user: UserResponse = Depends(get_current_user)):
     """Create a new activity log entry"""
     activity = ActivityLog(**log.dict())
     await db.activity_logs.insert_one(activity.dict())
