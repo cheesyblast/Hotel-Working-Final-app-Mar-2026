@@ -2350,7 +2350,11 @@ async def get_daily_financial_report(
     }
 
 @api_router.get("/financial-reports/monthly")
-async def get_monthly_financial_report(year: int = None, month: int = None):
+async def get_monthly_financial_report(
+    year: int = None,
+    month: int = None,
+    current_user: UserResponse = Depends(get_current_user)
+):
     """Get financial report for a specific month"""
     if not year or not month:
         today = datetime.now().date()
