@@ -891,7 +891,7 @@ async def toggle_user_status(user_id: str, current_user: UserResponse = Depends(
 
 # Settings Management Routes
 @api_router.get("/settings")
-async def get_settings():
+async def get_settings(current_user: UserResponse = Depends(get_current_user)):
     """Get hotel settings"""
     settings = await db.settings.find_one()
     if not settings:
@@ -902,8 +902,11 @@ async def get_settings():
     return Settings(**settings)
 
 @api_router.put("/settings")
-async def update_settings(settings_update: SettingsUpdate):
-    """Update hotel settings"""
+async def update_settings(
+    settings_update: SettingsUpdate,
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Update hotel settings (Admin only)"""
     # Get current settings or create default
     current_settings = await db.settings.find_one()
     if not current_settings:
@@ -913,6 +916,7 @@ async def update_settings(settings_update: SettingsUpdate):
     # Update only provided fields
     update_data = {k: v for k, v in settings_update.dict().items() if v is not None}
     update_data['updated_at'] = datetime.utcnow()
+    update_data['updated_by'] = current_user.username
     
     result = await db.settings.update_one(
         {"id": current_settings.get('id', current_settings.get('_id'))},
@@ -929,6 +933,7 @@ async def update_settings(settings_update: SettingsUpdate):
     await log_activity(
         action="settings_updated",
         description=f"Hotel settings updated: {', '.join(updated_fields)}",
+        user_name=current_user.username,
         entity_type="settings",
         details=update_data
     )
