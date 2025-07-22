@@ -215,7 +215,7 @@ class FinancialSummary(BaseModel):
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     username: str
-    password: str  # In real app, this should be hashed
+    password_hash: str  # Hashed password
     full_name: str
     role: str = "Staff"  # Admin, Manager, Staff
     email: str = ""
@@ -229,6 +229,74 @@ class UserCreate(BaseModel):
     full_name: str
     role: str = "Staff"
     email: str = ""
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    full_name: str
+    role: str
+    email: str
+    is_active: bool
+    created_at: datetime
+    last_login: Optional[datetime] = None
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+class SetupWizard(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    is_completed: bool = False
+    hotel_name: str = ""
+    hotel_address: str = ""
+    hotel_email: str = ""
+    admin_created: bool = False
+    completed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SetupWizardRequest(BaseModel):
+    hotel_name: str
+    hotel_address: str
+    hotel_email: str
+
+class EmailSettings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    provider: str = "smtp"  # sendgrid, gmail, ses, smtp
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    sendgrid_api_key: str = ""
+    aws_access_key: str = ""
+    aws_secret_key: str = ""
+    aws_region: str = "us-east-1"
+    from_email: str = ""
+    from_name: str = ""
+    is_configured: bool = False
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class EmailSettingsUpdate(BaseModel):
+    provider: Optional[str] = None
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    sendgrid_api_key: Optional[str] = None
+    aws_access_key: Optional[str] = None
+    aws_secret_key: Optional[str] = None
+    aws_region: Optional[str] = None
+    from_email: Optional[str] = None
+    from_name: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    username_or_email: str
 
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
