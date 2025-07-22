@@ -4810,6 +4810,63 @@ const Settings = () => {
     setTestingEmail(false);
   };
 
+  const handleCompleteReset = async () => {
+    // Multiple confirmation dialogs for safety
+    const firstConfirm = window.confirm(
+      '⚠️ DANGER: COMPLETE SYSTEM RESET\n\n' +
+      'This will DELETE ALL DATA including:\n' +
+      '• All rooms and bookings\n' +
+      '• All guest records\n' +
+      '• All financial data\n' +
+      '• All users (except admin)\n' +
+      '• All activity logs\n\n' +
+      'Are you sure you want to continue?'
+    );
+    
+    if (!firstConfirm) return;
+    
+    const secondConfirm = window.confirm(
+      '🔥 FINAL WARNING: This action is IRREVERSIBLE!\n\n' +
+      'All your hotel data will be permanently deleted.\n' +
+      'Only hotel name and admin account will be preserved.\n\n' +
+      'Type YES in the next dialog to confirm.'
+    );
+    
+    if (!secondConfirm) return;
+    
+    const typeConfirm = window.prompt(
+      'Please type "DELETE ALL DATA" to confirm complete reset:'
+    );
+    
+    if (typeConfirm !== 'DELETE ALL DATA') {
+      alert('Reset cancelled - confirmation text did not match.');
+      return;
+    }
+    
+    setResetting(true);
+    try {
+      const response = await axios.post(`${API}/admin/complete-reset`);
+      alert(
+        '✅ COMPLETE RESET SUCCESSFUL!\n\n' +
+        'All data has been cleared:\n' +
+        `• Rooms cleared: ${response.data.reset_summary.rooms || 0}\n` +
+        `• Bookings cleared: ${response.data.reset_summary.bookings || 0}\n` +
+        `• Customers cleared: ${response.data.reset_summary.customers || 0}\n` +
+        `• Expenses cleared: ${response.data.reset_summary.expenses || 0}\n` +
+        `• Users cleared: ${response.data.reset_summary.users_except_admin || 0}\n\n` +
+        'Hotel name and admin account preserved.\n' +
+        'Refreshing page...'
+      );
+      
+      // Refresh the page to show clean state
+      window.location.reload();
+      
+    } catch (error) {
+      alert('Reset failed: ' + (error.response?.data?.detail || error.message));
+    }
+    setResetting(false);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
