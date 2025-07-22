@@ -194,6 +194,7 @@ class Income(BaseModel):
     category: str  # Restaurant, Events, Laundry, Spa, Other Services, etc.
     payment_method: str = "Cash"  # Cash, Card, Bank Transfer
     income_date: date
+    guest_name: str = ""  # Associated guest name if applicable
     created_by: str = "Admin"
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -201,7 +202,9 @@ class IncomeCreate(BaseModel):
     description: str
     amount: float
     category: str
+    payment_method: str = "Cash"  # Cash, Card, Bank Transfer
     income_date: date
+    guest_name: str = ""  # Associated guest name if applicable
 
 class FinancialSummary(BaseModel):
     total_revenue: float
