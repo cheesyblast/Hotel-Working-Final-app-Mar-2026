@@ -165,6 +165,18 @@ backend:
         agent: "main"
         comment: "Implemented forgot password functionality with /api/auth/forgot-password endpoint. System generates new random password, updates user's hashed password, and sends email with new credentials. Includes user lookup by username or email, email validation, and activity logging. Integrates with email service configuration for sending password reset emails."
 
+  - task: "Short Time Booking Creation Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed Short Time booking creation error. Backend: Enhanced date handling logic to properly process Short Time bookings by ensuring check_out_date is set to same day as check_in_date, improved date string to date object conversion, and added proper MongoDB datetime storage format. Frontend: Added logic to properly handle check_out_date for Short Time bookings by removing the field from request (letting backend set it) and converting empty strings to null for proper backend processing. Tested both Short Time and Night Stay bookings - both working correctly with proper date handling."
+
   - task: "Complete Database Reset Feature - Admin Only"
     implemented: true
     working: true
