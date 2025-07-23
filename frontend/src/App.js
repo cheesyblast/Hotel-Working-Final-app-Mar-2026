@@ -641,6 +641,15 @@ const Dashboard = () => {
     }
   };
 
+  const fetchAvailableChannels = async () => {
+    try {
+      const response = await axios.get(`${API}/booking-channels`);
+      setAvailableChannels(response.data.filter(channel => channel.is_active));
+    } catch (error) {
+      console.error('Error fetching booking channels:', error);
+    }
+  };
+
   // Check room availability function
   const checkRoomAvailability = async () => {
     if (!availabilityDates.check_in_date || !availabilityDates.check_out_date) {
