@@ -2214,6 +2214,78 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Status Selection Modal for Past Date Bookings */}
+      {showStatusSelectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Past Date Booking Detected</h3>
+            <p className="text-gray-700 mb-4">
+              You're creating a booking with a past check-in date. Please choose how you'd like to add this booking:
+            </p>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  id="upcoming"
+                  name="booking_status"
+                  value="Upcoming"
+                  checked={selectedBookingStatus === 'Upcoming'}
+                  onChange={(e) => setSelectedBookingStatus(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <label htmlFor="upcoming" className="font-medium text-gray-900 cursor-pointer">
+                    Add as Upcoming Booking
+                  </label>
+                  <p className="text-sm text-gray-600">
+                    The booking will appear in the "Upcoming Bookings" section and you can check the guest in later.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  id="checked_in"
+                  name="booking_status"
+                  value="Checked In"
+                  checked={selectedBookingStatus === 'Checked In'}
+                  onChange={(e) => setSelectedBookingStatus(e.target.value)}
+                  className="mt-1"
+                />
+                <div>
+                  <label htmlFor="checked_in" className="font-medium text-gray-900 cursor-pointer">
+                    Add as Checked In Customer
+                  </label>
+                  <p className="text-sm text-gray-600">
+                    The guest will immediately appear in the "Checked In Customers" section and the room will be marked as occupied.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowStatusSelectionModal(false);
+                  setSelectedBookingStatus('Upcoming');
+                }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => createBookingWithStatus(selectedBookingStatus)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Create Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Print Invoice Dialog */}
       {showPrintInvoiceDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
