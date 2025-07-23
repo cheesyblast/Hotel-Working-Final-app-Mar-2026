@@ -1504,8 +1504,21 @@ async def get_upcoming_bookings():
     return [Booking(**booking) for booking in bookings]
 
 @api_router.post("/bookings", response_model=Booking)
-async def create_booking(booking: BookingCreate):
+async def create_booking(booking: BookingCreate, current_user: UserResponse = Depends(get_current_user)):
     booking_dict = booking.dict()
+    
+    # Validate booking channel if provided
+    if booking_dict.get('booking_channel_id'):
+        channel = await db.booking_channels.find_one({"id": booking_dict['booking_channel_id']})
+        if not channel:
+            raise HTTPException(status_code=400, detail="Invalid booking channel")
+        if not channel.get('is_active', True):
+            raise HTTPException(status_code=400, detail="Booking channel is inactive")
+        # Update channel name from database
+        booking_dict['booking_channel_name'] = channel['channel_name']
+    else:
+        # Default to Direct booking if no channel specified
+        booking_dict['booking_channel_name'] = "Direct"
     
     # Convert date strings to date objects for processing
     if isinstance(booking_dict.get('check_in_date'), str):
@@ -1537,14 +1550,16 @@ async def create_booking(booking: BookingCreate):
     # Log activity
     await log_activity(
         action="booking_created",
-        description=f"New booking created for {booking.guest_name} in room {booking.room_number}",
+        description=f"New booking created for {booking.guest_name} in room {booking.room_number} via {booking_dict['booking_channel_name']}",
+        user_name=current_user.username,
         entity_type="booking",
         entity_id=booking_obj.id,
         details={
             "guest_name": booking.guest_name,
             "room_number": booking.room_number,
             "booking_amount": booking.booking_amount,
-            "stay_type": booking.stay_type
+            "stay_type": booking.stay_type,
+            "booking_channel": booking_dict['booking_channel_name']
         }
     )
     
