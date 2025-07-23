@@ -573,6 +573,7 @@ const Dashboard = () => {
     additional_notes: ''
   });
   const [editBookingData, setEditBookingData] = useState({
+    room_number: '',
     check_in_date: '',
     check_out_date: '',
     additional_notes: ''
