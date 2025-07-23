@@ -2647,6 +2647,7 @@ async def get_daily_financial_report(
                 "Description": income.get("description", ""),
                 "Amount (LKR)": income.get("amount", 0),
                 "Payment Method": income.get("payment_method", "Cash"),
+                "Channel": "Direct",  # Income entries are typically direct
                 "Added By": income.get("added_by", "N/A")
             })
         
@@ -2659,6 +2660,7 @@ async def get_daily_financial_report(
                 "Description": f"Room {booking.get('room_number', 'N/A')} - {booking.get('stay_type', 'N/A')}",
                 "Amount (LKR)": booking.get("booking_amount", 0),
                 "Payment Method": booking.get("payment_method", "Cash"),
+                "Channel": booking.get("booking_channel_name", "Direct"),
                 "Added By": "System (Check-in)"
             })
         
