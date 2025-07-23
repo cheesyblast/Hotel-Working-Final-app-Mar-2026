@@ -155,6 +155,7 @@ class BookingCreate(BaseModel):
     booking_channel_id: str = ""  # ID of the booking channel
     booking_channel_name: str = "Direct"  # Name of the booking channel for display
     additional_notes: str = ""
+    booking_status: str = "Upcoming"  # "Upcoming" or "Checked In" - for past date bookings
 
 class BookingUpdate(BaseModel):
     room_number: Optional[str] = None
