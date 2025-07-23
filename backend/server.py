@@ -1943,6 +1943,63 @@ async def initialize_sample_data():
         )
         await db.settings.insert_one(default_settings.dict())
     
+    # Create default booking channels if none exist
+    existing_channels = await db.booking_channels.count_documents({})
+    if existing_channels == 0:
+        default_channels = [
+            BookingChannel(
+                channel_name="Direct",
+                channel_type="Direct",
+                commission_rate=0.0,
+                contact_email="",
+                contact_phone="",
+                is_active=True
+            ),
+            BookingChannel(
+                channel_name="Booking.com",
+                channel_type="OTA",
+                commission_rate=15.0,
+                contact_email="partners@booking.com",
+                contact_phone="",
+                is_active=True
+            ),
+            BookingChannel(
+                channel_name="Expedia",
+                channel_type="OTA", 
+                commission_rate=18.0,
+                contact_email="partners@expedia.com",
+                contact_phone="",
+                is_active=True
+            ),
+            BookingChannel(
+                channel_name="Agoda",
+                channel_type="OTA",
+                commission_rate=16.5,
+                contact_email="partners@agoda.com",
+                contact_phone="",
+                is_active=True
+            ),
+            BookingChannel(
+                channel_name="Walk-in",
+                channel_type="Direct",
+                commission_rate=0.0,
+                contact_email="",
+                contact_phone="",
+                is_active=True
+            ),
+            BookingChannel(
+                channel_name="Corporate",
+                channel_type="Corporate",
+                commission_rate=5.0,
+                contact_email="corporate@hotel.com",
+                contact_phone="",
+                is_active=True
+            )
+        ]
+        
+        for channel in default_channels:
+            await db.booking_channels.insert_one(channel.dict())
+    
     return {"message": "Sample data initialized successfully"}
 
 # Guest Management Routes
