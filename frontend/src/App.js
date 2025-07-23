@@ -4928,6 +4928,47 @@ const Settings = () => {
     setTestingEmail(false);
   };
 
+  const handleCreateChannel = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/booking-channels`, newChannel);
+      setShowCreateChannelModal(false);
+      setNewChannel({
+        channel_name: '',
+        channel_type: 'OTA',
+        commission_rate: 0,
+        contact_email: '',
+        contact_phone: ''
+      });
+      await fetchBookingChannels();
+      alert('Booking channel created successfully!');
+    } catch (error) {
+      alert('Error creating booking channel: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleToggleChannelStatus = async (channelId) => {
+    try {
+      await axios.put(`${API}/booking-channels/${channelId}/toggle-status`);
+      await fetchBookingChannels();
+      alert('Channel status updated successfully!');
+    } catch (error) {
+      alert('Error updating channel status: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleDeleteChannel = async (channelId, channelName) => {
+    if (window.confirm(`Are you sure you want to delete the "${channelName}" booking channel?`)) {
+      try {
+        await axios.delete(`${API}/booking-channels/${channelId}`);
+        await fetchBookingChannels();
+        alert('Booking channel deleted successfully!');
+      } catch (error) {
+        alert('Error deleting booking channel: ' + (error.response?.data?.detail || error.message));
+      }
+    }
+  };
+
   const handleCompleteReset = async () => {
     // Multiple confirmation dialogs for safety
     const firstConfirm = window.confirm(
