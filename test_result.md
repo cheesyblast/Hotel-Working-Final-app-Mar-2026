@@ -256,8 +256,11 @@ frontend:
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: false
+        agent: "testing"
+        comment: "PARTIALLY WORKING - Comprehensive testing completed with 87.5% success rate (7/8 tests passed). ✅ WORKING FEATURES: (1) Normal future date bookings work correctly with 'Upcoming' status. (2) Past date bookings with booking_status='Upcoming' are created correctly and maintain 'Upcoming' status without affecting room status. (3) Past date bookings with booking_status='Checked In' work perfectly - automatically create customer records, update room status to 'Occupied', and set room's current guest and dates correctly. (4) Short Time bookings handle dates correctly (same check-in/check-out dates). (5) Booking listings show appropriate bookings in correct categories. ❌ CRITICAL ISSUE FOUND: Room availability validation is completely missing in the booking creation endpoint (POST /api/bookings). The system allows double bookings for the same room and overlapping dates. Confirmed by creating multiple bookings for the same occupied room - all were accepted with 200 status instead of being rejected. This is a major bug that needs immediate attention. ✅ AUTHENTICATION: JWT authentication working correctly with admin credentials (admin/admin123). The core past date booking functionality with status selection is implemented and working, but the missing room availability validation is a critical security/business logic flaw."
       - working: false
         agent: "main"
         comment: "Implemented past date booking functionality. Backend: Enhanced BookingCreate model with booking_status field, modified booking creation endpoint to handle 'Upcoming' vs 'Checked In' status, automatically creates customer record and updates room status for 'Checked In' bookings. Frontend: Added status selection modal that appears when past dates are detected, user can choose between 'Upcoming Booking' or 'Checked In Customer', enhanced handleNewBooking function to detect past dates and show appropriate dialog. Need to test the complete workflow."
