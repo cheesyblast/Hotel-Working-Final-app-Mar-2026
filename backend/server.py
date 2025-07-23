@@ -1567,25 +1567,112 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
     return booking_obj
 
 @api_router.put("/bookings/{booking_id}")
-async def update_booking(booking_id: str, booking_update: BookingUpdate):
-    update_data = {}
+async def update_booking(
+    booking_id: str, 
+    booking_update: BookingUpdate, 
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update booking details - allows room changes only for upcoming bookings"""
+    # Get the current booking
+    current_booking = await db.bookings.find_one({"id": booking_id})
+    if not current_booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
     
-    # Only update fields that are provided
+    # Check if booking can be modified
+    booking_status = current_booking.get('status', 'Upcoming')
+    if booking_status not in ['Upcoming']:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot modify booking with status '{booking_status}'. Only 'Upcoming' bookings can be modified."
+        )
+    
+    update_data = {}
+    changes_made = []
+    
+    # Handle room number change with availability validation
+    if booking_update.room_number is not None:
+        new_room = booking_update.room_number
+        current_room = current_booking.get('room_number')
+        
+        if new_room != current_room:
+            # Check if new room is available for the booking dates
+            check_in = current_booking.get('check_in_date')
+            check_out = current_booking.get('check_out_date')
+            
+            if isinstance(check_in, datetime):
+                check_in_date = check_in.date()
+            else:
+                check_in_date = check_in
+                
+            if isinstance(check_out, datetime):
+                check_out_date = check_out.date()
+            else:
+                check_out_date = check_out
+            
+            # Check for conflicting bookings in the new room (excluding current booking)
+            conflicting_bookings = await db.bookings.find({
+                "room_number": new_room,
+                "id": {"$ne": booking_id},  # Exclude current booking
+                "status": {"$in": ["Upcoming", "Checked In"]},
+                "$or": [
+                    {
+                        "check_in_date": {"$lte": datetime.combine(check_out_date, datetime.min.time())},
+                        "check_out_date": {"$gte": datetime.combine(check_in_date, datetime.min.time())}
+                    }
+                ]
+            }).to_list(100)
+            
+            if conflicting_bookings:
+                conflicting_guest = conflicting_bookings[0].get('guest_name', 'Unknown')
+                conflicting_dates = f"{conflicting_bookings[0].get('check_in_date', '').strftime('%Y-%m-%d') if conflicting_bookings[0].get('check_in_date') else 'N/A'} to {conflicting_bookings[0].get('check_out_date', '').strftime('%Y-%m-%d') if conflicting_bookings[0].get('check_out_date') else 'N/A'}"
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Room {new_room} is not available for the requested dates. Conflict with booking for {conflicting_guest} ({conflicting_dates})"
+                )
+            
+            update_data['room_number'] = new_room
+            changes_made.append(f"Room changed from {current_room} to {new_room}")
+    
+    # Handle other updates
     if booking_update.check_in_date is not None:
         update_data['check_in_date'] = datetime.combine(booking_update.check_in_date, datetime.min.time())
+        changes_made.append(f"Check-in date updated to {booking_update.check_in_date}")
+        
     if booking_update.check_out_date is not None:
         update_data['check_out_date'] = datetime.combine(booking_update.check_out_date, datetime.min.time())
+        changes_made.append(f"Check-out date updated to {booking_update.check_out_date}")
+        
     if booking_update.additional_notes is not None:
         update_data['additional_notes'] = booking_update.additional_notes
+        changes_made.append("Notes updated")
     
     if not update_data:
-        raise HTTPException(status_code=400, detail="No fields provided for update")
+        raise HTTPException(status_code=400, detail="No valid fields provided for update")
     
+    # Update the booking
     result = await db.bookings.update_one({"id": booking_id}, {"$set": update_data})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    return {"message": "Booking updated successfully"}
+    # Log activity
+    await log_activity(
+        action="booking_updated",
+        description=f"Booking for {current_booking.get('guest_name', 'Unknown')} updated: {', '.join(changes_made)}",
+        user_name=current_user.username,
+        entity_type="booking",
+        entity_id=booking_id,
+        details={
+            "changes": changes_made,
+            "guest_name": current_booking.get('guest_name'),
+            "old_room": current_booking.get('room_number'),
+            "new_room": update_data.get('room_number', current_booking.get('room_number'))
+        }
+    )
+    
+    return {
+        "message": "Booking updated successfully",
+        "changes": changes_made
+    }
 
 # Customer Management Routes
 @api_router.get("/customers/checked-in", response_model=List[Customer])
