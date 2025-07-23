@@ -614,7 +614,8 @@ const Dashboard = () => {
         fetchRooms(),
         fetchUpcomingBookings(),
         fetchCheckedInCustomers(),
-        fetchHotelSettings()
+        fetchHotelSettings(),
+        fetchAvailableChannels()
       ]);
     } catch (error) {
       console.error('Error initializing data:', error);
