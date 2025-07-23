@@ -555,6 +555,7 @@ const Dashboard = () => {
   const [showPrintInvoiceDialog, setShowPrintInvoiceDialog] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
   const [availableRoomsForBooking, setAvailableRoomsForBooking] = useState([]);
+  const [availableChannels, setAvailableChannels] = useState([]);
   const [newBookingData, setNewBookingData] = useState({
     guest_name: '',
     guest_email: '',
@@ -567,6 +568,8 @@ const Dashboard = () => {
     stay_type: 'Night Stay',
     rate_per_night: '',
     booking_amount: 0,
+    booking_channel_id: '',
+    booking_channel_name: 'Direct',
     additional_notes: ''
   });
   const [editBookingData, setEditBookingData] = useState({
