@@ -879,6 +879,135 @@ async def complete_database_reset(current_user: UserResponse = Depends(get_curre
             detail=f"Reset failed: {str(e)}"
         )
 
+# Booking Channels Management Routes  
+@api_router.get("/booking-channels", response_model=List[BookingChannel])
+async def get_booking_channels(current_user: UserResponse = Depends(get_current_user)):
+    """Get all booking channels"""
+    channels = await db.booking_channels.find().to_list(1000)
+    return [BookingChannel(**channel) for channel in channels]
+
+@api_router.post("/booking-channels", response_model=BookingChannel)
+async def create_booking_channel(
+    channel: BookingChannelCreate, 
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Create a new booking channel (Admin only)"""
+    # Check if channel name already exists
+    existing_channel = await db.booking_channels.find_one({"channel_name": channel.channel_name})
+    if existing_channel:
+        raise HTTPException(status_code=400, detail="Booking channel with this name already exists")
+    
+    channel_obj = BookingChannel(**channel.dict(), created_by=current_user.username)
+    channel_dict = channel_obj.dict()
+    await db.booking_channels.insert_one(channel_dict)
+    
+    # Log activity
+    await log_activity(
+        action="booking_channel_created",
+        description=f"New booking channel '{channel.channel_name}' created with {channel.commission_rate}% commission",
+        user_name=current_user.username,
+        entity_type="booking_channel",
+        entity_id=channel_obj.id
+    )
+    
+    return BookingChannel(**channel_dict)
+
+@api_router.put("/booking-channels/{channel_id}", response_model=BookingChannel)
+async def update_booking_channel(
+    channel_id: str,
+    channel_update: BookingChannelUpdate,
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Update a booking channel (Admin only)"""
+    channel = await db.booking_channels.find_one({"id": channel_id})
+    if not channel:
+        raise HTTPException(status_code=404, detail="Booking channel not found")
+    
+    # Update only provided fields
+    update_data = {k: v for k, v in channel_update.dict().items() if v is not None}
+    
+    if update_data:
+        result = await db.booking_channels.update_one(
+            {"id": channel_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Booking channel not found")
+        
+        # Log activity
+        await log_activity(
+            action="booking_channel_updated",
+            description=f"Booking channel '{channel.get('channel_name', 'Unknown')}' updated",
+            user_name=current_user.username,
+            entity_type="booking_channel",
+            entity_id=channel_id
+        )
+    
+    # Return updated channel
+    updated_channel = await db.booking_channels.find_one({"id": channel_id})
+    return BookingChannel(**updated_channel)
+
+@api_router.delete("/booking-channels/{channel_id}")
+async def delete_booking_channel(
+    channel_id: str, 
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Delete a booking channel (Admin only)"""
+    channel = await db.booking_channels.find_one({"id": channel_id})
+    if not channel:
+        raise HTTPException(status_code=404, detail="Booking channel not found")
+    
+    # Check if channel is being used in bookings
+    bookings_count = await db.bookings.count_documents({"booking_channel_id": channel_id})
+    if bookings_count > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete channel. It is used in {bookings_count} booking(s). Deactivate instead.")
+    
+    result = await db.booking_channels.delete_one({"id": channel_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Booking channel not found")
+    
+    # Log activity
+    await log_activity(
+        action="booking_channel_deleted",
+        description=f"Booking channel '{channel.get('channel_name', 'Unknown')}' deleted",
+        user_name=current_user.username,
+        entity_type="booking_channel",
+        entity_id=channel_id
+    )
+    
+    return {"message": "Booking channel deleted successfully"}
+
+@api_router.put("/booking-channels/{channel_id}/toggle-status")
+async def toggle_booking_channel_status(
+    channel_id: str, 
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Toggle booking channel active/inactive status (Admin only)"""
+    channel = await db.booking_channels.find_one({"id": channel_id})
+    if not channel:
+        raise HTTPException(status_code=404, detail="Booking channel not found")
+    
+    new_status = not channel.get('is_active', True)
+    result = await db.booking_channels.update_one(
+        {"id": channel_id},
+        {"$set": {"is_active": new_status}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Booking channel not found")
+    
+    # Log activity
+    await log_activity(
+        action="booking_channel_status_changed",
+        description=f"Booking channel '{channel.get('channel_name', 'Unknown')}' {'activated' if new_status else 'deactivated'}",
+        user_name=current_user.username,
+        entity_type="booking_channel",
+        entity_id=channel_id
+    )
+    
+    return {"message": f"Booking channel {'activated' if new_status else 'deactivated'} successfully"}
+
 # User Management Routes
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_users(current_user: UserResponse = Depends(get_current_active_admin)):
