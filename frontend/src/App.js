@@ -892,10 +892,31 @@ const Dashboard = () => {
         return;
       }
 
+      // Check if check-in date is in the past
+      const today = new Date().toISOString().split('T')[0];
+      const checkInDate = newBookingData.check_in_date;
+      
+      if (checkInDate < today) {
+        // Past date detected - show status selection dialog
+        setShowStatusSelectionModal(true);
+        return;
+      }
+
+      // Future date - proceed with normal booking creation
+      await createBookingWithStatus('Upcoming');
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      alert('Error creating booking. Please try again.');
+    }
+  };
+
+  const createBookingWithStatus = async (status) => {
+    try {
       // Prepare booking data - send the calculated booking_amount to backend
       const bookingData = {
         ...newBookingData,
-        booking_amount: newBookingData.booking_amount // This is the calculated total
+        booking_amount: newBookingData.booking_amount, // This is the calculated total
+        booking_status: status
       };
 
       // For Short Time bookings, ensure check_out_date is handled correctly
