@@ -2086,7 +2086,7 @@ const Dashboard = () => {
                 onClick={handleEditBooking}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
-                Update Booking
+                {selectedBooking && selectedBooking.status === 'Upcoming' ? '💾 Save Changes' : '💾 Update Details'}
               </button>
             </div>
           </div>
