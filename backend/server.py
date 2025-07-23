@@ -522,6 +522,95 @@ async def log_activity(action: str, description: str, user_name: str = "Admin",
         # Log the error but don't fail the main operation
         print(f"Failed to log activity: {str(e)}")
 
+# Room availability validation helper function
+async def check_room_availability_for_booking(room_number: str, check_in_date: date, check_out_date: date, exclude_booking_id: str = None):
+    """
+    Check if a specific room is available for booking during the given date range
+    Returns: (is_available: bool, error_message: str)
+    """
+    try:
+        # Convert dates to datetime for database queries
+        check_in_datetime = datetime.combine(check_in_date, datetime.min.time())
+        check_out_datetime = datetime.combine(check_out_date, datetime.min.time())
+        
+        # Check if room exists
+        room = await db.rooms.find_one({"room_number": room_number})
+        if not room:
+            return False, f"Room {room_number} does not exist"
+        
+        # Build query to find conflicting bookings
+        conflict_query = {
+            "$and": [
+                {"room_number": room_number},
+                {"status": {"$in": ["Upcoming", "Checked-in"]}},
+                {
+                    "$or": [
+                        # Booking starts during requested period
+                        {
+                            "$and": [
+                                {"check_in_date": {"$gte": check_in_datetime}},
+                                {"check_in_date": {"$lt": check_out_datetime}}
+                            ]
+                        },
+                        # Booking ends during requested period
+                        {
+                            "$and": [
+                                {"check_out_date": {"$gt": check_in_datetime}},
+                                {"check_out_date": {"$lte": check_out_datetime}}
+                            ]
+                        },
+                        # Booking encompasses requested period
+                        {
+                            "$and": [
+                                {"check_in_date": {"$lte": check_in_datetime}},
+                                {"check_out_date": {"$gte": check_out_datetime}}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        # Exclude specific booking ID if provided (for booking updates)
+        if exclude_booking_id:
+            conflict_query["$and"].append({"id": {"$ne": exclude_booking_id}})
+        
+        # Find conflicting bookings
+        conflicting_bookings = await db.bookings.find(conflict_query).to_list(10)
+        
+        if conflicting_bookings:
+            # Get details of the first conflicting booking
+            conflict = conflicting_bookings[0]
+            conflict_guest = conflict.get('guest_name', 'Unknown Guest')
+            conflict_checkin = conflict.get('check_in_date')
+            conflict_checkout = conflict.get('check_out_date')
+            
+            # Convert datetime to date for display
+            if isinstance(conflict_checkin, datetime):
+                conflict_checkin = conflict_checkin.date()
+            if isinstance(conflict_checkout, datetime):
+                conflict_checkout = conflict_checkout.date()
+                
+            error_msg = f"Room {room_number} is already booked by {conflict_guest} from {conflict_checkin} to {conflict_checkout}"
+            return False, error_msg
+        
+        # Check if room is currently occupied (status = "Occupied")
+        if room.get('status') == 'Occupied':
+            current_guest = room.get('current_guest', 'Unknown Guest')
+            room_checkout = room.get('check_out_date')
+            if isinstance(room_checkout, datetime):
+                room_checkout = room_checkout.date()
+            
+            # Only block if the requested check-in is before room checkout
+            if room_checkout and check_in_date < room_checkout:
+                error_msg = f"Room {room_number} is currently occupied by {current_guest} until {room_checkout}"
+                return False, error_msg
+        
+        return True, ""
+        
+    except Exception as e:
+        return False, f"Error checking room availability: {str(e)}"
+
 # Setup Wizard Routes
 @api_router.get("/setup/status")
 async def get_setup_status():
