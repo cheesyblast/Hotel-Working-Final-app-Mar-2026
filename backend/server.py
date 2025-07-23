@@ -113,6 +113,32 @@ class Booking(BaseModel):
     additional_notes: str = ""
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+class BookingChannel(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    channel_name: str  # e.g., "Booking.com", "Expedia", "Direct", "Agoda"
+    channel_type: str = "OTA"  # OTA (Online Travel Agency), Direct, Corporate, Walk-in
+    commission_rate: float = 0.0  # Percentage commission (e.g., 15.5 for 15.5%)
+    contact_email: str = ""
+    contact_phone: str = ""
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: str = "Admin"
+
+class BookingChannelCreate(BaseModel):
+    channel_name: str
+    channel_type: str = "OTA"
+    commission_rate: float = 0.0
+    contact_email: str = ""
+    contact_phone: str = ""
+
+class BookingChannelUpdate(BaseModel):
+    channel_name: Optional[str] = None
+    channel_type: Optional[str] = None
+    commission_rate: Optional[float] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    is_active: Optional[bool] = None
+
 class BookingCreate(BaseModel):
     guest_name: str
     guest_email: str = ""
@@ -124,6 +150,8 @@ class BookingCreate(BaseModel):
     check_out_date: Optional[date] = None
     stay_type: str = "Night Stay"
     booking_amount: float = 0.0
+    booking_channel_id: str = ""  # ID of the booking channel
+    booking_channel_name: str = "Direct"  # Name of the booking channel for display
     additional_notes: str = ""
 
 class BookingUpdate(BaseModel):
