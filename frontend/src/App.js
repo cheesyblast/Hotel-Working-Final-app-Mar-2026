@@ -527,6 +527,7 @@ const Dashboard = () => {
   const [showNewBookingModal, setShowNewBookingModal] = useState(false);
   const [showEditBookingModal, setShowEditBookingModal] = useState(false);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [showStatusSelectionModal, setShowStatusSelectionModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   
