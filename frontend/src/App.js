@@ -931,11 +931,13 @@ const Dashboard = () => {
       await axios.post(`${API}/bookings`, bookingData);
       
       setShowNewBookingModal(false);
+      setShowStatusSelectionModal(false);
+      setSelectedBookingStatus('Upcoming');
       setNewBookingData({
         guest_name: '',
         guest_email: '',
         guest_phone: '',
-        country: '',
+        guest_country: '',
         guest_id_passport: '',
         room_number: '',
         check_in_date: '',
@@ -951,9 +953,15 @@ const Dashboard = () => {
       // Refresh data after adding booking
       await Promise.all([
         fetchRooms(),
-        fetchUpcomingBookings()
+        fetchUpcomingBookings(),
+        fetchCheckedInCustomers() // Also refresh checked-in customers if status was "Checked In"
       ]);
-      alert('Booking added successfully!');
+      
+      if (status === 'Checked In') {
+        alert('Booking created and guest checked in successfully!');
+      } else {
+        alert('Booking added successfully!');
+      }
     } catch (error) {
       console.error('Error creating booking:', error);
       alert('Error creating booking. Please try again.');
