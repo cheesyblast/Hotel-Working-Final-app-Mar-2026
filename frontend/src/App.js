@@ -959,10 +959,18 @@ const Dashboard = () => {
   const openEditBookingModal = (booking) => {
     setSelectedBooking(booking);
     setEditBookingData({
+      room_number: booking.room_number || '',
       check_in_date: booking.check_in_date,
       check_out_date: booking.check_out_date,
       additional_notes: booking.additional_notes || ''
     });
+    
+    // Get available rooms for the selected dates (excluding current room)
+    const availableRooms = rooms.filter(room => 
+      room.status !== 'Occupied' || room.room_number === booking.room_number
+    );
+    setAvailableRoomsForBooking(availableRooms);
+    
     setShowEditBookingModal(true);
   };
 
