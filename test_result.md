@@ -165,6 +165,18 @@ backend:
         agent: "main"
         comment: "Implemented forgot password functionality with /api/auth/forgot-password endpoint. System generates new random password, updates user's hashed password, and sends email with new credentials. Includes user lookup by username or email, email validation, and activity logging. Integrates with email service configuration for sending password reset emails."
 
+  - task: "Room Change Functionality for Upcoming Bookings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Successfully implemented room change functionality with comprehensive validation. Backend: Enhanced BookingUpdate model to include room_number field, completely rewrote PUT /api/bookings/{id} endpoint with room availability validation, booking status checks (only 'Upcoming' bookings can change rooms), conflict detection for new room availability, and detailed activity logging with change tracking. Frontend: Updated editBookingData state to include room_number, enhanced openEditBookingModal with available rooms filtering, added room selection dropdown in edit modal (only for upcoming bookings), added status-based UI warnings for non-upcoming bookings, and improved error handling with detailed conflict messages. Room change validation prevents changes for 'Checked In' or 'Completed' bookings. Professional UI shows current room, allows selection from available rooms, and displays helpful status messages. Tested successfully with room changes working as expected."
+
   - task: "Comprehensive Booking Channels Management System"
     implemented: true
     working: true
