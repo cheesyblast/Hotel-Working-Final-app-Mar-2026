@@ -827,7 +827,7 @@ async def complete_database_reset(current_user: UserResponse = Depends(get_curre
         # Collections to clear (all except setup_wizard)
         collections_to_clear = [
             'rooms', 'bookings', 'customers', 'expenses', 'incomes', 
-            'activity_logs', 'daily_sales', 'email_settings'
+            'activity_logs', 'daily_sales', 'email_settings', 'booking_channels'
         ]
         
         reset_results = {}
