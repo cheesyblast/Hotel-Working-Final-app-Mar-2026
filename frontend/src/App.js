@@ -5629,6 +5629,232 @@ const Settings = () => {
         </div>
       )}
 
+      {/* Booking Channels Tab */}
+      {activeTab === 'channels' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">📈 Booking Channels Management</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Manage all booking sources including OTAs, direct bookings, and corporate channels
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCreateChannelModal(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                + Add Channel
+              </button>
+            </div>
+
+            {/* Channels List */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Channel Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Commission Rate
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                  {bookingChannels.map((channel) => (
+                    <tr key={channel.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {channel.channel_name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          channel.channel_type === 'Direct' 
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+                            : channel.channel_type === 'OTA'
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                        }`}>
+                          {channel.channel_type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {channel.commission_rate}%
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div>
+                          {channel.contact_email && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              📧 {channel.contact_email}
+                            </div>
+                          )}
+                          {channel.contact_phone && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              📞 {channel.contact_phone}
+                            </div>
+                          )}
+                          {!channel.contact_email && !channel.contact_phone && (
+                            <span className="text-xs text-gray-400">No contact info</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          channel.is_active 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                            : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                        }`}>
+                          {channel.is_active ? '✅ Active' : '❌ Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button
+                          onClick={() => handleToggleChannelStatus(channel.id)}
+                          className={`px-3 py-1 rounded text-xs ${
+                            channel.is_active
+                              ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                              : 'bg-green-600 text-white hover:bg-green-700'
+                          }`}
+                        >
+                          {channel.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        {channel.channel_name !== 'Direct' && (
+                          <button
+                            onClick={() => handleDeleteChannel(channel.id, channel.channel_name)}
+                            className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {bookingChannels.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  No booking channels found. Create your first channel to get started.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Channel Modal */}
+      {showCreateChannelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Booking Channel</h3>
+            
+            <form onSubmit={handleCreateChannel} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Channel Name *
+                </label>
+                <input
+                  type="text"
+                  value={newChannel.channel_name}
+                  onChange={(e) => setNewChannel({...newChannel, channel_name: e.target.value})}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="e.g., Booking.com, Expedia"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Channel Type
+                </label>
+                <select
+                  value={newChannel.channel_type}
+                  onChange={(e) => setNewChannel({...newChannel, channel_type: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="OTA">OTA (Online Travel Agency)</option>
+                  <option value="Direct">Direct</option>
+                  <option value="Corporate">Corporate</option>
+                  <option value="Walk-in">Walk-in</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Commission Rate (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  value={newChannel.commission_rate}
+                  onChange={(e) => setNewChannel({...newChannel, commission_rate: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="e.g., 15.5"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Contact Email
+                </label>
+                <input
+                  type="email"
+                  value={newChannel.contact_email}
+                  onChange={(e) => setNewChannel({...newChannel, contact_email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="contact@channel.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Contact Phone
+                </label>
+                <input
+                  type="text"
+                  value={newChannel.contact_phone}
+                  onChange={(e) => setNewChannel({...newChannel, contact_phone: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="+1-234-567-8900"
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+                >
+                  Create Channel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateChannelModal(false)}
+                  className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* System Management Tab - Admin Only */}
       {activeTab === 'system' && user?.role === 'Admin' && (
         <div className="space-y-6">
