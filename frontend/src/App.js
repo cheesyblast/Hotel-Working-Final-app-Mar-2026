@@ -1983,13 +1983,50 @@ const Dashboard = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Edit Booking</h3>
             {selectedBooking && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600">Guest: {selectedBooking.guest_name}</p>
-                <p className="text-sm text-gray-600">Room: {selectedBooking.room_number}</p>
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">Guest: <strong>{selectedBooking.guest_name}</strong></p>
+                <p className="text-sm text-gray-600">Current Room: <strong>{selectedBooking.room_number}</strong></p>
+                <p className="text-sm text-gray-500">Status: <strong>{selectedBooking.status}</strong></p>
               </div>
             )}
             
             <div className="space-y-4">
+              {/* Room Selection - Only for Upcoming bookings */}
+              {selectedBooking && selectedBooking.status === 'Upcoming' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    🏠 Change Room Number
+                  </label>
+                  <select
+                    value={editBookingData.room_number}
+                    onChange={(e) => setEditBookingData({...editBookingData, room_number: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a room</option>
+                    {availableRoomsForBooking.map((room) => (
+                      <option key={room.room_number} value={room.room_number}>
+                        Room {room.room_number} - {room.room_type} ({room.status})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-green-600 mt-1">
+                    ℹ️ Room can only be changed for upcoming bookings
+                  </p>
+                </div>
+              )}
+              
+              {/* Show warning for non-upcoming bookings */}
+              {selectedBooking && selectedBooking.status !== 'Upcoming' && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ Room number cannot be changed for bookings with status: <strong>{selectedBooking.status}</strong>
+                  </p>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Only upcoming bookings can have room changes.
+                  </p>
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
