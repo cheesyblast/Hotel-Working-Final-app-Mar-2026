@@ -1627,6 +1627,16 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
             # Default to same day if no checkout date provided
             booking_dict['check_out_date'] = booking_dict['check_in_date']
     
+    # Validate room availability before creating booking
+    is_available, availability_error = await check_room_availability_for_booking(
+        room_number=booking.room_number,
+        check_in_date=booking_dict['check_in_date'],
+        check_out_date=booking_dict['check_out_date']
+    )
+    
+    if not is_available:
+        raise HTTPException(status_code=400, detail=availability_error)
+    
     
     # Use the provided booking_status, default to "Upcoming"
     final_status = booking_dict.get('booking_status', 'Upcoming')
