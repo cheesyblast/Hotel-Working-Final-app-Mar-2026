@@ -165,6 +165,18 @@ backend:
         agent: "main"
         comment: "Implemented forgot password functionality with /api/auth/forgot-password endpoint. System generates new random password, updates user's hashed password, and sends email with new credentials. Includes user lookup by username or email, email validation, and activity logging. Integrates with email service configuration for sending password reset emails."
 
+  - task: "Comprehensive Booking Channels Management System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Successfully implemented complete booking channels management system for OTAs and direct bookings. Backend: Added BookingChannel, BookingChannelCreate, BookingChannelUpdate models with commission rates, contact info, and active status. Implemented full CRUD endpoints (/api/booking-channels) with admin-only access, channel validation in booking creation, and default channels (Direct, Booking.com, Expedia, Agoda, Walk-in, Corporate). Updated booking creation to validate and store channel information. Enhanced financial reports to include booking channel data in Excel exports. Frontend: Added '📈 Booking Channels' tab in Settings with professional management interface, create/edit/delete/toggle status functionality, commission rate display, and contact information. Updated new booking modal with channel selection dropdown showing commission rates. Added channel information to booking displays and Excel reports. Tested successfully: Created Booking.com channel (15% commission) and booking via channel - working perfectly."
+
   - task: "Fixed Reports Issues & Enhanced Print Invoice with Settings"
     implemented: true
     working: true
