@@ -1538,7 +1538,10 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
             # Default to same day if no checkout date provided
             booking_dict['check_out_date'] = booking_dict['check_in_date']
     
-    booking_obj = Booking(**booking_dict, status="Upcoming")
+    
+    # Use the provided booking_status, default to "Upcoming"
+    final_status = booking_dict.get('booking_status', 'Upcoming')
+    booking_obj = Booking(**booking_dict, status=final_status)
     
     # Convert date objects to datetime for MongoDB storage
     booking_storage = booking_obj.dict()
@@ -1549,10 +1552,48 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
     
     await db.bookings.insert_one(booking_storage)
     
+    # If booking status is "Checked In", also create a customer record
+    if final_status == "Checked In":
+        customer_data = {
+            "name": booking.guest_name,
+            "email": booking.guest_email,
+            "phone": booking.guest_phone,
+            "current_room": booking.room_number,
+            "check_in_date": booking_dict['check_in_date'],
+            "check_out_date": booking_dict['check_out_date'],
+            "advance_amount": 0.0,  # No advance amount for past date check-ins
+            "notes": booking.additional_notes,
+            "room_charges": booking.booking_amount,
+            "additional_charges": 0.0,
+            "total_amount": booking.booking_amount
+        }
+        
+        customer_obj = Customer(**customer_data)
+        customer_storage = customer_obj.dict()
+        
+        # Convert date objects to datetime for MongoDB storage
+        if customer_storage.get('check_in_date'):
+            customer_storage['check_in_date'] = datetime.combine(customer_storage['check_in_date'], datetime.min.time())
+        if customer_storage.get('check_out_date'):
+            customer_storage['check_out_date'] = datetime.combine(customer_storage['check_out_date'], datetime.min.time())
+        
+        await db.customers.insert_one(customer_storage)
+        
+        # Update room status to Occupied
+        await db.rooms.update_one(
+            {"room_number": booking.room_number},
+            {"$set": {
+                "status": "Occupied",
+                "current_guest": booking.guest_name,
+                "check_in_date": datetime.combine(booking_dict['check_in_date'], datetime.min.time()),
+                "check_out_date": datetime.combine(booking_dict['check_out_date'], datetime.min.time())
+            }}
+        )
+    
     # Log activity
     await log_activity(
         action="booking_created",
-        description=f"New booking created for {booking.guest_name} in room {booking.room_number} via {booking_dict['booking_channel_name']}",
+        description=f"New booking created for {booking.guest_name} in room {booking.room_number} via {booking_dict['booking_channel_name']} (Status: {final_status})",
         user_name=current_user.username,
         entity_type="booking",
         entity_id=booking_obj.id,
@@ -1561,7 +1602,8 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
             "room_number": booking.room_number,
             "booking_amount": booking.booking_amount,
             "stay_type": booking.stay_type,
-            "booking_channel": booking_dict['booking_channel_name']
+            "booking_channel": booking_dict['booking_channel_name'],
+            "booking_status": final_status
         }
     )
     
