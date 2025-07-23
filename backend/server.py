@@ -157,6 +157,7 @@ class BookingCreate(BaseModel):
     additional_notes: str = ""
 
 class BookingUpdate(BaseModel):
+    room_number: Optional[str] = None
     check_in_date: Optional[date] = None
     check_out_date: Optional[date] = None
     additional_notes: Optional[str] = None
