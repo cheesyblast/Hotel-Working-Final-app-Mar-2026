@@ -939,7 +939,7 @@ const Dashboard = () => {
 
   const handleEditBooking = async () => {
     try {
-      await axios.put(`${API}/bookings/${selectedBooking.id}`, editBookingData);
+      const response = await axios.put(`${API}/bookings/${selectedBooking.id}`, editBookingData);
       
       setShowEditBookingModal(false);
       setSelectedBooking(null);
@@ -947,12 +947,20 @@ const Dashboard = () => {
       // Refresh data after editing booking
       await Promise.all([
         fetchUpcomingBookings(),
-        fetchCheckedInCustomers()
+        fetchCheckedInCustomers(),
+        fetchRooms() // Refresh rooms to update availability
       ]);
-      alert('Booking updated successfully!');
+      
+      // Show specific success message with changes made
+      if (response.data.changes && response.data.changes.length > 0) {
+        alert(`Booking updated successfully!\n\nChanges made:\n• ${response.data.changes.join('\n• ')}`);
+      } else {
+        alert('Booking updated successfully!');
+      }
     } catch (error) {
       console.error('Error updating booking:', error);
-      alert('Error updating booking. Please try again.');
+      const errorMessage = error.response?.data?.detail || 'Error updating booking. Please try again.';
+      alert(`Failed to update booking:\n\n${errorMessage}`);
     }
   };
 
