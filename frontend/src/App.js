@@ -4726,6 +4726,17 @@ const Settings = () => {
   const [testingEmail, setTestingEmail] = useState(false);
   const [resetting, setResetting] = useState(false);
   
+  // Booking channels state
+  const [bookingChannels, setBookingChannels] = useState([]);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
+  const [newChannel, setNewChannel] = useState({
+    channel_name: '',
+    channel_type: 'OTA',
+    commission_rate: 0,
+    contact_email: '',
+    contact_phone: ''
+  });
+  
   // Get current user context
   const { user } = useAuth();
   
