@@ -250,6 +250,18 @@ frontend:
         agent: "main"
         comment: "Successfully implemented complete authentication frontend system. AuthContext with JWT token management, setup status checking, login/logout functions working correctly. SetupWizard component for hotel configuration, LoginPage with forgot password functionality, ProtectedRoute component for access control. Updated RealTimeClock with user info and logout button. Added comprehensive Email Settings tab with support for SMTP, SendGrid, AWS SES, Gmail providers. Added admin-only System Management tab with complete database reset feature. App properly wrapped with AuthProvider and ProtectedRoute. Authentication system fully functional and tested."
 
+  - task: "Past Date Booking Functionality with Status Selection"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Implemented past date booking functionality. Backend: Enhanced BookingCreate model with booking_status field, modified booking creation endpoint to handle 'Upcoming' vs 'Checked In' status, automatically creates customer record and updates room status for 'Checked In' bookings. Frontend: Added status selection modal that appears when past dates are detected, user can choose between 'Upcoming Booking' or 'Checked In Customer', enhanced handleNewBooking function to detect past dates and show appropriate dialog. Need to test the complete workflow."
+
 backend:
   - task: "Income Management and Enhanced Financial Summary Integration"
     implemented: true
