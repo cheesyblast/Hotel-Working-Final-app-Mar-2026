@@ -557,6 +557,7 @@ const Dashboard = () => {
   const [invoiceData, setInvoiceData] = useState(null);
   const [availableRoomsForBooking, setAvailableRoomsForBooking] = useState([]);
   const [availableChannels, setAvailableChannels] = useState([]);
+  const [selectedBookingStatus, setSelectedBookingStatus] = useState('Upcoming');
   const [newBookingData, setNewBookingData] = useState({
     guest_name: '',
     guest_email: '',
