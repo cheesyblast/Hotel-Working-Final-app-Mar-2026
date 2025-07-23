@@ -5077,6 +5077,16 @@ const Settings = () => {
           >
             Email Settings
           </button>
+          <button
+            onClick={() => setActiveTab('channels')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'channels'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            📈 Booking Channels
+          </button>
           {/* System Management Tab - Only visible to Admin */}
           {user?.role === 'Admin' && (
             <button
