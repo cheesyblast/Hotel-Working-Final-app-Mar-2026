@@ -252,12 +252,15 @@ frontend:
 
   - task: "Past Date Booking Functionality with Status Selection"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "PASSED - Room Availability Validation Fix testing completed successfully with 100% success rate (7/7 tests passed). ✅ CRITICAL ISSUE RESOLVED: Room availability validation is now working correctly! The check_room_availability_for_booking() helper function has been successfully integrated into POST /api/bookings endpoint. ✅ DOUBLE BOOKING PREVENTION: System now properly prevents double bookings - conflicting bookings are rejected with 400 status and detailed error messages (e.g., 'Room AVTEST101 is already booked by John Doe from 2025-07-30 to 2025-08-01'). ✅ COMPREHENSIVE CONFLICT DETECTION: All overlapping date scenarios properly detected - bookings that start during existing booking, end during existing booking, encompass existing booking, and same exact dates all correctly rejected. ✅ ROOM EXISTENCE VALIDATION: Bookings for non-existent rooms properly rejected with clear error messages ('Room NONEXISTENT999 does not exist'). ✅ OCCUPIED ROOM VALIDATION: Currently occupied rooms properly protected from conflicting bookings with appropriate error messages. ✅ PAST DATE BOOKING FUNCTIONALITY: Past date bookings still work correctly with both 'Upcoming' and 'Checked In' status - 'Checked In' bookings automatically create customer records and update room status to 'Occupied'. ✅ ERROR MESSAGES: Proper detailed error messages returned for all conflict scenarios. The previously identified critical security/business logic flaw has been completely resolved."
       - working: false
         agent: "testing"
         comment: "PARTIALLY WORKING - Comprehensive testing completed with 87.5% success rate (7/8 tests passed). ✅ WORKING FEATURES: (1) Normal future date bookings work correctly with 'Upcoming' status. (2) Past date bookings with booking_status='Upcoming' are created correctly and maintain 'Upcoming' status without affecting room status. (3) Past date bookings with booking_status='Checked In' work perfectly - automatically create customer records, update room status to 'Occupied', and set room's current guest and dates correctly. (4) Short Time bookings handle dates correctly (same check-in/check-out dates). (5) Booking listings show appropriate bookings in correct categories. ❌ CRITICAL ISSUE FOUND: Room availability validation is completely missing in the booking creation endpoint (POST /api/bookings). The system allows double bookings for the same room and overlapping dates. Confirmed by creating multiple bookings for the same occupied room - all were accepted with 200 status instead of being rejected. This is a major bug that needs immediate attention. ✅ AUTHENTICATION: JWT authentication working correctly with admin credentials (admin/admin123). The core past date booking functionality with status selection is implemented and working, but the missing room availability validation is a critical security/business logic flaw."
