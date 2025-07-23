@@ -4790,12 +4790,22 @@ const Settings = () => {
         fetchUsers(),
         fetchSettings(),
         fetchEmailSettings(),
+        fetchBookingChannels(),
         fetchActivityLogs()
       ]);
     } catch (error) {
       console.error('Error fetching settings data:', error);
     }
     setLoading(false);
+  };
+
+  const fetchBookingChannels = async () => {
+    try {
+      const response = await axios.get(`${API}/booking-channels`);
+      setBookingChannels(response.data);
+    } catch (error) {
+      console.error('Error fetching booking channels:', error);
+    }
   };
 
   const fetchUsers = async () => {
