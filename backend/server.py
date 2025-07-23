@@ -109,6 +109,8 @@ class Booking(BaseModel):
     check_out_date: date
     stay_type: str = "Night Stay"  # "Night Stay" or "Short Time"
     booking_amount: float = 0.0  # Custom amount entered by user
+    booking_channel_id: str = ""  # ID of the booking channel
+    booking_channel_name: str = "Direct"  # Name of the booking channel for display
     status: str  # Upcoming, Checked-in, Completed, Cancelled
     additional_notes: str = ""
     created_at: datetime = Field(default_factory=datetime.utcnow)
