@@ -2303,6 +2303,7 @@ const Reports = () => {
           { width: 35 }, // Description
           { width: 15 }, // Amount
           { width: 15 }, // Payment Method
+          { width: 18 }, // Channel
           { width: 20 }  // Added By
         ];
         XLSX.utils.book_append_sheet(wb, incomeWs, '💰 Income Details');
