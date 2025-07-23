@@ -4702,7 +4702,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   
   // UI state
-  const [activeTab, setActiveTab] = useState('users'); // users, settings, email, system, logs
+  const [activeTab, setActiveTab] = useState('users'); // users, settings, email, channels, system, logs
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showActivityLogs, setShowActivityLogs] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
