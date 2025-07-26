@@ -409,7 +409,7 @@ def test_admin_cancel_booking_checked_in():
                                 room_103 = next((r for r in rooms if r.get("room_number") == "103"), None)
                                 
                                 if room_103 and room_103.get("status") == "Available":
-                                    print("✅ Room 103 is now available")
+                                    print("✅ Room 998 is now available")
                                     print("✅ ADMIN CANCEL BOOKING - CHECKED-IN TEST PASSED")
                                     return True
                                 else:
