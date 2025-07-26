@@ -86,23 +86,24 @@ def step1_create_short_time_booking():
     print("-" * 50)
     
     try:
-        # First, get available rooms
-        rooms_response = requests.get(f"{API_BASE}/rooms")
-        if rooms_response.status_code != 200:
-            print("❌ Failed to get rooms")
+        # Check room availability for today to tomorrow (then we'll create Short Time for today only)
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        
+        availability_response = requests.get(f"{API_BASE}/rooms/availability/check?check_in_date={today}&check_out_date={tomorrow}")
+        if availability_response.status_code != 200:
+            print(f"❌ Failed to check room availability: {availability_response.text}")
             return False
         
-        rooms = rooms_response.json()
-        available_room = None
-        for room in rooms:
-            if room.get('status') == 'Available':
-                available_room = room
-                break
+        availability_data = availability_response.json()
+        available_rooms = availability_data.get('rooms', [])
         
-        if not available_room:
+        if not available_rooms:
             print("❌ No available rooms found")
             return False
         
+        # Use the first available room
+        available_room = available_rooms[0]
         room_number = available_room['room_number']
         room_price = available_room.get('price_per_night', 5000)
         
