@@ -856,7 +856,7 @@ const Dashboard = () => {
   };
 
   // Handle booking cancellation (admin only)
-  const handleCancelBooking = async (customer) => {
+  const handleCancelBookingForCustomer = async (customer) => {
     if (!window.confirm(`Are you sure you want to cancel the booking for ${customer.name}? This will remove the guest from the room and cannot be undone.`)) {
       return;
     }
