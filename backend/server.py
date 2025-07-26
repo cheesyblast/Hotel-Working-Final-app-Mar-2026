@@ -2000,6 +2000,83 @@ async def checkout_customer(checkout: CheckoutRequest):
         }
     }
 
+@api_router.post("/advance-payment")
+async def collect_advance_payment(
+    advance_request: AdvancePaymentRequest, 
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Collect advance payment from checked-in customer and record as income"""
+    # Find the customer
+    customer = await db.customers.find_one({"id": advance_request.customer_id})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Update customer's advance amount (increase it)
+    current_advance = customer.get("advance_amount", 0.0)
+    new_advance = current_advance + advance_request.amount
+    
+    await db.customers.update_one(
+        {"id": advance_request.customer_id},
+        {"$set": {"advance_amount": new_advance}}
+    )
+    
+    # Record as income
+    income = Income(
+        description=f"Advance payment from {customer['name']} - Room {customer['current_room']}",
+        amount=advance_request.amount,
+        category="Advance Payment",
+        payment_method=advance_request.payment_method,
+        income_date=datetime.now().date(),
+        guest_name=customer["name"],
+        created_by=current_user.username
+    )
+    
+    # Convert date to datetime for MongoDB storage
+    income_dict = income.dict()
+    income_dict['income_date'] = datetime.combine(income_dict['income_date'], datetime.min.time())
+    await db.incomes.insert_one(income_dict)
+    
+    # Record as daily sale for financial tracking
+    daily_sale = DailySale(
+        customer_name=customer["name"],
+        room_number=customer["current_room"],
+        payment_method=advance_request.payment_method,
+        room_charges=0.0,  # This is advance payment, not room charge
+        additional_charges=advance_request.amount,  # Record as additional charge
+        discount_amount=0.0,
+        advance_amount=0.0,  # Already being paid, so no advance for this sale
+        total_amount=advance_request.amount,
+        date=datetime.now().date()
+    )
+    
+    # Convert date to datetime for MongoDB storage
+    daily_sale_dict = daily_sale.dict()
+    daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
+    await db.daily_sales.insert_one(daily_sale_dict)
+    
+    # Log activity
+    await log_activity(
+        action="advance_payment_collected",
+        description=f"Advance payment of {advance_request.amount} collected from {customer['name']} in room {customer['current_room']}",
+        user_name=current_user.username,
+        entity_type="payment",
+        entity_id=advance_request.customer_id,
+        details={
+            "guest_name": customer["name"],
+            "room_number": customer["current_room"],
+            "amount": advance_request.amount,
+            "payment_method": advance_request.payment_method,
+            "new_total_advance": new_advance
+        }
+    )
+    
+    return {
+        "message": f"Advance payment of {advance_request.amount} collected successfully",
+        "customer_name": customer["name"],
+        "amount_collected": advance_request.amount,
+        "new_total_advance": new_advance
+    }
+
 @api_router.post("/checkin")
 async def checkin_customer(checkin: CheckinRequest):
     # Find the booking
