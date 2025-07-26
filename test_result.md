@@ -256,8 +256,11 @@ frontend:
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL BUG CONFIRMED - Booking Amount Flow Investigation completed. ✅ INVESTIGATION METHODOLOGY: Created comprehensive test following exact user-reported scenario: (1) Create Short Time booking, (2) Update dates while 'Upcoming', (3) Check-in process, (4) Checkout verification. ❌ CRITICAL BUG FOUND: Booking amount recalculation NOT WORKING when dates are updated. Test Results: Created Short Time booking (4750.0 LKR = 50% of 9500.0 room rate), updated dates from same-day to overnight stay, but booking_amount remained 4750.0 instead of expected 9500.0 (full night rate). 🔍 ROOT CAUSE IDENTIFIED: In PUT /api/bookings/{booking_id} endpoint (line 1811), the code gets stay_type from current booking: stay_type = current_booking.get('stay_type', 'Night Stay'). However, stay_type is NEVER updated when dates change! So system still calculates as 'Short Time' (50% rate) even when dates are extended to multi-day stay. ✅ SOLUTION IDENTIFIED: Update stay_type field based on new dates in booking update logic - if new check-in and check-out dates are same day, keep 'Short Time', otherwise change to 'Night Stay'. This will ensure correct amount recalculation. The user-reported bug is confirmed and root cause identified."
       - working: false
         agent: "user"
         comment: "CRITICAL USER ISSUE IDENTIFIED: User reported a specific bug in the booking amount flow. Steps to reproduce: (1) Created a short time booking, (2) Updated the dates while in 'Upcoming' status (should trigger booking amount recalculation), (3) Clicked check-in (moved to 'Checked-in Customer' section), (4) When clicking checkout, it shows different amount than expected. This suggests the booking amount recalculation is working for the booking record, but when the booking is checked in, the customer record may not be getting the updated booking amount correctly. The checkout process might be pulling from customer.room_charges instead of the updated booking.booking_amount."
