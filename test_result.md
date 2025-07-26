@@ -252,15 +252,18 @@ frontend:
 
   - task: "Past Date Booking Functionality with Status Selection"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py, /app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
+      - working: false
+        agent: "user"
+        comment: "NEW BUG IDENTIFIED: User reported that booking editing works correctly for 'Upcoming' bookings (including the date change fix), but when a booking is moved to 'Checked In' status (after check-in), attempting to edit the booking results in 'booking not found' error instead of the expected 'Cannot modify booking with Checked In status' error message. This suggests there's an issue with booking lookup or status field handling for checked-in bookings. Expected behavior: should show proper error message that only Upcoming bookings can be modified, not 'booking not found'."
       - working: true
         agent: "testing"
-        comment: "PASSED - CRITICAL BUG FIX VERIFIED SUCCESSFULLY: The user-reported booking amount recalculation issue has been completely resolved. Testing confirmed: ✅ Short Time booking creation working with 50% rate calculation, ✅ Date update functionality successfully updates check-in and check-out dates, ✅ Stay type recalculation now properly recalculates stay_type based on new dates (same day = Short Time, different days = Night Stay), ✅ Booking amount recalculation correctly recalculates booking_amount using proper formula (Short Time = 50% of room rate, Night Stay = room rate × nights), ✅ Database updates properly save both stay_type and booking_amount fields. The root cause where stay_type was never updated when dates changed has been completely resolved. The PUT /api/bookings/{booking_id} endpoint now correctly recalculates stay_type and applies correct pricing formula. USER REPORTED ISSUE STATUS: COMPLETELY RESOLVED - The critical booking amount recalculation bug has been successfully fixed."
+        comment: "PASSED - CRITICAL BUG FIX VERIFIED SUCCESSFULLY: The user-reported booking amount recalculation issue has been completely resolved. Testing confirmed: ✅ Short Time booking creation working with 50% rate calculation, ✅ Date update functionality successfully updates check-in and check-out dates, ✅ Stay type recalculation now properly recalculates stay_type based on new dates (same day = Short Time, different days = Night Stay), ✅ Booking amount recalculation correctly recalculates booking_amount using proper formula (Short Time = 50% of room rate, Night Stay = room rate × nights), ✅ Database updates properly save both stay_type and booking_amount fields. The root cause where stay_type was never updated when dates changed has been completely resolved. The PUT /api/bookings/{booking_id} endpoint now correctly recalculates stay_type and applies correct icing formula. USER REPORTED ISSUE STATUS: COMPLETELY RESOLVED - The critical booking amount recalculation bug has been successfully fixed."
       - working: true
         agent: "main"
         comment: "CRITICAL BUG FIX IMPLEMENTED: Fixed the booking amount recalculation issue reported by user. Root cause was that stay_type was never recalculated when booking dates were updated. Modified PUT /api/bookings/{booking_id} endpoint to: (1) Recalculate stay_type based on new dates - if new_check_in == new_check_out then 'Short Time', else 'Night Stay', (2) Apply correct pricing formula based on updated stay_type, (3) Update both stay_type and booking_amount fields in database. This resolves the user's scenario where a Short Time booking extended to multiple days was still being calculated at Short Time rates instead of Night Stay rates."
