@@ -184,6 +184,12 @@ class CheckoutRequest(BaseModel):
     discount_amount: float = 0.0
     payment_method: str = "Cash"  # Cash, Card, Bank Transfer
 
+class AdvancePaymentRequest(BaseModel):
+    customer_id: str
+    amount: float
+    payment_method: str = "Cash"  # Cash, Card, Bank Transfer
+    notes: str = ""
+
 class DailySale(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     date: date
