@@ -1752,6 +1752,12 @@ async def update_booking(
     
     # Handle room number change with availability validation
     if booking_update.room_number is not None:
+        if not can_modify_room:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot change room for booking with status '{booking_status}'. Room changes are only allowed for 'Upcoming' bookings."
+            )
+            
         new_room = booking_update.room_number
         current_room = current_booking.get('room_number')
         
