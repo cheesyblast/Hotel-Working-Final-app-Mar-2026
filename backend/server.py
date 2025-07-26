@@ -2175,11 +2175,19 @@ async def checkin_customer(checkin: CheckinRequest):
     return {"message": "Customer checked in successfully", "customer": customer}
 
 @api_router.post("/cancel/{booking_id}")
-async def cancel_booking(booking_id: str):
+async def cancel_booking(
+    booking_id: str, 
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Cancel a booking (Admin only) - handles both upcoming and checked-in bookings"""
     # Find the booking
     booking = await db.bookings.find_one({"id": booking_id})
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+    
+    booking_status = booking.get("status", "")
+    guest_name = booking.get("guest_name", "")
+    room_number = booking.get("room_number", "")
     
     # Update booking status to cancelled
     result = await db.bookings.update_one(
@@ -2190,14 +2198,44 @@ async def cancel_booking(booking_id: str):
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    # If room was reserved for this booking, make it available
-    if booking["status"] == "Upcoming":
+    # Handle different booking statuses
+    if booking_status == "Upcoming":
+        # If room was reserved for this booking, make it available
         await db.rooms.update_one(
-            {"room_number": booking["room_number"], "status": "Reserved"},
+            {"room_number": room_number, "status": "Reserved"},
+            {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
+        )
+    elif booking_status == "Checked-in":
+        # If guest is currently checked in, remove from customers and free up room
+        await db.customers.delete_one({
+            "name": guest_name,
+            "current_room": room_number
+        })
+        
+        # Make room available
+        await db.rooms.update_one(
+            {"room_number": room_number},
             {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
         )
     
-    return {"message": "Booking cancelled successfully"}
+    # Log activity
+    await log_activity(
+        action="booking_cancelled",
+        description=f"Booking for {guest_name} in room {room_number} cancelled by admin (was {booking_status})",
+        user_name=current_user.username,
+        entity_type="booking",
+        entity_id=booking_id,
+        details={
+            "guest_name": guest_name,
+            "room_number": room_number,
+            "original_status": booking_status
+        }
+    )
+    
+    return {
+        "message": f"Booking cancelled successfully. Guest {guest_name} removed from room {room_number}.",
+        "original_status": booking_status
+    }
 
 # Initialize sample data
 @api_router.post("/init-data")
