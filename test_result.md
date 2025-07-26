@@ -693,6 +693,21 @@ frontend:
         agent: "main"
         comment: "Implemented Room Availability Checker feature on dashboard with date selection, availability search, room details display, and booking integration."
 
+  - task: "Real-Time Cash/Bank Balance Testing for Advance Payments"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "PASSED - Comprehensive Real-Time Cash/Bank Balance Testing for Advance Payments completed successfully with 100% success rate (4/4 tests passed). ✅ Test 1 - Check-in Advance Payment Reflection: Successfully tested advance payments during check-in process with both Cash (1500.0) and Card (2000.0) payment methods. Cash advance correctly increased cash_balance from 122650.0 to 124150.0, while bank_balance remained unchanged. Card advance correctly increased bank_balance from 25625.0 to 27625.0, while cash_balance remained unchanged. Real-time balance updates working perfectly. ✅ Test 2 - 'Get Advance' Feature Reflection: Successfully tested additional advance collection from checked-in customers using income endpoint (/api/incomes) with category 'Advance Payment'. Cash advance (800.0) correctly increased cash_balance, Card advance (1200.0) correctly increased bank_balance. Both updates reflected immediately in GET /api/daily-financial-summary. ✅ Test 3 - Real-time Balance Updates: Verified immediate balance updates after advance payment transactions. Recorded initial balances, performed Cash advance payment (500.0), immediately re-fetched daily-financial-summary, and confirmed balance changes match exactly the advance payment amount and method (Cash: +500.0, Bank: +0.0). ✅ Test 4 - Mixed Payment Methods: Successfully tested all three payment methods - Cash advances correctly increase cash_balance, Card advances correctly increase bank_balance, Bank Transfer advances correctly increase bank_balance. All payment method routing working correctly. ✅ Daily Financial Summary Integration: GET /api/daily-financial-summary endpoint working perfectly with real-time data including total_revenue, total_expenses, cash_balance, bank_balance, and date fields. ✅ Authentication: Admin authentication (admin/admin123) working correctly for all protected endpoints. ✅ Key Verification Points Confirmed: Daily sales record advance payments from check-ins, Income records capture advance payments from 'Get Advance' feature, Both are included in daily-financial-summary calculations, Payment methods correctly route to cash vs bank balances, Updates happen in real-time immediately after transaction. The real-time Cash and Bank balance updates for advance entries system is production-ready and fully addresses the user's concerns about advance payment reflection."
+      - working: "NA"
+        agent: "main"
+        comment: "Real-time Cash/Bank balance testing for advance payments requested by user to verify advance payments from both check-in and 'Get Advance' feature are correctly reflected in real-time in Cash and Bank balances on Inc & Exp page."
+
 metadata:
   created_by: "main_agent"
   version: "2.0"
