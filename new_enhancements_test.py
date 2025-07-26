@@ -454,7 +454,7 @@ def test_booking_amount_recalculation():
             "guest_phone": "+1444555666",
             "guest_id_passport": "ID111222",
             "guest_country": "Australia",
-            "room_number": "201",  # Use available room
+            "room_number": "301",  # Use a different room number
             "check_in_date": (datetime.now().date() + timedelta(days=1)).isoformat(),
             "check_out_date": (datetime.now().date() + timedelta(days=1)).isoformat(),  # Same day = Short Time
             "stay_type": "Short Time",
