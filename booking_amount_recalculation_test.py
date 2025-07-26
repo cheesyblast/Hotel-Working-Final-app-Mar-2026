@@ -435,18 +435,21 @@ def cleanup_test_data():
     print("\n7. Cleaning up test data")
     
     try:
-        # Delete test room
+        # Delete test rooms
         rooms_response = requests.get(f"{API_BASE}/rooms", headers=get_auth_headers())
         if rooms_response.status_code == 200:
             rooms = rooms_response.json()
-            test_room = next((r for r in rooms if r.get('room_number') == 'TEST101'), None)
+            test_room_numbers = ['TEST101', 'TEST102', 'TEST103']
             
-            if test_room:
-                delete_response = requests.delete(f"{API_BASE}/rooms/{test_room.get('id')}", headers=get_auth_headers())
-                if delete_response.status_code == 200:
-                    print("✅ Test room cleaned up")
-                else:
-                    print(f"⚠️ Failed to delete test room - Status: {delete_response.status_code}")
+            for room_number in test_room_numbers:
+                test_room = next((r for r in rooms if r.get('room_number') == room_number), None)
+                
+                if test_room:
+                    delete_response = requests.delete(f"{API_BASE}/rooms/{test_room.get('id')}", headers=get_auth_headers())
+                    if delete_response.status_code == 200:
+                        print(f"✅ Test room {room_number} cleaned up")
+                    else:
+                        print(f"⚠️ Failed to delete test room {room_number} - Status: {delete_response.status_code}")
         
         print("✅ Cleanup completed")
         return True
