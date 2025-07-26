@@ -551,6 +551,9 @@ const Dashboard = () => {
   // Get current user context
   const { user } = useAuth();
   
+  // Get financial context to trigger refreshes across components
+  const { triggerFinancialRefresh } = useFinancial();
+  
   // Modal states
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
