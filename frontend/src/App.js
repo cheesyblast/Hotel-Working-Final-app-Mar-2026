@@ -824,6 +824,86 @@ const Dashboard = () => {
     }
   };
 
+  // Handle advance payment
+  const handleAdvancePayment = (customer) => {
+    setSelectedCustomer(customer);
+    setAdvancePaymentData({ amount: '', payment_method: 'Cash', notes: '' });
+    setShowAdvancePaymentModal(true);
+  };
+
+  const confirmAdvancePayment = async () => {
+    try {
+      await axios.post(`${API}/advance-payment`, {
+        customer_id: selectedCustomer.id,
+        amount: parseFloat(advancePaymentData.amount) || 0,
+        payment_method: advancePaymentData.payment_method,
+        notes: advancePaymentData.notes
+      });
+      
+      setShowAdvancePaymentModal(false);
+      setSelectedCustomer(null);
+      
+      // Refresh data after advance payment
+      await Promise.all([
+        fetchCheckedInCustomers()
+      ]);
+      
+      alert(`Advance payment of LKR ${advancePaymentData.amount} collected successfully!`);
+    } catch (error) {
+      console.error('Error collecting advance payment:', error);
+      alert('Error collecting advance payment: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Handle booking cancellation (admin only)
+  const handleCancelBooking = async (customer) => {
+    if (!window.confirm(`Are you sure you want to cancel the booking for ${customer.name}? This will remove the guest from the room and cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Find the booking for this customer
+      const allBookingsResponse = await axios.get(`${API}/bookings`);
+      const allBookings = allBookingsResponse.data.bookings || [];
+      
+      const booking = allBookings.find(b => 
+        b.guest_name === customer.name && 
+        b.room_number === customer.current_room &&
+        (b.status === 'Checked-in' || b.status === 'Checked In')
+      );
+      
+      if (booking) {
+        await axios.post(`${API}/cancel/${booking.id}`);
+        
+        // Refresh data after cancellation
+        await Promise.all([
+          fetchRooms(),
+          fetchCheckedInCustomers(),
+          fetchUpcomingBookings()
+        ]);
+        
+        alert(`Booking for ${customer.name} has been cancelled successfully.`);
+      } else {
+        alert('Unable to find the booking record for this customer.');
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Error cancelling booking: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Dropdown toggle functions
+  const closeAllCustomerDropdowns = () => {
+    setOpenCustomerDropdowns({});
+  };
+
+  const toggleCustomerDropdown = (customerId) => {
+    setOpenCustomerDropdowns(prev => ({
+      ...prev,
+      [customerId]: !prev[customerId]
+    }));
+  };
+
   const handleCheckin = async (booking) => {
     setSelectedBooking(booking);
     setCheckinData({ advance_amount: 0, notes: '', payment_method: 'Cash' });
