@@ -74,10 +74,43 @@ def authenticate():
         print(f"❌ Authentication failed - Exception: {e}")
         return None
 
+def step0_create_test_room():
+    """Step 0: Create a test room for our booking"""
+    print("\n🏨 STEP 0: Creating a test room...")
+    
+    try:
+        room_data = {
+            "room_number": "999",
+            "room_type": "Double",
+            "price_per_night": 8500.0,
+            "max_occupancy": 2,
+            "amenities": ["WiFi", "AC", "TV"]
+        }
+        
+        headers = {"Authorization": auth_token}
+        response = requests.post(f"{API_BASE}/rooms", json=room_data, headers=headers)
+        print(f"Create Room Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            room = response.json()
+            print(f"✅ Test room created successfully")
+            print(f"   Room Number: {room.get('room_number')}")
+            print(f"   Room Type: {room.get('room_type')}")
+            print(f"   Status: {room.get('status')}")
+            return True
+        else:
+            print(f"❌ Room creation failed - Status code: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Room creation failed - Exception: {e}")
+        return False
+
 def step1_create_booking():
     """Step 1: Create a test booking"""
     print("\n📝 STEP 1: Creating a test booking...")
-    global test_booking_id
+    global test_booking_id, test_room_number
+    test_room_number = "999"  # Use our test room
     
     try:
         # Create booking for tomorrow
