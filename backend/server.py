@@ -1834,6 +1834,30 @@ async def update_booking(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Booking not found")
     
+    # If the booking is checked in, also update the corresponding customer record
+    if current_booking.get('status') == 'Checked In':
+        customer_update_data = {}
+        
+        # Update customer record with new dates if they changed
+        if 'check_in_date' in update_data:
+            customer_update_data['check_in_date'] = update_data['check_in_date']
+        if 'check_out_date' in update_data:
+            customer_update_data['check_out_date'] = update_data['check_out_date']
+        if 'booking_amount' in update_data:
+            customer_update_data['room_charges'] = update_data['booking_amount']
+            customer_update_data['total_amount'] = update_data['booking_amount']  # Recalculate total
+        
+        if customer_update_data:
+            # Find and update customer record based on booking details
+            await db.customers.update_one(
+                {
+                    "name": current_booking.get('guest_name'),
+                    "current_room": current_booking.get('room_number')
+                },
+                {"$set": customer_update_data}
+            )
+            changes_made.append("Customer record updated")
+    
     # Log activity
     await log_activity(
         action="booking_updated",
