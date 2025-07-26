@@ -1882,6 +1882,82 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Advance Payment Modal */}
+      {showAdvancePaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Collect Advance Payment</h3>
+            {selectedCustomer && (
+              <div className="mb-4">
+                <p className="text-sm text-gray-600">Guest: {selectedCustomer.name}</p>
+                <p className="text-sm text-gray-600">Room: {selectedCustomer.current_room}</p>
+                <p className="text-sm text-gray-600">Current Advance: LKR {selectedCustomer.advance_amount || 0}</p>
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount to Collect *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={advancePaymentData.amount}
+                  onChange={(e) => setAdvancePaymentData({...advancePaymentData, amount: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter amount"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Method
+                </label>
+                <select
+                  value={advancePaymentData.payment_method}
+                  onChange={(e) => setAdvancePaymentData({...advancePaymentData, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes (Optional)
+                </label>
+                <textarea
+                  value={advancePaymentData.notes}
+                  onChange={(e) => setAdvancePaymentData({...advancePaymentData, notes: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Add any notes about this advance payment"
+                  rows="3"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAdvancePaymentModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAdvancePayment}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Collect Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* New Booking Modal */}
       {showNewBookingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
