@@ -91,8 +91,8 @@ def test_past_date_booking_upcoming_status():
         print(f"Using room: {room_number}")
         
         # Create past date booking with 'Upcoming' status
-        past_date = (datetime.now() - timedelta(days=2)).date()
-        checkout_date = (datetime.now() - timedelta(days=1)).date()
+        past_date = (datetime.now() - timedelta(days=5)).date()
+        checkout_date = (datetime.now() - timedelta(days=4)).date()
         
         booking_data = {
             "guest_name": "John Smith",
