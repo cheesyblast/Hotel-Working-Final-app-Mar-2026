@@ -3147,6 +3147,14 @@ const Expenses = () => {
     fetchDailyFinancialSummary();
   }, []);
 
+  // Listen for financial refresh triggers from other components
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchDailyFinancialSummary();
+      fetchFinancialSummary();
+    }
+  }, [refreshTrigger]);
+
   const fetchExpenses = async () => {
     try {
       const response = await axios.get(`${API}/expenses`);
