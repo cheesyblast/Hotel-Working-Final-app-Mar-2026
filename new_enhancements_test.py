@@ -634,7 +634,13 @@ def test_authorization():
             print(f"❌ Failed to check in test booking: {checkin_response.status_code}")
             return False
         
-        customer_id = checkin_response.json().get("customer_id")
+        checkin_result = checkin_response.json()
+        customer_data = checkin_result.get("customer", {})
+        customer_id = customer_data.get("id")
+        
+        if not customer_id:
+            print("❌ Customer ID not found in checkin response for auth test")
+            return False
         
         # Test advance payment with admin credentials
         advance_data = {
