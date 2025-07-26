@@ -477,8 +477,8 @@ def test_booking_amount_recalculation():
         
         # Update booking to extend dates (should trigger recalculation)
         update_data = {
-            "check_in_date": (datetime.now().date() + timedelta(days=1)).isoformat(),
-            "check_out_date": (datetime.now().date() + timedelta(days=3)).isoformat(),  # 2 nights
+            "check_in_date": (datetime.now().date() + timedelta(days=10)).isoformat(),
+            "check_out_date": (datetime.now().date() + timedelta(days=12)).isoformat(),  # 2 nights
             "additional_notes": "Extended to multiple days"
         }
         
