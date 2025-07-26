@@ -222,13 +222,13 @@ def test_short_time_booking_recalculation():
     print("\n4. Testing Short Time Booking Amount Recalculation")
     
     today = datetime.now().date()
-    check_in_date = today + timedelta(days=2)
+    check_in_date = today + timedelta(days=5)  # Use different date to avoid conflicts
     
     short_time_booking_data = {
         "guest_name": "Jane Smith",
         "guest_email": "jane.smith@example.com",
         "guest_phone": "+1987654321",
-        "room_number": "TEST101",
+        "room_number": "TEST102",  # Use different room
         "check_in_date": check_in_date.strftime('%Y-%m-%d'),
         "stay_type": "Short Time",
         "booking_amount": 2500.0,  # 50% of 5000 = 2500
