@@ -250,14 +250,29 @@ frontend:
         agent: "main"
         comment: "Successfully implemented complete authentication frontend system. AuthContext with JWT token management, setup status checking, login/logout functions working correctly. SetupWizard component for hotel configuration, LoginPage with forgot password functionality, ProtectedRoute component for access control. Updated RealTimeClock with user info and logout button. Added comprehensive Email Settings tab with support for SMTP, SendGrid, AWS SES, Gmail providers. Added admin-only System Management tab with complete database reset feature. App properly wrapped with AuthProvider and ProtectedRoute. Authentication system fully functional and tested."
 
-  - task: "Enhanced Checked-in Guest Management UI and Functionality"
-    implemented: true
-    working: true
+  - task: "Real-time Financial Balance Updates and Booking Edit Issues"
+    implemented: false
+    working: false
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    priority: "critical"
+    needs_retesting: true
     status_history:
+      - working: false
+        agent: "user"
+        comment: "CRITICAL ISSUES IDENTIFIED: (1) When adding advance for checked-in guests using Get Advance feature, the Cash/Bank balance in Inc & Exp top div is not updating in real-time. The amounts are being recorded but the financial summary cards are not refreshing. (2) Dates cannot be extended for Day or Short time bookings when they're in Checked-in guests section - the booking edit functionality is still not working properly for checked-in bookings despite previous fixes."
+
+  - task: "Enhanced Checked-in Guest Management UI and Functionality"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "PARTIAL FUNCTIONALITY ISSUES: While the Get Advance feature and dropdown UI are implemented, there are still issues: (1) Advance payments not reflecting in real-time financial balance updates, (2) Booking date extension still not working for checked-in bookings."
       - working: true
         agent: "testing"
         comment: "PASSED - REAL-TIME CASH/BANK BALANCE TESTING FOR ADVANCE PAYMENTS - 100% SUCCESS RATE (4/4 tests). All critical test scenarios passed: ✅ Check-in Advance Payment Reflection - Cash advance payments during check-in correctly increase cash_balance in real-time, Card advance payments correctly increase bank_balance. ✅ Get Advance Feature Reflection - Additional advance collection from checked-in customers working correctly using income endpoint with category 'Advance Payment'. Cash advances increase cash_balance, Card advances increase bank_balance. ✅ Real-time Balance Updates - Balance changes match exactly the advance payment amount and method, updates happen immediately after transaction. ✅ Mixed Payment Methods - Cash advance payments increase cash_balance, Card/Bank Transfer advance payments increase bank_balance. All verification points confirmed: Daily sales record advance payments from check-ins, Income records capture advance payments from Get Advance feature, Both are included in daily-financial-summary calculations, Payment methods correctly route to cash vs bank balances, Updates happen in real-time immediately after transaction."
