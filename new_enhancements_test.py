@@ -607,7 +607,7 @@ def test_authorization():
             "guest_name": "Auth Test User",
             "guest_email": "auth.test@example.com",
             "guest_phone": "+1000000000",
-            "room_number": "301",
+            "room_number": "102",  # Use available room
             "check_in_date": datetime.now().date().isoformat(),
             "check_out_date": (datetime.now().date() + timedelta(days=1)).isoformat(),
             "stay_type": "Night Stay",
