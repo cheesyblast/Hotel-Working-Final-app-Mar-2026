@@ -325,7 +325,7 @@ def test_admin_cancel_booking_checked_in():
             "guest_phone": "+1555666777",
             "guest_id_passport": "ID345678",
             "guest_country": "UK",
-            "room_number": "103",
+            "room_number": "998",  # Use available room
             "check_in_date": datetime.now().date().isoformat(),
             "check_out_date": (datetime.now().date() + timedelta(days=1)).isoformat(),
             "stay_type": "Night Stay",
