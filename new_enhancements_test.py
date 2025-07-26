@@ -121,8 +121,14 @@ def test_advance_payment_collection():
             return False
         
         checkin_result = checkin_response.json()
-        customer_id = checkin_result.get("customer_id")
+        customer_data = checkin_result.get("customer", {})
+        customer_id = customer_data.get("id")
         print(f"✅ Booking checked in, customer ID: {customer_id}")
+        
+        if not customer_id:
+            print("❌ Customer ID not found in checkin response")
+            print(f"Checkin response: {checkin_result}")
+            return False
         
         # Step 2: Test advance payment collection
         print("Step 2: Testing advance payment collection...")
