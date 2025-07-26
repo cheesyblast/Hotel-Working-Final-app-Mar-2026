@@ -165,13 +165,26 @@ def step2_update_booking_dates(initial_amount, room_number, room_price):
     print("-" * 70)
     
     try:
-        # First, verify booking is in "Upcoming" status
-        booking_response = requests.get(f"{API_BASE}/bookings/{test_booking_id}", headers=get_auth_headers())
-        if booking_response.status_code != 200:
-            print("❌ Failed to get booking details")
+        # Get all bookings and find our booking
+        bookings_response = requests.get(f"{API_BASE}/bookings", headers=get_auth_headers())
+        if bookings_response.status_code != 200:
+            print("❌ Failed to get bookings")
             return False, initial_amount
         
-        booking = booking_response.json()
+        bookings_data = bookings_response.json()
+        bookings = bookings_data.get('bookings', [])
+        
+        # Find our booking
+        booking = None
+        for b in bookings:
+            if b.get('id') == test_booking_id:
+                booking = b
+                break
+        
+        if not booking:
+            print("❌ Could not find our test booking")
+            return False, initial_amount
+        
         print(f"Current booking status: {booking.get('status')}")
         
         if booking.get('status') != 'Upcoming':
@@ -200,12 +213,25 @@ def step2_update_booking_dates(initial_amount, room_number, room_price):
             print("✅ Booking dates updated successfully")
             
             # Get updated booking to verify amount recalculation
-            updated_booking_response = requests.get(f"{API_BASE}/bookings/{test_booking_id}", headers=get_auth_headers())
-            if updated_booking_response.status_code != 200:
-                print("❌ Failed to get updated booking details")
+            updated_bookings_response = requests.get(f"{API_BASE}/bookings", headers=get_auth_headers())
+            if updated_bookings_response.status_code != 200:
+                print("❌ Failed to get updated bookings")
                 return False, initial_amount
             
-            updated_booking = updated_booking_response.json()
+            updated_bookings_data = updated_bookings_response.json()
+            updated_bookings = updated_bookings_data.get('bookings', [])
+            
+            # Find our updated booking
+            updated_booking = None
+            for b in updated_bookings:
+                if b.get('id') == test_booking_id:
+                    updated_booking = b
+                    break
+            
+            if not updated_booking:
+                print("❌ Could not find updated booking")
+                return False, initial_amount
+            
             new_amount = updated_booking.get('booking_amount')
             
             print(f"📊 AMOUNT COMPARISON:")
