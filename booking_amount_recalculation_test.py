@@ -196,7 +196,7 @@ def test_booking_amount_recalculation_night_stay():
         
         if not updated_bookings:
             print("❌ No bookings found after update")
-            return False
+            return False, None
         
         updated_booking = updated_bookings[0]
         updated_amount = updated_booking.get('booking_amount')
