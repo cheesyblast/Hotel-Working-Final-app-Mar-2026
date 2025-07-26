@@ -1808,17 +1808,25 @@ async def update_booking(
         room = await db.rooms.find_one({"room_number": current_booking.get('room_number')})
         if room:
             price_per_night = room.get('price_per_night', 0.0)
-            stay_type = current_booking.get('stay_type', 'Night Stay')
             
-            if stay_type == 'Short Time':
-                # Short time bookings are 50% of night rate
+            # Recalculate stay_type based on new dates
+            if new_check_in == new_check_out:
+                # Same day = Short Time
+                stay_type = 'Short Time'
                 new_booking_amount = price_per_night * 0.5
             else:
-                # Night stay - calculate based on number of nights
+                # Different days = Night Stay
+                stay_type = 'Night Stay'
                 nights = (new_check_out - new_check_in).days
                 if nights <= 0:
                     nights = 1  # Minimum 1 night
                 new_booking_amount = price_per_night * nights
+            
+            # Update stay_type if it has changed
+            current_stay_type = current_booking.get('stay_type', 'Night Stay')
+            if stay_type != current_stay_type:
+                update_data['stay_type'] = stay_type
+                changes_made.append(f"Stay type updated from {current_stay_type} to {stay_type}")
             
             # Update booking amount if it has changed
             current_amount = current_booking.get('booking_amount', 0.0)
