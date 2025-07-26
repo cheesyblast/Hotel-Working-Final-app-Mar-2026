@@ -180,17 +180,18 @@ def step2_update_booking_dates(initial_amount, room_number, room_price):
         
         # Update booking dates - extend by 1 day (convert Short Time to Night Stay)
         today = datetime.now().date()
-        tomorrow = today + timedelta(days=1)
+        future_date = today + timedelta(days=3)  # Same future date as original booking
+        extended_checkout = future_date + timedelta(days=1)  # Extend to next day
         
         update_data = {
-            "check_in_date": today.isoformat(),
-            "check_out_date": tomorrow.isoformat(),  # Extend to next day
+            "check_in_date": future_date.isoformat(),
+            "check_out_date": extended_checkout.isoformat(),  # Extend to next day
             "additional_notes": "Updated dates - should recalculate amount"
         }
         
         print(f"Updating booking dates:")
         print(f"   Original: {booking.get('check_in_date')} to {booking.get('check_out_date')}")
-        print(f"   New: {today} to {tomorrow}")
+        print(f"   New: {future_date} to {extended_checkout}")
         print(f"   This should change from Short Time (50% rate) to Night Stay (full rate)")
         
         response = requests.put(f"{API_BASE}/bookings/{test_booking_id}", json=update_data, headers=get_auth_headers())
