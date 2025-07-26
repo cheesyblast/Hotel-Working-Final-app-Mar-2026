@@ -1728,10 +1728,23 @@ async def update_booking(
     
     # Check if booking can be modified
     booking_status = current_booking.get('status', 'Upcoming')
-    if booking_status not in ['Upcoming']:
+    
+    # Allow different types of modifications based on status
+    if booking_status == 'Upcoming':
+        # Upcoming bookings can be fully modified
+        can_modify_room = True
+        can_modify_dates = True
+        can_modify_guest_info = True
+    elif booking_status in ['Checked-in', 'Checked In']:
+        # Checked-in bookings can only have dates extended (not shortened) and guest info updated
+        can_modify_room = False  # Can't change room for checked-in guests
+        can_modify_dates = True  # Can extend dates
+        can_modify_guest_info = True  # Can update guest information
+    else:
+        # Other statuses (Cancelled, Completed) cannot be modified
         raise HTTPException(
             status_code=400, 
-            detail=f"Cannot modify booking with status '{booking_status}'. Only 'Upcoming' bookings can be modified."
+            detail=f"Cannot modify booking with status '{booking_status}'. Only 'Upcoming' and 'Checked-in' bookings can be modified."
         )
     
     update_data = {}
