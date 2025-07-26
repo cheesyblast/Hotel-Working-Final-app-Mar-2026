@@ -688,7 +688,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Past Date Booking Functionality with Status Selection"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
