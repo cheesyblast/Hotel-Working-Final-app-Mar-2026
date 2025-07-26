@@ -455,8 +455,8 @@ def test_booking_amount_recalculation():
             "guest_id_passport": "ID111222",
             "guest_country": "Australia",
             "room_number": "301",  # Use a different room number
-            "check_in_date": (datetime.now().date() + timedelta(days=1)).isoformat(),
-            "check_out_date": (datetime.now().date() + timedelta(days=1)).isoformat(),  # Same day = Short Time
+            "check_in_date": (datetime.now().date() + timedelta(days=10)).isoformat(),
+            "check_out_date": (datetime.now().date() + timedelta(days=10)).isoformat(),  # Same day = Short Time
             "stay_type": "Short Time",
             "booking_amount": 6000.0,  # Short time rate
             "additional_notes": "Short time booking for recalculation test"
