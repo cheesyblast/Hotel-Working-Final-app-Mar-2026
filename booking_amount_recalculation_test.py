@@ -83,26 +83,44 @@ def test_health_check():
         return False
 
 def setup_test_data():
-    """Set up test data - create rooms and initial booking"""
+    """Set up test data - create multiple test rooms with known pricing"""
     print("\n2. Setting up test data")
     
-    # Create a test room with known pricing
-    test_room_data = {
-        "room_number": "TEST101",
-        "room_type": "Double",
-        "price_per_night": 5000.0,  # LKR 5000 per night
-        "max_occupancy": 2,
-        "amenities": ["WiFi", "AC", "TV"]
-    }
+    # Create multiple test rooms to avoid conflicts
+    test_rooms = [
+        {
+            "room_number": "TEST101",
+            "room_type": "Double",
+            "price_per_night": 5000.0,  # LKR 5000 per night
+            "max_occupancy": 2,
+            "amenities": ["WiFi", "AC", "TV"]
+        },
+        {
+            "room_number": "TEST102",
+            "room_type": "Double",
+            "price_per_night": 5000.0,  # LKR 5000 per night
+            "max_occupancy": 2,
+            "amenities": ["WiFi", "AC", "TV"]
+        },
+        {
+            "room_number": "TEST103",
+            "room_type": "Triple",
+            "price_per_night": 7500.0,  # LKR 7500 per night
+            "max_occupancy": 3,
+            "amenities": ["WiFi", "AC", "TV", "Balcony"]
+        }
+    ]
     
     try:
-        # Create room
-        response = requests.post(f"{API_BASE}/rooms", json=test_room_data, headers=get_auth_headers())
-        if response.status_code == 200:
-            print("✅ Test room created successfully")
-        else:
-            print(f"⚠️ Room creation response: {response.status_code} - {response.text}")
+        created_rooms = 0
+        for room_data in test_rooms:
+            response = requests.post(f"{API_BASE}/rooms", json=room_data, headers=get_auth_headers())
+            if response.status_code == 200:
+                created_rooms += 1
+            else:
+                print(f"⚠️ Room {room_data['room_number']} creation response: {response.status_code}")
         
+        print(f"✅ {created_rooms} test rooms created successfully")
         return True
     except Exception as e:
         print(f"❌ Test data setup failed - Exception: {e}")
