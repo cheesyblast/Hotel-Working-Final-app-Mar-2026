@@ -249,6 +249,12 @@ def step2_update_booking_dates(initial_amount, room_number, room_price):
             else:
                 print("❌ CRITICAL BUG FOUND: Booking amount recalculation NOT WORKING")
                 print(f"   Expected: {expected_new_amount}, Got: {new_amount}")
+                print("🔍 ROOT CAUSE ANALYSIS:")
+                print("   The booking update logic gets stay_type from current booking:")
+                print("   stay_type = current_booking.get('stay_type', 'Night Stay')")
+                print("   But stay_type is never updated when dates change!")
+                print("   So it still calculates as 'Short Time' (50% rate) instead of 'Night Stay'")
+                print("   SOLUTION: Update stay_type based on new dates in booking update logic")
                 return False, new_amount
         else:
             print(f"❌ Failed to update booking dates - Status: {response.status_code}")
