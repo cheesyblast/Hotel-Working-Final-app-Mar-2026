@@ -3480,25 +3480,25 @@ const Expenses = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-green-800 dark:text-green-300 uppercase tracking-wider">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {getPaginatedData(dailySales, roomBookingsPage).map((sale, index) => (
                       <tr key={index}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm text-gray-900 dark:text-gray-300">
                             {new Date(sale.date).toLocaleDateString()}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{sale.customer_name}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-300">{sale.customer_name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{sale.room_number}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-300">{sale.room_number}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{sale.payment_method}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-300">{sale.payment_method}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-bold text-green-600">LKR {sale.total_amount.toFixed(2)}</div>
+                          <div className="text-sm font-bold text-green-600 dark:text-green-400">LKR {sale.total_amount.toFixed(2)}</div>
                         </td>
                       </tr>
                     ))}
@@ -3508,7 +3508,7 @@ const Expenses = () => {
               {renderPagination(dailySales, roomBookingsPage, setRoomBookingsPage)}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               No room booking income recorded
             </div>
           )}
@@ -3516,7 +3516,7 @@ const Expenses = () => {
 
         {/* Additional Income */}
         <div>
-          <h4 className="text-md font-medium text-blue-800 mb-3">Additional Income</h4>
+          <h4 className="text-md font-medium text-blue-800 dark:text-blue-400 mb-3">Additional Income</h4>
           {incomes && incomes.length > 0 ? (
             <div>
               <div className="overflow-x-auto">
