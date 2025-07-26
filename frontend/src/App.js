@@ -1565,10 +1565,7 @@ const Dashboard = () => {
                       Contact
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Edit Booking
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -1590,43 +1587,95 @@ const Dashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-white">{customer.phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleCheckout(customer)}
-                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
-                        >
-                          Checkout
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={async () => {
-                            try {
-                              // Fetch all bookings to find the actual booking for this customer
-                              const allBookingsResponse = await axios.get(`${API}/bookings`);
-                              const allBookings = allBookingsResponse.data.bookings || [];
-                              
-                              // Find the booking for this customer by matching guest name and room
-                              const booking = allBookings.find(b => 
-                                b.guest_name === customer.name && 
-                                b.room_number === customer.current_room &&
-                                (b.status === 'Checked-in' || b.status === 'Checked In')
-                              );
-                              
-                              if (booking) {
-                                openEditBookingModal(booking);
-                              } else {
-                                alert('Unable to find the booking record for this customer. Please try refreshing the page.');
-                              }
-                            } catch (error) {
-                              console.error('Error finding booking for customer:', error);
-                              alert('Error finding booking record. Please try again.');
-                            }
-                          }}
-                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
-                        >
-                          Edit Booking
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap relative">
+                        <div className="flex items-center space-x-2">
+                          {/* Checkout Button */}
+                          <button
+                            onClick={() => handleCheckout(customer)}
+                            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+                          >
+                            Checkout
+                          </button>
+                          
+                          {/* Actions Dropdown */}
+                          <div className="relative">
+                            <button
+                              onClick={() => toggleCustomerDropdown(customer.id)}
+                              className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors flex items-center"
+                            >
+                              Actions
+                              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            
+                            {openCustomerDropdowns[customer.id] && (
+                              <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-50 border border-gray-600">
+                                <div className="py-1">
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        // Fetch all bookings to find the actual booking for this customer
+                                        const allBookingsResponse = await axios.get(`${API}/bookings`);
+                                        const allBookings = allBookingsResponse.data.bookings || [];
+                                        
+                                        // Find the booking for this customer by matching guest name and room
+                                        const booking = allBookings.find(b => 
+                                          b.guest_name === customer.name && 
+                                          b.room_number === customer.current_room &&
+                                          (b.status === 'Checked-in' || b.status === 'Checked In')
+                                        );
+                                        
+                                        if (booking) {
+                                          openEditBookingModal(booking);
+                                        } else {
+                                          alert('Unable to find the booking record for this customer. Please try refreshing the page.');
+                                        }
+                                        closeAllCustomerDropdowns();
+                                      } catch (error) {
+                                        console.error('Error finding booking for customer:', error);
+                                        alert('Error finding booking record. Please try again.');
+                                        closeAllCustomerDropdowns();
+                                      }
+                                    }}
+                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
+                                  >
+                                    <svg className="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Edit Booking
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      handleAdvancePayment(customer);
+                                      closeAllCustomerDropdowns();
+                                    }}
+                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
+                                  >
+                                    <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                    </svg>
+                                    Get Advance
+                                  </button>
+                                  {user?.role === 'Admin' && (
+                                    <button
+                                      onClick={() => {
+                                        handleCancelBookingForCustomer(customer);
+                                        closeAllCustomerDropdowns();
+                                      }}
+                                      className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
+                                    >
+                                      <svg className="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                      </svg>
+                                      Cancel Booking
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ))}
