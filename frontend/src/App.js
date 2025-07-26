@@ -10,6 +10,33 @@ const API = `${BACKEND_URL}/api`;
 // Authentication Context
 const AuthContext = createContext();
 
+// Financial Context for cross-component data refresh
+const FinancialContext = createContext();
+
+// Financial Provider
+const FinancialProvider = ({ children }) => {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  const triggerFinancialRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+  
+  return (
+    <FinancialContext.Provider value={{ refreshTrigger, triggerFinancialRefresh }}>
+      {children}
+    </FinancialContext.Provider>
+  );
+};
+
+// Hook to use financial context
+const useFinancial = () => {
+  const context = useContext(FinancialContext);
+  if (!context) {
+    throw new Error('useFinancial must be used within a FinancialProvider');
+  }
+  return context;
+};
+
 // Authentication Provider
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
