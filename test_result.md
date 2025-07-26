@@ -252,12 +252,15 @@ frontend:
 
   - task: "Past Date Booking Functionality with Status Selection"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE BUG INVESTIGATION COMPLETED - NO BUG FOUND: Conducted extensive testing of the reported 'booking not found' error for checked-in booking edits. Created multiple test scenarios: ✅ Booking Edit Bug Test: Created booking → edited while 'Upcoming' (works) → checked-in → attempted edit → received proper error message 'Cannot modify booking with status Checked-in. Only Upcoming bookings can be modified.' ✅ Status Investigation: Confirmed system uses 'Checked-in' status consistently, all booking statuses working correctly ('Upcoming', 'Checked-in', 'Completed'). ✅ Booking ID Persistence Test: Verified booking IDs remain consistent throughout entire lifecycle (creation → edit → check-in), no ID corruption or loss. ✅ Database Integrity: Confirmed bookings exist after check-in with correct status and can be found in all booking queries. ✅ Error Handling: Edit attempts on 'Checked-in' bookings properly return 400 status with correct error message, not 404 'booking not found'. The reported bug could not be reproduced under normal conditions. The booking edit functionality is working correctly with proper error messages for status restrictions."
       - working: false
         agent: "user"
         comment: "NEW BUG IDENTIFIED: User reported that booking editing works correctly for 'Upcoming' bookings (including the date change fix), but when a booking is moved to 'Checked In' status (after check-in), attempting to edit the booking results in 'booking not found' error instead of the expected 'Cannot modify booking with Checked In status' error message. This suggests there's an issue with booking lookup or status field handling for checked-in bookings. Expected behavior: should show proper error message that only Upcoming bookings can be modified, not 'booking not found'."
