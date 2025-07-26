@@ -250,6 +250,18 @@ frontend:
         agent: "main"
         comment: "Successfully implemented complete authentication frontend system. AuthContext with JWT token management, setup status checking, login/logout functions working correctly. SetupWizard component for hotel configuration, LoginPage with forgot password functionality, ProtectedRoute component for access control. Updated RealTimeClock with user info and logout button. Added comprehensive Email Settings tab with support for SMTP, SendGrid, AWS SES, Gmail providers. Added admin-only System Management tab with complete database reset feature. App properly wrapped with AuthProvider and ProtectedRoute. Authentication system fully functional and tested."
 
+  - task: "Enhanced Checked-in Guest Management UI and Functionality"
+    implemented: false
+    working: false
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "NEW ENHANCEMENT REQUESTS: (1) Remove simple Edit Booking button on Checked-in Guests section and replace with dropdown containing: Edit Booking, Get Advance, Cancel Booking (admin only). (2) Get Advance functionality should record advance payments to income page. (3) Fix dark theme for Income records in Inc & Exp page. (4) Fix issue where Short Time bookings after check-in cannot be extended (still shows booking not found). These enhancements will improve the UI/UX and add missing functionality for hotel operations."
+
   - task: "Past Date Booking Functionality with Status Selection"
     implemented: true
     working: true
