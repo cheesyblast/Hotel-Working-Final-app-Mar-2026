@@ -76,7 +76,10 @@ def get_available_room():
             available_rooms = [room for room in rooms if room.get('status') == 'Available']
             
             if available_rooms:
-                test_room = available_rooms[0]
+                # Try to find a room that's not TEST103 (which seems to have conflicts)
+                preferred_rooms = [room for room in available_rooms if room['room_number'] != 'TEST103']
+                test_room = preferred_rooms[0] if preferred_rooms else available_rooms[0]
+                
                 print(f"✅ Found available room: {test_room['room_number']} - {test_room['room_type']}")
                 print(f"   Price per night: {test_room['price_per_night']} LKR")
                 return test_room
