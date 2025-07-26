@@ -275,11 +275,11 @@ def test_checked_in_booking_update():
         "guest_name": "Alice Johnson",
         "guest_email": "alice.johnson@example.com",
         "guest_phone": "+1122334455",
-        "room_number": "TEST101",
+        "room_number": "TEST103",  # Use different room
         "check_in_date": check_in_date.strftime('%Y-%m-%d'),
         "check_out_date": check_out_date.strftime('%Y-%m-%d'),
         "stay_type": "Night Stay",
-        "booking_amount": 10000.0,  # 2 nights × 5000
+        "booking_amount": 15000.0,  # 2 nights × 7500 (TEST103 price)
         "booking_status": "Checked In",  # This will create customer record
         "additional_notes": "Checked-in booking for customer record test"
     }
