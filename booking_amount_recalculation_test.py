@@ -178,7 +178,7 @@ def test_booking_amount_recalculation_night_stay():
         if update_response.status_code != 200:
             print(f"❌ Failed to update booking - Status: {update_response.status_code}")
             print(f"Response: {update_response.text}")
-            return False
+            return False, None
         
         update_result = update_response.json()
         print(f"✅ Booking update response: {update_result}")
