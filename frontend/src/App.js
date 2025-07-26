@@ -882,6 +882,9 @@ const Dashboard = () => {
         fetchCheckedInCustomers()
       ]);
       
+      // Trigger financial refresh across all components
+      triggerFinancialRefresh();
+      
       alert(`Advance payment of LKR ${advancePaymentData.amount} collected successfully!`);
     } catch (error) {
       console.error('Error collecting advance payment:', error);
