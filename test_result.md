@@ -252,12 +252,15 @@ frontend:
 
   - task: "Past Date Booking Functionality with Status Selection"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
+      - working: false
+        agent: "main"
+        comment: "CRITICAL BUG FIX: Fixed booking amount recalculation issue when editing booking dates. Backend: Added room availability validation to prevent double bookings, enhanced booking update endpoint to recalculate booking_amount when check-in/check-out dates are modified, added customer record updates for checked-in bookings when dates change. The system now properly recalculates charges based on new stay duration (e.g., changing from 2 nights to 3 nights will update the total amount). Frontend: Added status selection modal that appears when past dates are detected, user can choose between 'Upcoming Booking' or 'Checked In Customer'. Room availability validation prevents conflicts with detailed error messages."
       - working: true
         agent: "testing"
         comment: "PASSED - Room Availability Validation Fix testing completed successfully with 100% success rate (7/7 tests passed). ✅ CRITICAL ISSUE RESOLVED: Room availability validation is now working correctly! The check_room_availability_for_booking() helper function has been successfully integrated into POST /api/bookings endpoint. ✅ DOUBLE BOOKING PREVENTION: System now properly prevents double bookings - conflicting bookings are rejected with 400 status and detailed error messages (e.g., 'Room AVTEST101 is already booked by John Doe from 2025-07-30 to 2025-08-01'). ✅ COMPREHENSIVE CONFLICT DETECTION: All overlapping date scenarios properly detected - bookings that start during existing booking, end during existing booking, encompass existing booking, and same exact dates all correctly rejected. ✅ ROOM EXISTENCE VALIDATION: Bookings for non-existent rooms properly rejected with clear error messages ('Room NONEXISTENT999 does not exist'). ✅ OCCUPIED ROOM VALIDATION: Currently occupied rooms properly protected from conflicting bookings with appropriate error messages. ✅ PAST DATE BOOKING FUNCTIONALITY: Past date bookings still work correctly with both 'Upcoming' and 'Checked In' status - 'Checked In' bookings automatically create customer records and update room status to 'Occupied'. ✅ ERROR MESSAGES: Proper detailed error messages returned for all conflict scenarios. The previously identified critical security/business logic flaw has been completely resolved."
