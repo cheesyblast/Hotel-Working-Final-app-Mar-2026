@@ -90,7 +90,7 @@ def test_booking_edit_bug_fix():
         "guest_phone": "+1234567890",
         "guest_id_passport": "TEST123",
         "guest_country": "Test Country",
-        "room_number": "101",
+        "room_number": "103",
         "check_in_date": tomorrow.isoformat(),
         "check_out_date": day_after.isoformat(),
         "stay_type": "Night Stay",
