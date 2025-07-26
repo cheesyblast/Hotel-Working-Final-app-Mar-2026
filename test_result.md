@@ -716,7 +716,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Past Date Booking Functionality with Status Selection"
+    - "Real-Time Cash/Bank Balance Testing for Advance Payments"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
