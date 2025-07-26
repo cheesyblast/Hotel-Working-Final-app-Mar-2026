@@ -531,8 +531,17 @@ const Dashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   
-  // Dropdown state for booking actions
+  // Dropdown state for booking actions and customer actions
   const [openDropdowns, setOpenDropdowns] = useState({});
+  const [openCustomerDropdowns, setOpenCustomerDropdowns] = useState({});
+  
+  // Advance payment modal state
+  const [showAdvancePaymentModal, setShowAdvancePaymentModal] = useState(false);
+  const [advancePaymentData, setAdvancePaymentData] = useState({
+    amount: '',
+    payment_method: 'Cash',
+    notes: ''
+  });
   
   // Room availability checker state
   const [availabilityData, setAvailabilityData] = useState(null);
