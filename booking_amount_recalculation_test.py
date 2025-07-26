@@ -157,7 +157,7 @@ def test_booking_amount_recalculation_night_stay():
         if response.status_code != 200:
             print(f"❌ Failed to create initial booking - Status: {response.status_code}")
             print(f"Response: {response.text}")
-            return False
+            return False, None
         
         booking = response.json()
         booking_id = booking.get('id')
