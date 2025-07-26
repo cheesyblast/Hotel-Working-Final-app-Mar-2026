@@ -86,11 +86,13 @@ def step1_create_short_time_booking():
     print("-" * 50)
     
     try:
-        # Check room availability for today to tomorrow (then we'll create Short Time for today only)
+        # Use future dates to avoid conflicts with existing bookings
         today = datetime.now().date()
-        tomorrow = today + timedelta(days=1)
+        future_date = today + timedelta(days=3)  # Use a future date
+        future_checkout = future_date + timedelta(days=1)
         
-        availability_response = requests.get(f"{API_BASE}/rooms/availability/check?check_in_date={today}&check_out_date={tomorrow}")
+        # Check room availability for future dates
+        availability_response = requests.get(f"{API_BASE}/rooms/availability/check?check_in_date={future_date}&check_out_date={future_checkout}")
         if availability_response.status_code != 200:
             print(f"❌ Failed to check room availability: {availability_response.text}")
             return False
