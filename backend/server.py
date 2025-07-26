@@ -1788,6 +1788,44 @@ async def update_booking(
         update_data['additional_notes'] = booking_update.additional_notes
         changes_made.append("Notes updated")
     
+    # Recalculate booking amount if dates have changed
+    if booking_update.check_in_date is not None or booking_update.check_out_date is not None:
+        # Get current and new dates
+        current_check_in = current_booking.get('check_in_date')
+        current_check_out = current_booking.get('check_out_date')
+        
+        # Convert current dates to date objects if they're datetime
+        if isinstance(current_check_in, datetime):
+            current_check_in = current_check_in.date()
+        if isinstance(current_check_out, datetime):
+            current_check_out = current_check_out.date()
+        
+        # Use new dates if provided, otherwise use current ones
+        new_check_in = booking_update.check_in_date if booking_update.check_in_date is not None else current_check_in
+        new_check_out = booking_update.check_out_date if booking_update.check_out_date is not None else current_check_out
+        
+        # Get room information to calculate new amount
+        room = await db.rooms.find_one({"room_number": current_booking.get('room_number')})
+        if room:
+            price_per_night = room.get('price_per_night', 0.0)
+            stay_type = current_booking.get('stay_type', 'Night Stay')
+            
+            if stay_type == 'Short Time':
+                # Short time bookings are 50% of night rate
+                new_booking_amount = price_per_night * 0.5
+            else:
+                # Night stay - calculate based on number of nights
+                nights = (new_check_out - new_check_in).days
+                if nights <= 0:
+                    nights = 1  # Minimum 1 night
+                new_booking_amount = price_per_night * nights
+            
+            # Update booking amount if it has changed
+            current_amount = current_booking.get('booking_amount', 0.0)
+            if abs(new_booking_amount - current_amount) > 0.01:  # Use small epsilon for float comparison
+                update_data['booking_amount'] = new_booking_amount
+                changes_made.append(f"Booking amount updated from {current_amount} to {new_booking_amount}")
+    
     if not update_data:
         raise HTTPException(status_code=400, detail="No valid fields provided for update")
     
