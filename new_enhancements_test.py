@@ -85,7 +85,7 @@ def test_advance_payment_collection():
             "guest_phone": "+1234567890",
             "guest_id_passport": "ID123456",
             "guest_country": "USA",
-            "room_number": "101",
+            "room_number": "999",  # Use available room
             "check_in_date": datetime.now().date().isoformat(),
             "check_out_date": (datetime.now().date() + timedelta(days=2)).isoformat(),
             "stay_type": "Night Stay",
