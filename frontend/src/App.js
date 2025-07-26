@@ -610,6 +610,7 @@ const Dashboard = () => {
       // Close dropdowns when clicking outside
       if (!event.target.closest('.relative')) {
         closeAllDropdowns();
+        closeAllCustomerDropdowns();
       }
     };
     
