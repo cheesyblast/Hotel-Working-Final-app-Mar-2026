@@ -105,7 +105,7 @@ def test_1_checkin_advance_payment_reflection():
         "guest_phone": "+1234567890",
         "guest_id_passport": "ID123456",
         "guest_country": "USA",
-        "room_number": "101",
+        "room_number": "105",
         "check_in_date": tomorrow.isoformat(),
         "check_out_date": (tomorrow + timedelta(days=1)).isoformat(),
         "stay_type": "Night Stay",
