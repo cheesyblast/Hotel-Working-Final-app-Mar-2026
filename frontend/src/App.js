@@ -3093,6 +3093,9 @@ const Expenses = () => {
   const [showAddIncomeModal, setShowAddIncomeModal] = useState(false);
   const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'monthly'
   
+  // Get financial context for cross-component refresh
+  const { refreshTrigger } = useFinancial();
+  
   // Pagination state
   const [roomBookingsPage, setRoomBookingsPage] = useState(1);
   const [additionalIncomePage, setAdditionalIncomePage] = useState(1);
