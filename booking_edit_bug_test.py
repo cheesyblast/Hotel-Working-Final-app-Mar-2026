@@ -377,6 +377,13 @@ def main():
     
     test_results = []
     
+    # Step 0: Create a test room
+    test_results.append(("Create Test Room", step0_create_test_room()))
+    
+    if not test_results[-1][1]:
+        print("❌ Cannot proceed without a test room")
+        return False
+    
     # Step 1: Create a booking
     test_results.append(("Create Booking", step1_create_booking()))
     
