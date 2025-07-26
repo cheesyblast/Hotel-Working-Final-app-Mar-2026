@@ -6682,11 +6682,13 @@ function AppContent() {
 // Main App Component with Authentication
 function App() {
   return (
-    <AuthProvider>
-      <ProtectedRoute>
-        <AppContent />
-      </ProtectedRoute>
-    </AuthProvider>
+    <FinancialProvider>
+      <AuthProvider>
+        <ProtectedRoute>
+          <AppContent />
+        </ProtectedRoute>
+      </AuthProvider>
+    </FinancialProvider>
   );
 }
 
