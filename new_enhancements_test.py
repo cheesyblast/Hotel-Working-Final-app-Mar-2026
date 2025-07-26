@@ -406,14 +406,14 @@ def test_admin_cancel_booking_checked_in():
                             rooms_response = requests.get(f"{API_BASE}/rooms", headers=headers)
                             if rooms_response.status_code == 200:
                                 rooms = rooms_response.json()
-                                room_103 = next((r for r in rooms if r.get("room_number") == "103"), None)
+                                room_998 = next((r for r in rooms if r.get("room_number") == "998"), None)
                                 
-                                if room_103 and room_103.get("status") == "Available":
+                                if room_998 and room_998.get("status") == "Available":
                                     print("✅ Room 998 is now available")
                                     print("✅ ADMIN CANCEL BOOKING - CHECKED-IN TEST PASSED")
                                     return True
                                 else:
-                                    print(f"❌ Room 103 status: {room_103.get('status') if room_103 else 'Not found'}")
+                                    print(f"❌ Room 998 status: {room_998.get('status') if room_998 else 'Not found'}")
                                     return False
                             else:
                                 print(f"❌ Failed to get rooms: {rooms_response.status_code}")
