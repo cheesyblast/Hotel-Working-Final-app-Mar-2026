@@ -111,8 +111,7 @@ def step1_create_short_time_booking():
         
         print(f"Using room: {room_number} (Price per night: {room_price})")
         
-        # Create Short Time booking
-        today = datetime.now().date()
+        # Create Short Time booking for the future date
         booking_data = {
             "guest_name": "Test Guest - Short Time",
             "guest_email": "testguest@example.com",
@@ -120,8 +119,8 @@ def step1_create_short_time_booking():
             "guest_id_passport": "TEST123456",
             "guest_country": "Test Country",
             "room_number": room_number,
-            "check_in_date": today.isoformat(),
-            "check_out_date": today.isoformat(),  # Same day for Short Time
+            "check_in_date": future_date.isoformat(),
+            "check_out_date": future_date.isoformat(),  # Same day for Short Time
             "stay_type": "Short Time",
             "booking_amount": room_price * 0.5,  # Short Time = 50% of night rate
             "additional_notes": "Test booking for amount flow investigation"
