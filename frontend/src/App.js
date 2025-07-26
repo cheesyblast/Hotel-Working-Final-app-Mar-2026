@@ -521,6 +521,9 @@ const Dashboard = () => {
   const [checkedInCustomers, setCheckedInCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Get current user context
+  const { user } = useAuth();
+  
   // Modal states
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
