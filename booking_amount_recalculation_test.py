@@ -189,7 +189,7 @@ def test_booking_amount_recalculation_night_stay():
         
         if get_response.status_code != 200:
             print(f"❌ Failed to retrieve updated booking - Status: {get_response.status_code}")
-            return False
+            return False, None
         
         bookings_data = get_response.json()
         updated_bookings = bookings_data.get('bookings', [])
