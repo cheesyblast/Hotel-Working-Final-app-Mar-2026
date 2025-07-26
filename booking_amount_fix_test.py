@@ -155,11 +155,11 @@ def update_booking_to_night_stay(booking_id, room_data):
     
     try:
         # Extend booking to 2 nights
-        tomorrow = datetime.now().date() + timedelta(days=1)
-        checkout_date = tomorrow + timedelta(days=2)
+        future_date = datetime.now().date() + timedelta(days=30)
+        checkout_date = future_date + timedelta(days=2)
         
         update_data = {
-            "check_in_date": tomorrow.isoformat(),
+            "check_in_date": future_date.isoformat(),
             "check_out_date": checkout_date.isoformat()
         }
         
