@@ -593,8 +593,10 @@ def test_short_time_booking_amount():
         
         rooms = rooms_response.json()
         available_room = None
+        # Find a different room than the ones used in previous tests
+        used_rooms = ['101']  # Rooms used in previous tests
         for room in rooms:
-            if room.get('status') == 'Available':
+            if room.get('status') == 'Available' and room.get('room_number') not in used_rooms:
                 available_room = room
                 break
         
