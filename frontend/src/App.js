@@ -1511,25 +1511,27 @@ const Dashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => {
-                            // Find the booking for this customer
-                            const booking = upcomingBookings.find(b => 
-                              b.guest_name === customer.name && 
-                              b.room_number === customer.current_room
-                            );
-                            if (booking) {
-                              openEditBookingModal(booking);
-                            } else {
-                              // Create a mock booking object for checked-in customers
-                              const mockBooking = {
-                                id: customer.id,
-                                guest_name: customer.name,
-                                room_number: customer.current_room,
-                                check_in_date: customer.check_in_date,
-                                check_out_date: customer.check_out_date,
-                                additional_notes: customer.notes || ''
-                              };
-                              openEditBookingModal(mockBooking);
+                          onClick={async () => {
+                            try {
+                              // Fetch all bookings to find the actual booking for this customer
+                              const allBookingsResponse = await axios.get(`${API}/bookings`);
+                              const allBookings = allBookingsResponse.data.bookings || [];
+                              
+                              // Find the booking for this customer by matching guest name and room
+                              const booking = allBookings.find(b => 
+                                b.guest_name === customer.name && 
+                                b.room_number === customer.current_room &&
+                                (b.status === 'Checked-in' || b.status === 'Checked In')
+                              );
+                              
+                              if (booking) {
+                                openEditBookingModal(booking);
+                              } else {
+                                alert('Unable to find the booking record for this customer. Please try refreshing the page.');
+                              }
+                            } catch (error) {
+                              console.error('Error finding booking for customer:', error);
+                              alert('Error finding booking record. Please try again.');
                             }
                           }}
                           className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
