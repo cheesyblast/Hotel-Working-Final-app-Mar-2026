@@ -3520,32 +3520,32 @@ const Expenses = () => {
           {incomes && incomes.length > 0 ? (
             <div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-700">
-                  <thead className="bg-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-blue-50 dark:bg-blue-900">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Category</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Action</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 dark:text-blue-300 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 dark:text-blue-300 uppercase tracking-wider">Description</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 dark:text-blue-300 uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 dark:text-blue-300 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 dark:text-blue-300 uppercase tracking-wider">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-gray-800 divide-y divide-gray-700">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {getPaginatedData(incomes, additionalIncomePage).map((income, index) => (
-                      <tr key={index} className="hover:bg-gray-700">
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-white">
+                          <div className="text-sm text-gray-900 dark:text-gray-300">
                             {new Date(income.income_date).toLocaleDateString()}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-white">{income.description}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-300">{income.description}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-300">{income.category}</div>
+                          <div className="text-sm text-gray-700 dark:text-gray-400">{income.category}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-bold text-green-400">LKR {income.amount.toFixed(2)}</div>
+                          <div className="text-sm font-bold text-green-600 dark:text-green-400">LKR {income.amount.toFixed(2)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
