@@ -77,6 +77,7 @@ def test_past_date_booking_upcoming_status():
         
         rooms = rooms_response.json()
         available_room = None
+        # Find an available room that's not occupied
         for room in rooms:
             if room.get('status') == 'Available':
                 available_room = room
