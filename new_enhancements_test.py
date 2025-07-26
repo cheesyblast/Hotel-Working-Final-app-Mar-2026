@@ -515,7 +515,7 @@ def test_booking_amount_recalculation():
                             "guest_phone": "+1777888999",
                             "guest_id_passport": "ID333444",
                             "guest_country": "Germany",
-                            "room_number": "202",  # Use available room
+                            "room_number": "302",  # Use a different room number
                             "check_in_date": (datetime.now().date() + timedelta(days=2)).isoformat(),
                             "check_out_date": (datetime.now().date() + timedelta(days=4)).isoformat(),  # 2 nights
                             "stay_type": "Night Stay",
