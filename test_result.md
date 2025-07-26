@@ -256,8 +256,11 @@ frontend:
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
+      - working: true
+        agent: "main"
+        comment: "Ready to conduct final backend testing for past date booking functionality and booking amount recalculation features. All previous testing by testing agent showed 100% success rate for core functionality including: (1) Past date booking creation with status selection (Upcoming/Checked In), (2) Booking amount recalculation when editing dates, (3) Room availability validation preventing double bookings, (4) Customer record creation for Checked In bookings, (5) Proper status transitions and UI integration. User has confirmed they will handle frontend testing themselves. Proceeding with final backend validation before handover."
       - working: true
         agent: "testing"
         comment: "PASSED - Booking Amount Recalculation Fix testing completed successfully with 100% success rate. ✅ CRITICAL USER ISSUE RESOLVED: The booking amount recalculation functionality is working perfectly! When editing booking dates (e.g., changing from 2 nights to 3 nights), the system now correctly recalculates and updates the booking_amount based on the new stay duration. ✅ CORE FUNCTIONALITY VERIFIED: (1) PUT /api/bookings/{booking_id} endpoint correctly recalculates booking amounts when check-in or check-out dates are modified. (2) Night Stay bookings: amount = nights × price_per_night (tested: 2 nights × 5000 = 10000, updated to 3 nights × 5000 = 15000). (3) Short Time bookings: amount = 50% of price_per_night (tested: 50% × 5000 = 2500). (4) Room availability validation prevents double bookings with detailed error messages. (5) Only 'Upcoming' bookings can be modified - 'Checked In' bookings are protected from modification. ✅ BACKEND LOGIC CONFIRMED: The booking update endpoint retrieves room's price_per_night, calculates new amount based on stay duration and type, updates booking_amount field, and logs all changes with detailed activity tracking. ✅ USER REPORTED ISSUE FIXED: The original problem where 'checkout only shows charges for the original booking amount, not the updated amount based on new dates' has been completely resolved. The booking amount recalculation system is production-ready and working as expected."
