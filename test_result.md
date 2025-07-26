@@ -252,12 +252,18 @@ frontend:
 
   - task: "Past Date Booking Functionality with Status Selection"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py, /app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
+      - working: false
+        agent: "user"
+        comment: "CRITICAL USER ISSUE IDENTIFIED: User reported a specific bug in the booking amount flow. Steps to reproduce: (1) Created a short time booking, (2) Updated the dates while in 'Upcoming' status (should trigger booking amount recalculation), (3) Clicked check-in (moved to 'Checked-in Customer' section), (4) When clicking checkout, it shows different amount than expected. This suggests the booking amount recalculation is working for the booking record, but when the booking is checked in, the customer record may not be getting the updated booking amount correctly. The checkout process might be pulling from customer.room_charges instead of the updated booking.booking_amount."
+      - working: true
+        agent: "testing"
+        comment: "PASSED - Final backend testing confirmed past date booking functionality working with 83.3-100% success rate. All core features operational: (1) Past date booking creation with status selection, (2) Booking amount recalculation when editing dates, (3) Room availability validation preventing double bookings, (4) Status and protection logic. However, specific flow of Update dates -> Check-in -> Checkout may need additional validation based on user feedback."
       - working: true
         agent: "main"
         comment: "Ready to conduct final backend testing for past date booking functionality and booking amount recalculation features. All previous testing by testing agent showed 100% success rate for core functionality including: (1) Past date booking creation with status selection (Upcoming/Checked In), (2) Booking amount recalculation when editing dates, (3) Room availability validation preventing double bookings, (4) Customer record creation for Checked In bookings, (5) Proper status transitions and UI integration. User has confirmed they will handle frontend testing themselves. Proceeding with final backend validation before handover."
