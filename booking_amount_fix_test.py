@@ -98,18 +98,18 @@ def create_short_time_booking(room_data):
     print("\n📅 STEP 1: Creating Short Time booking...")
     
     try:
-        # Use today's date for short time booking
-        today = datetime.now().date()
+        # Use tomorrow's date to avoid conflicts with existing bookings
+        tomorrow = datetime.now().date() + timedelta(days=1)
         
         booking_data = {
-            "guest_name": "John Doe",
-            "guest_email": "john.doe@example.com",
-            "guest_phone": "+94771234567",
-            "guest_id_passport": "ID123456789",
+            "guest_name": "Test User Amount Fix",
+            "guest_email": "testuser.amountfix@example.com",
+            "guest_phone": "+94771234999",
+            "guest_id_passport": "TEST123456789",
             "guest_country": "Sri Lanka",
             "room_number": room_data['room_number'],
-            "check_in_date": today.isoformat(),
-            "check_out_date": today.isoformat(),  # Same day for Short Time
+            "check_in_date": tomorrow.isoformat(),
+            "check_out_date": tomorrow.isoformat(),  # Same day for Short Time
             "stay_type": "Short Time",
             "booking_amount": room_data['price_per_night'] * 0.5,  # 50% for Short Time
             "additional_notes": "Test booking for amount recalculation fix"
