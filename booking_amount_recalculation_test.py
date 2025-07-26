@@ -446,8 +446,8 @@ def main():
     # Test 5: Checked-In Booking Update Protection
     test_results.append(("Checked-In Update Protection", test_checked_in_booking_update()))
     
-    # Test 6: Checkout with Updated Amount
-    test_results.append(("Checkout Updated Amount", test_checkout_with_updated_amount(booking_id_for_checkout)))
+    # Test 6: Verify Updated Amount
+    test_results.append(("Updated Amount Verification", test_checkout_with_updated_amount(booking_id_for_checkout)))
     
     # Test 7: Cleanup
     test_results.append(("Cleanup", cleanup_test_data()))
