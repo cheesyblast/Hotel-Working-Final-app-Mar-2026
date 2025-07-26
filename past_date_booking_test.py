@@ -179,7 +179,7 @@ def test_past_date_booking_checked_in_status():
         print(f"Using room: {room_number}")
         
         # Create past date booking with 'Checked In' status
-        past_date = (datetime.now() - timedelta(days=3)).date()
+        past_date = (datetime.now() - timedelta(days=6)).date()
         checkout_date = (datetime.now() + timedelta(days=1)).date()  # Still checked in
         
         booking_data = {
