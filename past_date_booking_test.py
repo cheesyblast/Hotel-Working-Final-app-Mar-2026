@@ -164,8 +164,9 @@ def test_past_date_booking_checked_in_status():
         
         rooms = rooms_response.json()
         available_room = None
+        # Find a different room than the one used in test 1
         for room in rooms:
-            if room.get('status') == 'Available':
+            if room.get('status') == 'Available' and room.get('room_number') != '101':
                 available_room = room
                 break
         
