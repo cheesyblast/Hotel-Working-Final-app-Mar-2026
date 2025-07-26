@@ -3461,23 +3461,23 @@ const Expenses = () => {
       </div>
 
       {/* Income Records Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Income Records</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Income Records</h3>
         
         {/* Room Bookings Income */}
         <div className="mb-6">
-          <h4 className="text-md font-medium text-green-800 mb-3">Room Bookings</h4>
+          <h4 className="text-md font-medium text-green-800 dark:text-green-400 mb-3">Room Bookings</h4>
           {dailySales && dailySales.length > 0 ? (
             <div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-green-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-green-50 dark:bg-green-900">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Guest</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Room</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Payment Method</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 dark:text-green-300 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 dark:text-green-300 uppercase tracking-wider">Guest</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 dark:text-green-300 uppercase tracking-wider">Room</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 dark:text-green-300 uppercase tracking-wider">Payment Method</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-800 dark:text-green-300 uppercase tracking-wider">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
