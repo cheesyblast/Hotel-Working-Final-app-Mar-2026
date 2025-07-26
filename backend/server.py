@@ -1815,6 +1815,12 @@ async def update_booking(
     
     # Recalculate booking amount if dates have changed
     if booking_update.check_in_date is not None or booking_update.check_out_date is not None:
+        if not can_modify_dates:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot modify dates for booking with status '{booking_status}'."
+            )
+        
         # Get current and new dates
         current_check_in = current_booking.get('check_in_date')
         current_check_out = current_booking.get('check_out_date')
@@ -1828,6 +1834,22 @@ async def update_booking(
         # Use new dates if provided, otherwise use current ones
         new_check_in = booking_update.check_in_date if booking_update.check_in_date is not None else current_check_in
         new_check_out = booking_update.check_out_date if booking_update.check_out_date is not None else current_check_out
+        
+        # Special validation for checked-in bookings
+        if booking_status in ['Checked-in', 'Checked In']:
+            # For checked-in bookings, only allow extending checkout date
+            if booking_update.check_in_date is not None and booking_update.check_in_date != current_check_in:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Cannot change check-in date for checked-in bookings. Guest is already checked in."
+                )
+            
+            # Only allow extending checkout date (not shortening)
+            if booking_update.check_out_date is not None and booking_update.check_out_date < current_check_out:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Cannot shorten checkout date for checked-in bookings. Only extensions are allowed."
+                )
         
         # Get room information to calculate new amount
         room = await db.rooms.find_one({"room_number": current_booking.get('room_number')})
