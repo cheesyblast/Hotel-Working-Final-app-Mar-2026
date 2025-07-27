@@ -5308,13 +5308,39 @@ const Restaurant = () => {
       setShowAddItemModal(false);
       setNewItem({
         name: '', description: '', price: 0, category_id: '', 
-        is_vegetarian: false, is_spicy: false, prep_time: 15
+        is_vegetarian: false, is_spicy: false, prep_time: 15, image: ''
       });
       await fetchMenuItems();
       alert('Menu item added successfully!');
     } catch (error) {
       console.error('Error adding menu item:', error);
       alert('Error adding menu item: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Handle image upload
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Check file size (2MB limit)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size must be less than 2MB');
+        event.target.value = '';
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        event.target.value = '';
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setNewItem({...newItem, image: e.target.result});
+      };
+      reader.readAsDataURL(file);
     }
   };
 
