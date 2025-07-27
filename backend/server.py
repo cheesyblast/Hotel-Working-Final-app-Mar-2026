@@ -2077,24 +2077,6 @@ async def collect_advance_payment(
     income_dict['income_date'] = datetime.combine(income_dict['income_date'], datetime.min.time())
     await db.incomes.insert_one(income_dict)
     
-    # Record as daily sale for financial tracking
-    daily_sale = DailySale(
-        customer_name=customer["name"],
-        room_number=customer["current_room"],
-        payment_method=advance_request.payment_method,
-        room_charges=0.0,  # This is advance payment, not room charge
-        additional_charges=advance_request.amount,  # Record as additional charge
-        discount_amount=0.0,
-        advance_amount=0.0,  # Already being paid, so no advance for this sale
-        total_amount=advance_request.amount,
-        date=datetime.now().date()
-    )
-    
-    # Convert date to datetime for MongoDB storage
-    daily_sale_dict = daily_sale.dict()
-    daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
-    await db.daily_sales.insert_one(daily_sale_dict)
-    
     # Log activity
     await log_activity(
         action="advance_payment_collected",
