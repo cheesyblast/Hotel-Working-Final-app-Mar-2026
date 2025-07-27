@@ -66,7 +66,7 @@ class RestaurantIntegrationTest:
                 "guest_phone": "123-456-7890",
                 "guest_id_passport": "RS123456",
                 "guest_country": "Sri Lanka",
-                "room_number": "103",
+                "room_number": "201",
                 "check_in_date": date.today().isoformat(),
                 "check_out_date": (date.today()).isoformat(),
                 "stay_type": "Night Stay",
