@@ -5584,19 +5584,20 @@ const Restaurant = () => {
                           </span>
                         </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                        {order.payment_status === 'Pending' && (
-                          <button
-                            onClick={() => handlePayOrder(order.id)}
-                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                          >
-                            Pay
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          {order.payment_status === 'Pending' && (
+                            <button
+                              onClick={() => handlePayOrder(order.id)}
+                              className="bg-green-600 text-white px-2 py-1 sm:px-3 sm:py-1 rounded text-xs sm:text-sm hover:bg-green-700"
+                            >
+                              Pay
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
