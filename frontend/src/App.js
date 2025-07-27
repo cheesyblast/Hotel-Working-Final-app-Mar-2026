@@ -5366,6 +5366,10 @@ const Restaurant = () => {
     ));
   };
 
+  const handleAddItemToOrder = addItemToOrder;
+  const handleRemoveItemFromOrder = removeItemFromOrder;
+  const handleUpdateItemQuantity = updateItemQuantity;
+
   const handleCreateOrder = async () => {
     try {
       const orderData = { ...newOrder, items: orderItems };
