@@ -5532,7 +5532,17 @@ const Restaurant = () => {
             <div className="space-y-6 sm:space-y-8">
               {categories.map(category => (
                 <div key={category.id} className="bg-gray-800 rounded-lg p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-4 text-blue-400">{category.name}</h3>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-blue-400">{category.name}</h3>
+                    {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                      <button
+                        onClick={() => handleDeleteCategory(category.id)}
+                        className="mt-2 sm:mt-0 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
+                      >
+                        Delete Category
+                      </button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {menuItems
                       .filter(item => item.category_id === category.id)
@@ -5543,14 +5553,24 @@ const Restaurant = () => {
                             <span className="text-green-400 font-bold text-sm sm:text-base">LKR {item.price}</span>
                           </div>
                           <p className="text-gray-300 text-sm mb-2">{item.description}</p>
-                          <div className="flex items-center space-x-2 text-xs">
-                            {item.is_vegetarian && (
-                              <span className="bg-green-600 text-white px-2 py-1 rounded">Veg</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 text-xs">
+                              {item.is_vegetarian && (
+                                <span className="bg-green-600 text-white px-2 py-1 rounded">Veg</span>
+                              )}
+                              {item.is_spicy && (
+                                <span className="bg-red-600 text-white px-2 py-1 rounded">Spicy</span>
+                              )}
+                              <span className="text-gray-400">{item.prep_time}min</span>
+                            </div>
+                            {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                              <button
+                                onClick={() => handleDeleteMenuItem(item.id)}
+                                className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
+                              >
+                                Delete
+                              </button>
                             )}
-                            {item.is_spicy && (
-                              <span className="bg-red-600 text-white px-2 py-1 rounded">Spicy</span>
-                            )}
-                            <span className="text-gray-400">{item.prep_time}min</span>
                           </div>
                         </div>
                       ))
