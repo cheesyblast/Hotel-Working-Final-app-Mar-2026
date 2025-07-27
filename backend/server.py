@@ -3604,6 +3604,14 @@ async def delete_menu_item(
     if current_user.role not in ["Admin", "Restaurant Manager"]:
         raise HTTPException(status_code=403, detail="Access denied.")
     
+    # Check if item is in active orders
+    active_orders = await db.restaurant_orders.find({
+        "payment_status": "Pending",
+        "items.menu_item_id": item_id
+    }).to_list(1)
+    if active_orders:
+        raise HTTPException(status_code=400, detail="Cannot delete item that is in active orders")
+    
     result = await db.menu_items.update_one(
         {"id": item_id},
         {"$set": {"is_available": False}}
