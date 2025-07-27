@@ -5612,6 +5612,14 @@ const Restaurant = () => {
                     <div className="text-lg sm:text-xl lg:text-2xl font-bold">T{table.table_number}</div>
                     <div className="text-xs sm:text-sm">{table.capacity} seats</div>
                     <div className="text-xs mt-1 capitalize">{table.status}</div>
+                    {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                      <button
+                        onClick={() => handleDeleteTable(table.id)}
+                        className="mt-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
