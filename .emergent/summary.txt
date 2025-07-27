@@ -1,76 +1,93 @@
 <analysis>
-The provided trajectory details the AI engineer's work on expanding a hotel management application's booking functionality. Initially, the AI engineer summarized the existing comprehensive feature set, including setup wizard, authentication, system reset, and refined reporting. A new user request emerged to allow past-dated bookings with dynamic status assignment (Upcoming/Checked In). The engineer meticulously implemented this by modifying both backend () to accept  and handle customer creation, and frontend () to detect past dates and display a status selection modal. During testing, a critical bug was identified: booking amount was not recalculating upon date changes for edited bookings. The engineer successfully resolved this by adding logic to  to re-calculate  and update customer records, confirming the fix via backend testing. The current state reflects a robust backend for past-dated bookings and booking modifications, with frontend integration ready for verification.
+The trajectory details the AI engineer's progression on a hotel management application. Initially, work focused on enhancing booking functionality, specifically allowing past-dated bookings with dynamic status assignment and fixing a critical bug in booking amount recalculation for edited bookings. This involved extensive modifications to  and , including adding new models, endpoints, and UI elements.
+
+Subsequently, the engineer addressed several user-reported issues and enhancements, such as refining checked-in guest actions (adding advance payment and admin-only cancellation features), ensuring real-time financial updates, and fixing short-time booking date extension logic.
+
+The most significant recent development is the comprehensive implementation of a Restaurant Management System, encompassing menu, table, order, and staff management with dual billing and a dedicated user role. This required substantial additions to both backend models/endpoints and a new complex frontend component. The current task involves making the entire application mobile responsive, which is actively in progress, with the Restaurant component being the immediate focus.
 </analysis>
 
 <product_requirements>
-The application is a comprehensive hotel management system, encompassing Dashboard, Booking, Checkout, Room, Guest, Financial, and Reporting modules. Key features implemented include:
--   **Initial Setup Wizard**: Guides new server setup, capturing hotel details (name, address, email) and creating a default admin. It also sets the hotel's timezone.
--   **Authentication & User Management**: Secure login for all users, including admin, with JWT-based authentication. Includes password reset via email, requiring user-provided email service API keys.
--   **System Management**: An admin-only complete reset function in Settings to clear all application data while preserving core settings.
--   **Booking Functionality**: Fixes for Short Time bookings. Ability to change room numbers for *upcoming* bookings, with validation for room availability and conflicts.
--   **Reports**: Downloadable daily and monthly Excel reports, detailing individual income/expense entries (with guest names/categories) and accurate, separate cash/bank balances.
--   **Invoice**: Customizable print invoice template during checkout, dynamically including hotel details (logo, name, address).
--   **Timezone**: Application-wide date/time is based on user-selected timezone during setup, impacting all transactions.
--   **Booking Channels**: Management (add/edit/delete) of booking channels (e.g., Expedia) in Settings, with new bookings requiring channel selection and reports reflecting these details.
--   **New Request: Past Date Bookings**: The system must now accept bookings with check-in dates prior to the current date, provided the room is available. Upon creating such a booking, the user should be prompted to assign it as Upcoming or Checked In, and the booking should appear in the respective section.
+The application is a hotel management system with modules for Dashboard, Booking, Checkout, Room, Guest, Financial, and Reporting. Core features include an Initial Setup Wizard, JWT-based Authentication with password reset, System Management (complete reset), and enhanced Booking Functionality (Short Time bookings, room changes with availability validation, past-date bookings with Upcoming/Checked In status). Reporting provides downloadable daily/monthly Excel reports with detailed income/expense and balances. Invoice printing is customizable, and the system uses a user-selected Timezone. Booking Channels can be managed and are integrated into new bookings and reports.
+
+Recent major requests and issues include:
+-   **Past Date Bookings**: Allow bookings with check-in dates prior to current date, prompting for Upcoming or Checked In status.
+-   **Booking Amount Recalculation Bug**: Ensure  correctly recalculates upon date changes for edited bookings, especially when  changes (e.g., Short Time to Night Stay).
+-   **Checked-in Guest Actions Enhancement**: Remove the standard Edit Booking button, replace with a dropdown offering Edit Booking, Get Advance (to record payments to income), and Cancel Booking (Admin only).
+-   **Dark Theme for Income Records**: Fix the Inc & Exp page to correctly apply dark theme to income records.
+-   **Checked-in Booking Date Extension**: Allow extending dates for checked-in guests, with proper validation (cannot change check-in date, only extend check-out, cannot shorten stay, cannot change room).
+-   **Real-time Financial Balance Update**: Ensure advance payments (from check-in or Get Advance) immediately reflect in Cash/Bank balances on the Inc & Exp page.
+-   **Restaurant Management System**: Add a new module including:
+    -   Menu management (add/remove items, categories).
+    -   Table arrangement (custom tables, numbers matter for orders).
+    -   Bill generation for tables (immediate, updates daily revenue) and room orders (updates guest data, shows on checkout).
+    -   Staff management (waiter/staff assignment).
+    -   Dedicated Restaurant Manager user role.
+-   **Mobile Responsiveness**: Make the entire application mobile responsive.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Development**: React (frontend), FastAPI (Python backend), MongoDB (NoSQL).
--   **Authentication**: JWT, Bcrypt hashing, role-based access control.
--   **Data Management**: Pydantic for validation, Motor for async MongoDB.
--   **Frontend State**: React /, .
--   **Reporting**:  for Excel generation.
--   **UI/UX**: Tailwind CSS, conditional rendering.
+-   **Full-stack Development**: React.js (frontend), FastAPI (Python backend), MongoDB (NoSQL).
+-   **Authentication & Authorization**: JWT (JSON Web Tokens), Bcrypt hashing, role-based access control.
+-   **Data Management**: Pydantic models for validation, Motor for async MongoDB interactions.
+-   **Frontend State Management**: React , ,  (AuthContext, FinancialContext).
+-   **Responsive Design**: Tailwind CSS for UI styling.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture with a React frontend and a FastAPI backend, interacting with MongoDB.
-
 
 
 -   ****:
-    -   **Summary**: The core FastAPI backend handling API logic, MongoDB interactions, and business rules.
-    -   **Changes Made (Pre-Trajectory)**: Implemented JWT auth, setup wizard, system reset, updated models (, , , , ) with new fields (payment method, guest name, timezone, booking channel, room number). Enhanced booking logic for Short Time and room changes. Rewrote financial reports for detailed entries and added booking channel CRUD.
-    -   **Changes Made (During Trajectory)**:
-        -   **Booking Creation ()**: Modified to accept an optional  parameter in the  model. Logic added to automatically create a customer record if  is Checked In.
-        -   **Room Availability Validation**: A helper function  was introduced to check room availability for specific dates and a given room number. This helper was integrated into the  endpoint to ensure rooms are available before booking creation.
-        -   **Booking Update ()**:
-            -   Logic was added to recalculate  when  or  is modified. It fetches the room's  and updates the  accordingly.
-            -   If the booking's  is Checked In, the customer's  in their associated customer record are also updated to reflect the new booking amount, ensuring consistency during checkout.
+    -   **Summary**: The core FastAPI backend, handling all API logic, MongoDB interactions, and business rules.
+    -   **Changes Made**:
+        -   **Booking Management**: Modified  to accept  and create customer records for Checked In status. Introduced  for validation. Enhanced  to recalculate  and  on date changes, and update  for checked-in customers. Logic was added to allow *extension* of checkout dates for checked-in bookings (preventing check-in date changes, shortening stays, or room changes).
+        -   **Financials**: Added  endpoint to record advance payments as income. Modified the advance payment logic to prevent double-counting (ensuring payments are recorded only as , not  simultaneously). Updated checkout endpoint to factor in  into customer billing.
+        -   **User Management**: Modified  enum to include Restaurant Manager. Updated  endpoint to create a default restaurant user and sample restaurant data.
+        -   **Cancellation**: Modified  to require admin role and handle checked-in customer records.
+        -   **Restaurant Management**: Added new Pydantic models: , , , , . Implemented comprehensive CRUD (Create, Read, Update, Delete) API endpoints for all these models (, , , , ). Includes endpoints for order creation, payment processing, and room service integration.
 -   ****:
-    -   **Summary**: The main React component rendering UI, managing state, and handling client-side API interactions.
-    -   **Changes Made (Pre-Trajectory)**: Implemented authentication flow,  UI, enhanced Settings page (Email, System Management, Booking Channels, Timezone). Updated branding, booking modal (channel selection,   for Short Time), edit booking modal (room number selection for upcoming bookings), report downloads, and invoice printing. Fixed   bug.
-    -   **Changes Made (During Trajectory)**:
-        -   **State Management**: Added new  variables:  (boolean),  (string).
-        -   ** Function**: Refactored to detect if the  is in the past. If so, it displays the  allowing the user to choose Upcoming or Checked In. Otherwise, it proceeds with default booking creation.
-        -   ** Function**: A new function introduced to handle the actual API call for creating a booking, including the selected . It centralizes the booking submission logic.
-        -   **Status Selection Modal UI**: A new modal component () was added after the  to prompt the user for the booking status (Upcoming/Checked In) when a past  is detected. This modal allows users to select the appropriate status for historical bookings.
+    -   **Summary**: The main React component for UI rendering, state management, and client-side API interactions.
+    -   **Changes Made**:
+        -   **Booking Management**: Refactored  to show  for past-dated bookings. Introduced . Modified  to correctly find  for checked-in guests (previously used ).
+        -   **UI Enhancements**: Replaced the Edit Booking button for checked-in guests with a dropdown containing Edit Booking, Get Advance, and Cancel Booking options. Added UI for  and . Integrated  to conditionally show Cancel Booking for admins.
+        -   **Financial Real-time Updates**: Introduced  and  to enable cross-component communication for refreshing financial data. The Dashboard component now triggers financial data refresh after advance payments, and the Expenses component listens for these triggers via a new  hook.
+        -   **Dark Theme**: Updated classes in the Income Records section ( page) to correctly apply dark theme styling to tables and headers.
+        -   **Restaurant Management**: Added a new  functional component with four main tabs: Menu, Tables, Orders, and Staff. This component includes forms and display logic for managing categories, items, tables, staff, and orders. Integrated the Restaurant component into the main navigation (). Added state variables and handler functions for all restaurant-related operations (e.g., , ).
+        -   **Mobile Responsiveness**: Initiated a refactor to add responsive classes (Tailwind CSS) to main navigation, header, , Dashboard component (main layout, cards, room availability, tables), and the Restaurant component (main layout, menu, tables, orders, staff sections).
 -   ****:
     -   **Summary**: Root HTML file.
     -   **Changes Made**: Footer branding text changed from Made with Emergent to Made with Mount-Edge.
 -   ****:
     -   **Summary**: Lists Python dependencies.
-    -   **Changes Made**: Implicitly updated with new libraries (e.g., for email services, Excel generation, bcrypt) as features were added.
+    -   **Changes Made**: Implicitly updated with new libraries as features were added.
 -   ****:
     -   **Summary**: Environment variables for backend.
     -   **Changes Made**: Added  for authentication.
 </code_architecture>
 
 <pending_tasks>
-- No explicit pending tasks were identified within the provided trajectory. The AI engineer completed the implementation and bug fixes related to past-date bookings and booking amount recalculation.
+-   Continue making the entire application mobile responsive.
+-   Ensure the  component is fully responsive across all its tabs (Menu, Tables, Orders, Staff).
+-   Perform comprehensive frontend testing after responsiveness updates.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer had completed the implementation of **Past Date Booking Functionality** and successfully addressed a critical bug concerning **Booking Amount Recalculation on Booking Edit**.
+Immediately prior to this summary, the AI engineer was actively working on making the entire application mobile responsive as requested by the user. This task involves updating all relevant React components with appropriate responsive design classes (likely using Tailwind CSS, given the existing styling).
 
-On the **backend ()**, the  endpoint was modified to accept an optional  and now includes robust room availability validation before creating new bookings. Crucially, the  endpoint was enhanced: it now dynamically recalculates the  based on changes to  and . Furthermore, if the booking is 'Checked In', it also updates the  for the associated customer record, ensuring accurate financial data. These backend fixes were thoroughly tested and confirmed working by the backend testing agent.
+The work has progressed through several key areas in :
+1.  **Main Navigation and Layout**: Initial steps were taken to adjust the overall app structure for responsiveness.
+2.  **App Header**: Modifications were made to the main header component to ensure it adapts to different screen sizes.
+3.  **RealTimeClock Component**: This UI element was updated for mobile responsiveness.
+4.  **Dashboard Component**: This major component's layout, including cards, room availability sections, and various tables (Upcoming Bookings, Checked-in Customers), has been adapted for mobile views. Headers and table cells were specifically targeted for responsiveness.
+5.  **Restaurant Component**: This is the current focus of the responsiveness efforts. The engineer is systematically going through its sub-sections:
+    *   The main container of the Restaurant component has been modified.
+    *   The menu section is being updated to display responsively.
+    *   The tables section is also undergoing responsive adjustments.
+    *   The orders table within the Restaurant component recently caused a parsing error due to an incomplete structure, which was then fixed.
+    *   The staff section is also being made responsive.
 
-On the **frontend ()**, the  function was updated to detect if the selected  is in the past. If so, a new  is displayed, prompting the user to choose between 'Upcoming' and 'Checked In' status for the booking. The  helper function was introduced to streamline the API call with the selected status. The UI for the new booking modal correctly integrates this logic.
-
-The current state is that all backend logic for past-date bookings, status assignment, room availability, and booking amount recalculation on edit has been implemented and validated. The corresponding frontend UI has been integrated to support these features.
+The last action recorded was successfully fixing a parsing error related to the orders table within the Restaurant component, indicating that the task is ongoing within this specific component. The next step is to continue with the remaining responsiveness adjustments for the Restaurant component and then proceed with testing.
 </current_work>
 
 <optional_next_step>
-Test the frontend functionality related to past-date bookings and booking amount recalculation.
+Continue making the Restaurant component mobile responsive, specifically verifying the orders table and remaining sections.
 </optional_next_step>
