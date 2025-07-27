@@ -1352,18 +1352,17 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard</h2>
-          <p className="text-gray-600">Overview of hotel operations and current status</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Dashboard</h2>
+          <p className="text-sm sm:text-base text-gray-600">Overview of hotel operations and current status</p>
         </div>
-        <button 
-          onClick={openNewBookingModal}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center space-x-2"
+        <button
+          onClick={() => setShowNewBookingModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm sm:text-base"
         >
-          <span>+</span>
-          <span>New Booking</span>
+          New Booking
         </button>
       </div>
 
