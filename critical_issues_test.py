@@ -474,7 +474,7 @@ def test_validation_rules_for_checked_in():
             
             if response.status_code == 400:
                 error_msg = response.json().get('detail', '')
-                if 'Cannot modify booking with status Checked-in' in error_msg:
+                if 'Cannot change room for booking with status' in error_msg:
                     print("✅ Room change correctly prevented")
                     test_results.append(True)
                 else:
