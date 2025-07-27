@@ -250,6 +250,18 @@ frontend:
         agent: "main"
         comment: "Successfully implemented complete authentication frontend system. AuthContext with JWT token management, setup status checking, login/logout functions working correctly. SetupWizard component for hotel configuration, LoginPage with forgot password functionality, ProtectedRoute component for access control. Updated RealTimeClock with user info and logout button. Added comprehensive Email Settings tab with support for SMTP, SendGrid, AWS SES, Gmail providers. Added admin-only System Management tab with complete database reset feature. App properly wrapped with AuthProvider and ProtectedRoute. Authentication system fully functional and tested."
 
+  - task: "Restaurant Management System Integration"
+    implemented: false
+    working: false
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "NEW MAJOR FEATURE REQUEST: Implement comprehensive restaurant management system with: (1) Menu management - add/remove menu items with standard categories, customer can add/remove categories and items later, (2) Table arrangement - customer can add tables, table numbers important for orders, (3) Dual billing system - table orders generate immediate bills updating daily revenue and cash/bank accounts, room service bills sent to room and integrated with checked-in guests showing in checkout, (4) Staff management with waiter assignment features, (5) Dedicated Restaurant user role with restaurant-only access, (6) Real-time integration with existing hotel financial tracking system."
+
   - task: "Real-time Financial Balance Updates and Booking Edit Issues"
     implemented: true
     working: true
