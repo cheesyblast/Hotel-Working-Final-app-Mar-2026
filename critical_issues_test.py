@@ -65,16 +65,16 @@ def authenticate_admin():
         return False
 
 def get_financial_summary():
-    """Get current financial summary to check balances"""
+    """Get current daily financial summary to check balances"""
     try:
-        response = requests.get(f"{API_BASE}/financial-summary", headers=auth_headers)
+        response = requests.get(f"{API_BASE}/daily-financial-summary", headers=auth_headers)
         if response.status_code == 200:
             return response.json()
         else:
-            print(f"❌ Failed to get financial summary - Status: {response.status_code}")
+            print(f"❌ Failed to get daily financial summary - Status: {response.status_code}")
             return None
     except Exception as e:
-        print(f"❌ Failed to get financial summary - Exception: {e}")
+        print(f"❌ Failed to get daily financial summary - Exception: {e}")
         return None
 
 def create_test_booking(stay_type="Night Stay", booking_amount=8500.0):
