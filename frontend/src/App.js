@@ -5165,6 +5165,7 @@ const Restaurant = () => {
   const [staff, setStaff] = useState([]);
   const [orders, setOrders] = useState([]);
   const [checkedInCustomers, setCheckedInCustomers] = useState([]);
+  const [hotelSettings, setHotelSettings] = useState({});
   const [loading, setLoading] = useState(true);
   
   // Get current user context
@@ -5180,6 +5181,8 @@ const Restaurant = () => {
   const [showAddTableModal, setShowAddTableModal] = useState(false);
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState(null);
   
   // Form states
   const [newCategory, setNewCategory] = useState({ name: '', description: '', display_order: 0 });
@@ -5191,9 +5194,13 @@ const Restaurant = () => {
   const [newStaff, setNewStaff] = useState({ name: '', role: 'Waiter', phone: '' });
   const [newOrder, setNewOrder] = useState({
     order_type: 'table', table_id: '', room_number: '', customer_name: '',
-    items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+    items: [], waiter_id: '', notes: ''
   });
   const [orderItems, setOrderItems] = useState([]);
+  const [paymentData, setPaymentData] = useState({
+    payment_method: 'Cash',
+    add_to_room_bill: false
+  });
 
   useEffect(() => {
     fetchAllData();
