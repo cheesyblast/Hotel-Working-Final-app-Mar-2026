@@ -170,7 +170,7 @@ class Customer(BaseModel):
     phone: str
     current_room: str
     check_in_date: date
-    check_out_date: date
+    check_out_date: Optional[date] = None  # None indicates currently checked in
     advance_amount: float = 0.0
     notes: str = ""
     room_charges: float = 0.0
