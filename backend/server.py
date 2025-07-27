@@ -342,6 +342,111 @@ class EmailSettingsUpdate(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     username_or_email: str
 
+# Restaurant Management Models
+class MenuCategory(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str = ""
+    display_order: int = 0
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MenuCategoryCreate(BaseModel):
+    name: str
+    description: str = ""
+    display_order: int = 0
+
+class MenuItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str = ""
+    price: float
+    category_id: str
+    is_available: bool = True
+    is_vegetarian: bool = False
+    is_spicy: bool = False
+    prep_time: int = 15  # minutes
+    image_url: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MenuItemCreate(BaseModel):
+    name: str
+    description: str = ""
+    price: float
+    category_id: str
+    is_vegetarian: bool = False
+    is_spicy: bool = False
+    prep_time: int = 15
+
+class RestaurantTable(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    table_number: str
+    capacity: int
+    status: str = "Available"  # Available, Occupied, Reserved, Cleaning
+    position_x: int = 0  # For visual layout
+    position_y: int = 0  # For visual layout
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RestaurantTableCreate(BaseModel):
+    table_number: str
+    capacity: int
+    position_x: int = 0
+    position_y: int = 0
+
+class RestaurantStaff(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    role: str = "Waiter"  # Waiter, Chef, Manager
+    phone: str = ""
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RestaurantStaffCreate(BaseModel):
+    name: str
+    role: str = "Waiter"
+    phone: str = ""
+
+class RestaurantOrderItem(BaseModel):
+    menu_item_id: str
+    menu_item_name: str
+    quantity: int
+    unit_price: float
+    total_price: float
+    special_notes: str = ""
+
+class RestaurantOrder(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    order_number: str
+    order_type: str  # "table" or "room_service"
+    table_id: Optional[str] = None  # For table orders
+    table_number: Optional[str] = None
+    room_number: Optional[str] = None  # For room service
+    customer_name: str = ""
+    items: List[RestaurantOrderItem]
+    subtotal: float
+    tax_amount: float = 0.0
+    service_charge: float = 0.0
+    total_amount: float
+    payment_method: str = "Cash"  # Cash, Card, Bank Transfer
+    payment_status: str = "Pending"  # Pending, Paid, Cancelled
+    order_status: str = "Pending"  # Pending, Preparing, Ready, Served, Cancelled
+    waiter_id: Optional[str] = None
+    waiter_name: str = ""
+    notes: str = ""
+    order_date: datetime = Field(default_factory=datetime.utcnow)
+    created_by: str = "Restaurant"
+
+class RestaurantOrderCreate(BaseModel):
+    order_type: str  # "table" or "room_service"
+    table_id: Optional[str] = None
+    room_number: Optional[str] = None
+    customer_name: str = ""
+    items: List[RestaurantOrderItem]
+    payment_method: str = "Cash"
+    waiter_id: Optional[str] = None
+    notes: str = ""
+
 # Authentication dependency
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Get current authenticated user from JWT token"""
