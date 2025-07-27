@@ -524,16 +524,17 @@ const RealTimeClock = () => {
   };
 
   return (
-    <div className="flex items-center space-x-4">
-      <div className="text-sm text-gray-400">
-        <div>Welcome, {user?.full_name || user?.username || 'User'}</div>
+    <div className="flex items-center space-x-2 sm:space-x-4">
+      <div className="text-xs sm:text-sm text-gray-400 text-right">
+        <div className="hidden sm:block">Welcome, {user?.full_name || user?.username || 'User'}</div>
         <div className="text-xs">
-          {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}
+          <span className="hidden sm:inline">{currentTime.toLocaleDateString()} | </span>
+          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
       <button
         onClick={handleLogout}
-        className="text-xs text-red-400 hover:text-red-300 bg-red-900 px-2 py-1 rounded"
+        className="text-xs sm:text-sm text-red-400 hover:text-red-300 bg-red-900 px-2 py-1 rounded flex-shrink-0"
       >
         Logout
       </button>
