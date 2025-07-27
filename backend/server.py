@@ -2067,10 +2067,11 @@ async def checkout_customer(checkout: CheckoutRequest):
     
     # Calculate total amount
     base_room_charges = customer.get('room_charges', 500.0)  # Default room charge
+    restaurant_charges = customer.get('restaurant_charges', 0.0)  # Restaurant charges
     advance_amount = customer.get('advance_amount', 0.0)
     additional_amount = checkout.additional_amount
     discount_amount = checkout.discount_amount
-    total_amount = base_room_charges + additional_amount - advance_amount - discount_amount
+    total_amount = base_room_charges + restaurant_charges + additional_amount - advance_amount - discount_amount
     
     # Create daily sales record
     daily_sale = DailySale(
@@ -2078,7 +2079,7 @@ async def checkout_customer(checkout: CheckoutRequest):
         customer_name=customer.get('name', ''),
         room_number=customer.get('current_room', ''),
         room_charges=base_room_charges,
-        additional_charges=additional_amount,
+        additional_charges=restaurant_charges + additional_amount,  # Include restaurant charges
         discount_amount=discount_amount,
         advance_amount=advance_amount,
         total_amount=total_amount,
