@@ -5978,16 +5978,16 @@ const Restaurant = () => {
       {showOrderModal && (
         <div className="fixed inset-0 bg-gray-900 z-50 flex">
           {/* Left Panel - Menu Items */}
-          <div className="w-2/3 bg-gray-100 p-4 overflow-y-auto">
+          <div className="w-2/3 bg-gray-800 p-4 overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Menu</h2>
+              <h2 className="text-2xl font-bold text-white">Menu</h2>
               <button
                 onClick={() => {
                   setShowOrderModal(false);
                   setNewOrder({
                     order_type: 'table', table_id: '', room_number: '', customer_name: '',
-                    items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+                    items: [], waiter_id: '', notes: ''
                   });
                   setOrderItems([]);
                 }}
@@ -6005,7 +6005,7 @@ const Restaurant = () => {
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     newOrder.order_type === 'table' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   }`}
                 >
                   Table Order
@@ -6015,7 +6015,7 @@ const Restaurant = () => {
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     newOrder.order_type === 'room_service' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   }`}
                 >
                   Room Service
@@ -6026,7 +6026,7 @@ const Restaurant = () => {
             {/* Table/Room Selection */}
             {newOrder.order_type === 'table' && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-gray-800">Select Table</h3>
+                <h3 className="text-lg font-semibold mb-3 text-white">Select Table</h3>
                 <div className="grid grid-cols-4 gap-3">
                   {tables.filter(table => table.status === 'Available').map(table => (
                     <button
@@ -6035,7 +6035,7 @@ const Restaurant = () => {
                       className={`p-4 rounded-lg text-center transition-colors ${
                         newOrder.table_id === table.id
                           ? 'bg-green-600 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
                       }`}
                     >
                       <div className="font-bold text-lg">T{table.table_number}</div>
@@ -6048,7 +6048,7 @@ const Restaurant = () => {
 
             {newOrder.order_type === 'room_service' && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-gray-800">Select Room (Live Check-in)</h3>
+                <h3 className="text-lg font-semibold mb-3 text-white">Select Room (Live Check-in)</h3>
                 <div className="grid grid-cols-3 gap-3">
                   {checkedInCustomers.map(customer => (
                     <button
@@ -6057,12 +6057,12 @@ const Restaurant = () => {
                       className={`p-4 rounded-lg text-left transition-colors ${
                         newOrder.room_number === customer.room_number
                           ? 'bg-green-600 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
                       }`}
                     >
                       <div className="font-bold text-lg">Room {customer.room_number}</div>
                       <div className="text-sm">{customer.customer_name}</div>
-                      <div className="text-xs text-green-600">
+                      <div className="text-xs text-green-400">
                         ● Live Check-in
                       </div>
                     </button>
@@ -6074,8 +6074,8 @@ const Restaurant = () => {
             {/* Menu Categories */}
             <div className="space-y-6">
               {categories.map(category => (
-                <div key={category.id} className="bg-white rounded-lg p-4 shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                <div key={category.id} className="bg-gray-700 rounded-lg p-4 shadow-sm">
+                  <h3 className="text-xl font-semibold text-white mb-4 border-b border-gray-600 pb-2">
                     {category.name}
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -6083,21 +6083,21 @@ const Restaurant = () => {
                       <button
                         key={item.id}
                         onClick={() => handleAddItemToOrder(item)}
-                        className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                        className="p-4 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors text-left"
                       >
-                        <div className="font-medium text-gray-900">{item.name}</div>
-                        <div className="text-sm text-gray-600 mt-1">{item.description}</div>
-                        <div className="text-lg font-bold text-blue-600 mt-2">
+                        <div className="font-medium text-white">{item.name}</div>
+                        <div className="text-sm text-gray-300 mt-1">{item.description}</div>
+                        <div className="text-lg font-bold text-blue-400 mt-2">
                           LKR {item.price}
                         </div>
                         <div className="flex items-center space-x-2 mt-2">
                           {item.is_vegetarian && (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Veg</span>
+                            <span className="bg-green-600 text-green-100 px-2 py-1 rounded text-xs">Veg</span>
                           )}
                           {item.is_spicy && (
-                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Spicy</span>
+                            <span className="bg-red-600 text-red-100 px-2 py-1 rounded text-xs">Spicy</span>
                           )}
-                          <span className="text-gray-500 text-xs">{item.prep_time}min</span>
+                          <span className="text-gray-400 text-xs">{item.prep_time}min</span>
                         </div>
                       </button>
                     ))}
@@ -6108,21 +6108,21 @@ const Restaurant = () => {
           </div>
 
           {/* Right Panel - Order Summary */}
-          <div className="w-1/3 bg-white p-6 flex flex-col">
+          <div className="w-1/3 bg-gray-900 p-6 flex flex-col">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Order Summary</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Order Summary</h3>
               
               {/* Order Details */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="font-medium">{newOrder.order_type === 'table' ? 'Table Order' : 'Room Service'}</span>
+                  <span className="text-gray-400">Type:</span>
+                  <span className="font-medium text-white">{newOrder.order_type === 'table' ? 'Table Order' : 'Room Service'}</span>
                 </div>
                 
                 {newOrder.order_type === 'table' && newOrder.table_id && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Table:</span>
-                    <span className="font-medium">
+                    <span className="text-gray-400">Table:</span>
+                    <span className="font-medium text-white">
                       {tables.find(t => t.id === newOrder.table_id)?.table_number || 'N/A'}
                     </span>
                   </div>
@@ -6130,28 +6130,28 @@ const Restaurant = () => {
                 
                 {newOrder.order_type === 'room_service' && newOrder.room_number && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Room:</span>
-                    <span className="font-medium">{newOrder.room_number}</span>
+                    <span className="text-gray-400">Room:</span>
+                    <span className="font-medium text-white">{newOrder.room_number}</span>
                   </div>
                 )}
                 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Customer Name</label>
+                  <label className="block text-sm text-gray-400 mb-1">Customer Name</label>
                   <input
                     type="text"
                     value={newOrder.customer_name}
                     onChange={(e) => setNewOrder({...newOrder, customer_name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                     placeholder="Enter customer name"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Waiter</label>
+                  <label className="block text-sm text-gray-400 mb-1">Waiter</label>
                   <select
                     value={newOrder.waiter_id}
                     onChange={(e) => setNewOrder({...newOrder, waiter_id: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                   >
                     <option value="">Select Waiter</option>
                     {staff.filter(s => s.role === 'Waiter').map(waiter => (
@@ -6166,10 +6166,10 @@ const Restaurant = () => {
 
             {/* Order Items */}
             <div className="flex-1 overflow-y-auto">
-              <h4 className="text-lg font-semibold mb-4 text-gray-800">Items</h4>
+              <h4 className="text-lg font-semibold mb-4 text-white">Items</h4>
               
               {orderItems.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-400">
                   <div className="text-4xl mb-2">🍽️</div>
                   <p>No items added yet</p>
                   <p className="text-sm">Click on menu items to add them</p>
@@ -6177,12 +6177,12 @@ const Restaurant = () => {
               ) : (
                 <div className="space-y-3">
                   {orderItems.map((item, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-3">
+                    <div key={index} className="bg-gray-800 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="font-medium text-gray-900">{item.menu_item_name}</div>
+                        <div className="font-medium text-white">{item.menu_item_name}</div>
                         <button
                           onClick={() => handleRemoveItemFromOrder(item.menu_item_id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-400 hover:text-red-300"
                         >
                           ✕
                         </button>
@@ -6191,21 +6191,21 @@ const Restaurant = () => {
                         <div className="flex items-center space-x-3">
                           <button
                             onClick={() => handleUpdateItemQuantity(item.menu_item_id, item.quantity - 1)}
-                            className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-300"
+                            className="bg-gray-700 text-gray-300 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-600"
                           >
                             −
                           </button>
-                          <span className="font-medium text-lg">{item.quantity}</span>
+                          <span className="font-medium text-lg text-white">{item.quantity}</span>
                           <button
                             onClick={() => handleUpdateItemQuantity(item.menu_item_id, item.quantity + 1)}
-                            className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-300"
+                            className="bg-gray-700 text-gray-300 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-600"
                           >
                             +
                           </button>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm text-gray-600">LKR {item.unit_price} each</div>
-                          <div className="font-bold text-blue-600">LKR {item.total_price}</div>
+                          <div className="text-sm text-gray-400">LKR {item.unit_price} each</div>
+                          <div className="font-bold text-blue-400">LKR {item.total_price}</div>
                         </div>
                       </div>
                     </div>
@@ -6215,41 +6215,32 @@ const Restaurant = () => {
             </div>
 
             {/* Order Summary Footer */}
-            <div className="mt-6 pt-4 border-t">
+            <div className="mt-6 pt-4 border-t border-gray-700">
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-medium">LKR {orderItems.reduce((sum, item) => sum + item.total_price, 0).toFixed(2)}</span>
+                  <span className="text-gray-400">Subtotal:</span>
+                  <span className="font-medium text-white">LKR {orderItems.reduce((sum, item) => sum + item.total_price, 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tax (10%):</span>
-                  <span className="font-medium">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * 0.1).toFixed(2)}</span>
+                  <span className="text-gray-400">Tax ({hotelSettings.tax_rate || 0}%):</span>
+                  <span className="font-medium text-white">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (hotelSettings.tax_rate || 0) / 100).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Service Charge (10%):</span>
+                  <span className="font-medium text-white">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * 0.1).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold">
-                  <span>Total:</span>
-                  <span className="text-blue-600">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * 1.1).toFixed(2)}</span>
+                  <span className="text-white">Total:</span>
+                  <span className="text-blue-400">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (1 + (hotelSettings.tax_rate || 0) / 100 + 0.1)).toFixed(2)}</span>
                 </div>
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm text-gray-600 mb-1">Payment Method</label>
-                <select
-                  value={newOrder.payment_method}
-                  onChange={(e) => setNewOrder({...newOrder, payment_method: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Cash">Cash</option>
-                  <option value="Card">Card</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                </select>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm text-gray-600 mb-1">Special Notes</label>
+                <label className="block text-sm text-gray-400 mb-1">Special Notes</label>
                 <textarea
                   value={newOrder.notes}
                   onChange={(e) => setNewOrder({...newOrder, notes: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                   rows="3"
                   placeholder="Special instructions..."
                 />
@@ -6258,7 +6249,7 @@ const Restaurant = () => {
               <button
                 onClick={handleCreateOrder}
                 disabled={orderItems.length === 0 || (newOrder.order_type === 'table' && !newOrder.table_id) || (newOrder.order_type === 'room_service' && !newOrder.room_number)}
-                className="w-full bg-green-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-green-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
               >
                 {orderItems.length === 0 ? 'Add Items to Order' : 'Create Order'}
               </button>
