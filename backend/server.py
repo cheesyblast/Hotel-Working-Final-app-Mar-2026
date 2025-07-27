@@ -2046,6 +2046,37 @@ async def update_booking(
     }
 
 # Customer Management Routes
+@api_router.post("/migrate-customers")
+async def migrate_customers():
+    """Migrate existing customers to new schema"""
+    # Update all customers to have is_checked_out = False if not present
+    await db.customers.update_many(
+        {"is_checked_out": {"$exists": False}},
+        {"$set": {"is_checked_out": False, "actual_checkout_date": None}}
+    )
+    
+    # Fix any customers that have check_out_date = None (from previous logic)
+    customers_with_null_checkout = await db.customers.find({"check_out_date": None}).to_list(1000)
+    
+    for customer in customers_with_null_checkout:
+        # Find the corresponding booking to get the planned checkout date
+        booking = await db.bookings.find_one({
+            "guest_name": customer["name"],
+            "room_number": customer["current_room"]
+        })
+        
+        if booking and booking.get("check_out_date"):
+            planned_checkout = booking["check_out_date"]
+            if isinstance(planned_checkout, datetime):
+                planned_checkout = planned_checkout.date()
+            
+            await db.customers.update_one(
+                {"id": customer["id"]},
+                {"$set": {"check_out_date": datetime.combine(planned_checkout, datetime.min.time())}}
+            )
+    
+    return {"message": "Customer migration completed"}
+
 @api_router.get("/customers/checked-in", response_model=List[Customer])
 async def get_checked_in_customers():
     # Get only customers who are currently checked in (is_checked_out = False)
