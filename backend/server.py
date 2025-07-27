@@ -3395,6 +3395,437 @@ async def get_monthly_financial_report(
         print(f"Monthly report error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate monthly report: {str(e)}")
 
+# Restaurant Management Routes
+
+# Menu Categories
+@api_router.get("/restaurant/categories")
+async def get_menu_categories(current_user: UserResponse = Depends(get_current_user)):
+    """Get all menu categories"""
+    categories = await db.menu_categories.find({"is_active": True}).sort("display_order", 1).to_list(100)
+    return [MenuCategory(**category) for category in categories]
+
+@api_router.post("/restaurant/categories")
+async def create_menu_category(
+    category: MenuCategoryCreate, 
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Create a new menu category"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied. Only Admin or Restaurant Manager can manage categories.")
+    
+    # Check if category name already exists
+    existing = await db.menu_categories.find_one({"name": category.name, "is_active": True})
+    if existing:
+        raise HTTPException(status_code=400, detail="Category name already exists")
+    
+    new_category = MenuCategory(**category.dict())
+    await db.menu_categories.insert_one(new_category.dict())
+    
+    return new_category
+
+@api_router.put("/restaurant/categories/{category_id}")
+async def update_menu_category(
+    category_id: str,
+    category: MenuCategoryCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update a menu category"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.menu_categories.update_one(
+        {"id": category_id},
+        {"$set": category.dict()}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"message": "Category updated successfully"}
+
+@api_router.delete("/restaurant/categories/{category_id}")
+async def delete_menu_category(
+    category_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Delete a menu category"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    # Check if category has menu items
+    items = await db.menu_items.find({"category_id": category_id, "is_available": True}).to_list(1)
+    if items:
+        raise HTTPException(status_code=400, detail="Cannot delete category with active menu items")
+    
+    result = await db.menu_categories.update_one(
+        {"id": category_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"message": "Category deleted successfully"}
+
+# Menu Items
+@api_router.get("/restaurant/menu-items")
+async def get_menu_items(category_id: Optional[str] = None, current_user: UserResponse = Depends(get_current_user)):
+    """Get all menu items, optionally filtered by category"""
+    query = {"is_available": True}
+    if category_id:
+        query["category_id"] = category_id
+    
+    items = await db.menu_items.find(query).to_list(1000)
+    return [MenuItem(**item) for item in items]
+
+@api_router.post("/restaurant/menu-items")
+async def create_menu_item(
+    item: MenuItemCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Create a new menu item"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    # Verify category exists
+    category = await db.menu_categories.find_one({"id": item.category_id, "is_active": True})
+    if not category:
+        raise HTTPException(status_code=400, detail="Invalid category ID")
+    
+    new_item = MenuItem(**item.dict())
+    await db.menu_items.insert_one(new_item.dict())
+    
+    return new_item
+
+@api_router.put("/restaurant/menu-items/{item_id}")
+async def update_menu_item(
+    item_id: str,
+    item: MenuItemCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update a menu item"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.menu_items.update_one(
+        {"id": item_id},
+        {"$set": item.dict()}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    return {"message": "Menu item updated successfully"}
+
+@api_router.delete("/restaurant/menu-items/{item_id}")
+async def delete_menu_item(
+    item_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Delete a menu item"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.menu_items.update_one(
+        {"id": item_id},
+        {"$set": {"is_available": False}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    return {"message": "Menu item deleted successfully"}
+
+# Restaurant Tables
+@api_router.get("/restaurant/tables")
+async def get_restaurant_tables(current_user: UserResponse = Depends(get_current_user)):
+    """Get all restaurant tables"""
+    tables = await db.restaurant_tables.find({"is_active": True}).sort("table_number", 1).to_list(1000)
+    return [RestaurantTable(**table) for table in tables]
+
+@api_router.post("/restaurant/tables")
+async def create_restaurant_table(
+    table: RestaurantTableCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Create a new restaurant table"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    # Check if table number already exists
+    existing = await db.restaurant_tables.find_one({"table_number": table.table_number, "is_active": True})
+    if existing:
+        raise HTTPException(status_code=400, detail="Table number already exists")
+    
+    new_table = RestaurantTable(**table.dict())
+    await db.restaurant_tables.insert_one(new_table.dict())
+    
+    return new_table
+
+@api_router.put("/restaurant/tables/{table_id}")
+async def update_restaurant_table(
+    table_id: str,
+    table: RestaurantTableCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update a restaurant table"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.restaurant_tables.update_one(
+        {"id": table_id},
+        {"$set": table.dict()}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    return {"message": "Table updated successfully"}
+
+@api_router.delete("/restaurant/tables/{table_id}")
+async def delete_restaurant_table(
+    table_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Delete a restaurant table"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.restaurant_tables.update_one(
+        {"id": table_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Table not found")
+    
+    return {"message": "Table deleted successfully"}
+
+# Restaurant Staff
+@api_router.get("/restaurant/staff")
+async def get_restaurant_staff(current_user: UserResponse = Depends(get_current_user)):
+    """Get all restaurant staff"""
+    staff = await db.restaurant_staff.find({"is_active": True}).sort("name", 1).to_list(1000)
+    return [RestaurantStaff(**member) for member in staff]
+
+@api_router.post("/restaurant/staff")
+async def create_restaurant_staff(
+    staff: RestaurantStaffCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Create a new restaurant staff member"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    new_staff = RestaurantStaff(**staff.dict())
+    await db.restaurant_staff.insert_one(new_staff.dict())
+    
+    return new_staff
+
+@api_router.put("/restaurant/staff/{staff_id}")
+async def update_restaurant_staff(
+    staff_id: str,
+    staff: RestaurantStaffCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update a restaurant staff member"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.restaurant_staff.update_one(
+        {"id": staff_id},
+        {"$set": staff.dict()}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    
+    return {"message": "Staff member updated successfully"}
+
+@api_router.delete("/restaurant/staff/{staff_id}")
+async def delete_restaurant_staff(
+    staff_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Delete a restaurant staff member"""
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
+    result = await db.restaurant_staff.update_one(
+        {"id": staff_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    
+    return {"message": "Staff member deleted successfully"}
+
+# Restaurant Orders
+@api_router.get("/restaurant/orders")
+async def get_restaurant_orders(
+    status: Optional[str] = None,
+    order_type: Optional[str] = None,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Get restaurant orders with optional filtering"""
+    query = {}
+    if status:
+        query["order_status"] = status
+    if order_type:
+        query["order_type"] = order_type
+    
+    orders = await db.restaurant_orders.find(query).sort("order_date", -1).to_list(1000)
+    return [RestaurantOrder(**order) for order in orders]
+
+@api_router.post("/restaurant/orders")
+async def create_restaurant_order(
+    order: RestaurantOrderCreate,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Create a new restaurant order"""
+    # Generate order number
+    order_count = await db.restaurant_orders.count_documents({})
+    order_number = f"R{str(order_count + 1).zfill(4)}"
+    
+    # Calculate totals
+    subtotal = sum(item.total_price for item in order.items)
+    tax_amount = subtotal * 0.10  # 10% tax
+    service_charge = subtotal * 0.05  # 5% service charge
+    total_amount = subtotal + tax_amount + service_charge
+    
+    # Get table/staff details
+    table_number = None
+    waiter_name = ""
+    
+    if order.table_id:
+        table = await db.restaurant_tables.find_one({"id": order.table_id})
+        if table:
+            table_number = table["table_number"]
+        
+        # Update table status to Occupied
+        await db.restaurant_tables.update_one(
+            {"id": order.table_id},
+            {"$set": {"status": "Occupied"}}
+        )
+    
+    if order.waiter_id:
+        waiter = await db.restaurant_staff.find_one({"id": order.waiter_id})
+        if waiter:
+            waiter_name = waiter["name"]
+    
+    # Create order
+    new_order = RestaurantOrder(
+        order_number=order_number,
+        order_type=order.order_type,
+        table_id=order.table_id,
+        table_number=table_number,
+        room_number=order.room_number,
+        customer_name=order.customer_name,
+        items=order.items,
+        subtotal=subtotal,
+        tax_amount=tax_amount,
+        service_charge=service_charge,
+        total_amount=total_amount,
+        payment_method=order.payment_method,
+        waiter_id=order.waiter_id,
+        waiter_name=waiter_name,
+        notes=order.notes,
+        created_by=current_user.username
+    )
+    
+    await db.restaurant_orders.insert_one(new_order.dict())
+    
+    return new_order
+
+@api_router.put("/restaurant/orders/{order_id}/status")
+async def update_order_status(
+    order_id: str,
+    status: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update order status"""
+    valid_statuses = ["Pending", "Preparing", "Ready", "Served", "Cancelled"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    result = await db.restaurant_orders.update_one(
+        {"id": order_id},
+        {"$set": {"order_status": status}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    return {"message": f"Order status updated to {status}"}
+
+@api_router.post("/restaurant/orders/{order_id}/pay")
+async def pay_restaurant_order(
+    order_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Process payment for restaurant order"""
+    # Get the order
+    order = await db.restaurant_orders.find_one({"id": order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if order["payment_status"] == "Paid":
+        raise HTTPException(status_code=400, detail="Order already paid")
+    
+    # Update payment status
+    await db.restaurant_orders.update_one(
+        {"id": order_id},
+        {"$set": {"payment_status": "Paid", "order_status": "Served"}}
+    )
+    
+    # Handle different payment flows
+    if order["order_type"] == "table":
+        # Table order - add to daily revenue immediately
+        daily_sale = DailySale(
+            customer_name=order.get("customer_name", "Walk-in Customer"),
+            room_number="Restaurant",
+            payment_method=order["payment_method"],
+            room_charges=0.0,
+            additional_charges=order["total_amount"],
+            discount_amount=0.0,
+            advance_amount=0.0,
+            total_amount=order["total_amount"],
+            date=datetime.now().date()
+        )
+        
+        daily_sale_dict = daily_sale.dict()
+        daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
+        await db.daily_sales.insert_one(daily_sale_dict)
+        
+        # Free up table
+        if order.get("table_id"):
+            await db.restaurant_tables.update_one(
+                {"id": order["table_id"]},
+                {"$set": {"status": "Available"}}
+            )
+        
+    elif order["order_type"] == "room_service":
+        # Room service - add to customer's account
+        if order.get("room_number"):
+            # Find the checked-in customer for this room
+            customer = await db.customers.find_one({
+                "current_room": order["room_number"],
+                "check_out_date": None  # Still checked in
+            })
+            
+            if customer:
+                # Add restaurant charges to customer account
+                current_restaurant_charges = customer.get("restaurant_charges", 0.0)
+                new_restaurant_charges = current_restaurant_charges + order["total_amount"]
+                
+                await db.customers.update_one(
+                    {"id": customer["id"]},
+                    {"$set": {"restaurant_charges": new_restaurant_charges}}
+                )
+    
+    return {"message": "Payment processed successfully", "order": RestaurantOrder(**order)}
+
 # Test route
 @api_router.get("/")
 async def root():
