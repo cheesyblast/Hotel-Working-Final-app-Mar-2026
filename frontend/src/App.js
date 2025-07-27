@@ -6278,6 +6278,113 @@ const Restaurant = () => {
           </div>
         </div>
       )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && selectedOrderForPayment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Process Payment</h3>
+            
+            {/* Order Details */}
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">Order Details</h4>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Order Number:</span>
+                  <span className="font-medium">{selectedOrderForPayment.order_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Customer:</span>
+                  <span className="font-medium">{selectedOrderForPayment.customer_name}</span>
+                </div>
+                {selectedOrderForPayment.order_type === 'room_service' && (
+                  <div className="flex justify-between">
+                    <span>Room:</span>
+                    <span className="font-medium">{selectedOrderForPayment.room_number}</span>
+                  </div>
+                )}
+                {selectedOrderForPayment.order_type === 'table' && (
+                  <div className="flex justify-between">
+                    <span>Table:</span>
+                    <span className="font-medium">{selectedOrderForPayment.table_number}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>LKR {selectedOrderForPayment.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tax ({hotelSettings.tax_rate || 0}%):</span>
+                  <span>LKR {selectedOrderForPayment.tax_amount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Service Charge:</span>
+                  <span>LKR {selectedOrderForPayment.service_charge.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <span>Total:</span>
+                  <span>LKR {selectedOrderForPayment.total_amount.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Room Service Special Options */}
+            {selectedOrderForPayment.order_type === 'room_service' && (
+              <div className="mb-4">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={paymentData.add_to_room_bill}
+                    onChange={(e) => setPaymentData({...paymentData, add_to_room_bill: e.target.checked})}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-700">Add to Room Bill (will be charged at checkout)</span>
+                </label>
+              </div>
+            )}
+
+            {/* Payment Method Selection */}
+            {(!paymentData.add_to_room_bill || selectedOrderForPayment.order_type !== 'room_service') && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <select
+                  value={paymentData.payment_method}
+                  onChange={(e) => setPaymentData({...paymentData, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setSelectedOrderForPayment(null);
+                  setPaymentData({
+                    payment_method: 'Cash',
+                    add_to_room_bill: false
+                  });
+                }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleProcessPayment}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                {paymentData.add_to_room_bill && selectedOrderForPayment.order_type === 'room_service' 
+                  ? 'Add to Room Bill' 
+                  : 'Process Payment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
