@@ -5543,46 +5543,47 @@ const Restaurant = () => {
 
         {/* Orders Tab */}
         {activeTab === 'orders' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Order Management</h2>
+          <div className="space-y-4 sm:space-y-6">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Order Management</h2>
             
             <div className="bg-gray-800 rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Order #</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Table/Room</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {orders.map(order => (
-                    <tr key={order.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">{order.order_number}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded ${
-                          order.order_type === 'table' ? 'bg-blue-600' : 'bg-purple-600'
-                        }`}>
-                          {order.order_type === 'table' ? 'Table' : 'Room Service'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">
-                        {order.order_type === 'table' ? `Table ${order.table_number}` : `Room ${order.room_number}`}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">{order.customer_name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-green-400">LKR {order.total_amount}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded ${
-                          order.payment_status === 'Paid' ? 'bg-green-600' : 'bg-yellow-600'
-                        }`}>
-                          {order.payment_status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Order #</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Type</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase hidden sm:table-cell">Table/Room</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase hidden lg:table-cell">Customer</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-gray-800 divide-y divide-gray-700">
+                    {orders.map(order => (
+                      <tr key={order.id}>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-white">{order.order_number}</td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded ${
+                            order.order_type === 'table' ? 'bg-blue-600' : 'bg-purple-600'
+                          }`}>
+                            {order.order_type === 'table' ? 'Table' : 'Room'}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-white hidden sm:table-cell">
+                          {order.order_type === 'table' ? `Table ${order.table_number}` : `Room ${order.room_number}`}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-white hidden lg:table-cell">{order.customer_name}</td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-green-400">LKR {order.total_amount}</td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded ${
+                            order.payment_status === 'Paid' ? 'bg-green-600' : 'bg-yellow-600'
+                          }`}>
+                            {order.payment_status}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         {order.payment_status === 'Pending' && (
                           <button
                             onClick={() => handlePayOrder(order.id)}
