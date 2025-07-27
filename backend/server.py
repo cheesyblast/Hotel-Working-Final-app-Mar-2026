@@ -3527,6 +3527,14 @@ async def delete_menu_category(
     if items:
         raise HTTPException(status_code=400, detail="Cannot delete category with active menu items")
     
+    # Check if category items are in active orders
+    active_orders = await db.restaurant_orders.find({
+        "payment_status": "Pending",
+        "items.menu_item_id": {"$in": [item["id"] for item in items]}
+    }).to_list(1)
+    if active_orders:
+        raise HTTPException(status_code=400, detail="Cannot delete category with items in active orders")
+    
     result = await db.menu_categories.update_one(
         {"id": category_id},
         {"$set": {"is_active": False}}
