@@ -1771,7 +1771,7 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
             "phone": booking.guest_phone,
             "current_room": booking.room_number,
             "check_in_date": booking_dict['check_in_date'],
-            "check_out_date": booking_dict['check_out_date'],
+            "check_out_date": None,  # None indicates currently checked in
             "advance_amount": 0.0,  # No advance amount for past date check-ins
             "notes": booking.additional_notes,
             "room_charges": booking.booking_amount,
