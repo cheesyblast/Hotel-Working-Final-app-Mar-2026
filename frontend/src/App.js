@@ -5460,10 +5460,31 @@ const Restaurant = () => {
   };
 
   const handlePayOrder = async (orderId) => {
-    if (!window.confirm('Process payment for this order?')) return;
+    const order = orders.find(o => o.id === orderId);
+    setSelectedOrderForPayment(order);
+    setShowPaymentModal(true);
+  };
 
+  const handleProcessPayment = async () => {
+    if (!selectedOrderForPayment) return;
+    
     try {
-      await axios.post(`${API}/restaurant/orders/${orderId}/pay`);
+      const paymentRequest = {
+        payment_method: paymentData.payment_method,
+        add_to_room_bill: paymentData.add_to_room_bill && selectedOrderForPayment.order_type === 'room_service'
+      };
+      
+      await axios.post(`${API}/restaurant/orders/${selectedOrderForPayment.id}/pay`, paymentRequest);
+      
+      // Reset states
+      setShowPaymentModal(false);
+      setSelectedOrderForPayment(null);
+      setPaymentData({
+        payment_method: 'Cash',
+        add_to_room_bill: false
+      });
+      
+      // Refresh data
       await Promise.all([fetchOrders(), fetchTables()]);
       
       // Trigger financial refresh for real-time balance updates
