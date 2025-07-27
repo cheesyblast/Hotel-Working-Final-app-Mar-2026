@@ -3854,69 +3854,115 @@ async def update_order_status(
 @api_router.post("/restaurant/orders/{order_id}/pay")
 async def pay_restaurant_order(
     order_id: str,
+    payment_data: dict,
     current_user: UserResponse = Depends(get_current_user)
 ):
     """Process payment for restaurant order"""
-    # Get the order
+    if current_user.role not in ["Admin", "Restaurant Manager"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
+    
     order = await db.restaurant_orders.find_one({"id": order_id})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    if order["payment_status"] == "Paid":
+    if order["payment_status"] != "Pending":
         raise HTTPException(status_code=400, detail="Order already paid")
     
-    # Update payment status
+    payment_method = payment_data.get("payment_method", "Cash")
+    add_to_room_bill = payment_data.get("add_to_room_bill", False)
+    
+    # Update order payment status
     await db.restaurant_orders.update_one(
         {"id": order_id},
-        {"$set": {"payment_status": "Paid", "order_status": "Served"}}
+        {"$set": {
+            "payment_status": "Paid",
+            "payment_method": payment_method,
+            "order_status": "Completed"
+        }}
     )
     
-    # Handle different payment flows
-    if order["order_type"] == "table":
-        # Table order - add to daily revenue immediately
-        daily_sale = DailySale(
-            customer_name=order.get("customer_name", "Walk-in Customer"),
-            room_number="Restaurant",
-            payment_method=order["payment_method"],
-            room_charges=0.0,
-            additional_charges=order["total_amount"],
-            discount_amount=0.0,
-            advance_amount=0.0,
-            total_amount=order["total_amount"],
-            date=datetime.now().date()
-        )
-        
-        daily_sale_dict = daily_sale.dict()
-        daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
-        await db.daily_sales.insert_one(daily_sale_dict)
-        
-        # Free up table
-        if order.get("table_id"):
-            await db.restaurant_tables.update_one(
-                {"id": order["table_id"]},
-                {"$set": {"status": "Available"}}
+    # Handle room service billing
+    if order["order_type"] == "room_service" and add_to_room_bill:
+        # Add to customer's room charges
+        customer = await db.customers.find_one({"room_number": order["room_number"]})
+        if customer:
+            current_charges = customer.get("restaurant_charges", 0.0)
+            new_charges = current_charges + order["total_amount"]
+            await db.customers.update_one(
+                {"room_number": order["room_number"]},
+                {"$set": {"restaurant_charges": new_charges}}
             )
         
-    elif order["order_type"] == "room_service":
-        # Room service - add to customer's account
-        if order.get("room_number"):
-            # Find the checked-in customer for this room
-            customer = await db.customers.find_one({
-                "current_room": order["room_number"],
-                "check_out_date": None  # Still checked in
-            })
-            
-            if customer:
-                # Add restaurant charges to customer account
-                current_restaurant_charges = customer.get("restaurant_charges", 0.0)
-                new_restaurant_charges = current_restaurant_charges + order["total_amount"]
-                
-                await db.customers.update_one(
-                    {"id": customer["id"]},
-                    {"$set": {"restaurant_charges": new_restaurant_charges}}
-                )
+        # Log activity
+        await db.activity_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "action": "restaurant_bill_added",
+            "description": f"Added restaurant bill LKR {order['total_amount']:.2f} to Room {order['room_number']}",
+            "user_name": current_user.username,
+            "user_id": current_user.username,
+            "entity_type": "restaurant_order",
+            "entity_id": order_id,
+            "details": {
+                "order_number": order["order_number"],
+                "room_number": order["room_number"],
+                "amount": order["total_amount"],
+                "customer_name": order["customer_name"]
+            },
+            "timestamp": datetime.utcnow()
+        })
+    else:
+        # Process immediate payment - add to daily sales
+        await db.daily_sales.insert_one({
+            "id": str(uuid.uuid4()),
+            "sale_date": datetime.utcnow().date(),
+            "description": f"Restaurant Order {order['order_number']}",
+            "amount": order["total_amount"],
+            "category": "Restaurant",
+            "payment_method": payment_method,
+            "guest_name": order["customer_name"],
+            "created_by": current_user.username,
+            "created_at": datetime.utcnow()
+        })
+        
+        # Add to income records
+        await db.incomes.insert_one({
+            "id": str(uuid.uuid4()),
+            "description": f"Restaurant Order {order['order_number']}",
+            "amount": order["total_amount"],
+            "category": "Restaurant",
+            "payment_method": payment_method,
+            "income_date": datetime.utcnow().date(),
+            "guest_name": order["customer_name"],
+            "created_by": current_user.username,
+            "created_at": datetime.utcnow()
+        })
+        
+        # Log activity
+        await db.activity_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "action": "restaurant_payment_processed",
+            "description": f"Processed restaurant payment LKR {order['total_amount']:.2f} for Order {order['order_number']}",
+            "user_name": current_user.username,
+            "user_id": current_user.username,
+            "entity_type": "restaurant_order",
+            "entity_id": order_id,
+            "details": {
+                "order_number": order["order_number"],
+                "amount": order["total_amount"],
+                "payment_method": payment_method,
+                "customer_name": order["customer_name"]
+            },
+            "timestamp": datetime.utcnow()
+        })
     
-    return {"message": "Payment processed successfully", "order": RestaurantOrder(**order)}
+    # Free up table if it was a table order
+    if order["table_id"]:
+        await db.restaurant_tables.update_one(
+            {"id": order["table_id"]},
+            {"$set": {"status": "Available"}}
+        )
+    
+    return {"message": "Payment processed successfully"}
 
 # Test route
 @api_router.get("/")
