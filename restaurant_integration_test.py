@@ -202,7 +202,7 @@ class RestaurantIntegrationTest:
                 customers_response = requests.get(f"{API_BASE}/customers/checked-in", headers=headers)
                 if customers_response.status_code == 200:
                     customers = customers_response.json()
-                    updated_customer = next((c for c in customers if c.get('current_room') == '103'), None)
+                    updated_customer = next((c for c in customers if c.get('current_room') == '201'), None)
                     
                     if updated_customer:
                         final_restaurant_charges = updated_customer.get('restaurant_charges', 0.0)
