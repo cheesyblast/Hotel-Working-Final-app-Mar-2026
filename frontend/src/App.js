@@ -5410,19 +5410,19 @@ const Restaurant = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Restaurant Management</h1>
-            <p className="text-gray-300">Manage your restaurant operations</p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">Restaurant Management</h1>
+            <p className="text-sm sm:text-base text-gray-300">Manage your restaurant operations</p>
           </div>
           {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
-            <div className="flex space-x-4">
+            <div className="flex space-x-2 sm:space-x-4">
               <button
                 onClick={() => setShowOrderModal(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                className="bg-green-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-green-700 transition-colors text-sm sm:text-base"
               >
                 New Order
               </button>
@@ -5431,12 +5431,12 @@ const Restaurant = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-1 mb-8">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-6 sm:mb-8">
           {['menu', 'tables', 'orders', 'staff'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+              className={`px-3 py-2 sm:px-6 sm:py-3 font-medium rounded-lg transition-colors text-sm sm:text-base ${
                 activeTab === tab
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
