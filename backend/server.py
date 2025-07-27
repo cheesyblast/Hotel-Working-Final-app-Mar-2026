@@ -2102,20 +2102,22 @@ async def checkout_customer(checkout: CheckoutRequest):
     daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
     await db.daily_sales.insert_one(daily_sale_dict)
     
-    # Update customer with final billing details
+    # Update customer with final billing details and mark as checked out
     await db.customers.update_one(
         {"id": checkout.customer_id},
         {"$set": {
             "additional_charges": additional_amount,
             "restaurant_charges": restaurant_charges,
             "discount_amount": discount_amount,
-            "total_amount": total_amount
+            "total_amount": total_amount,
+            "is_checked_out": True,  # Mark as checked out
+            "actual_checkout_date": datetime.now().date()  # Set actual checkout date
         }}
     )
     
-    # Remove customer from checked-in list
-    result = await db.customers.delete_one({"id": checkout.customer_id})
-    if result.deleted_count == 0:
+    # Verify customer was updated
+    result = await db.customers.find_one({"id": checkout.customer_id})
+    if not result:
         raise HTTPException(status_code=404, detail="Customer not found")
     
     # Update corresponding booking status to "Completed"
