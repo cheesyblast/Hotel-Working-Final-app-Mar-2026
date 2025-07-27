@@ -174,6 +174,7 @@ class Customer(BaseModel):
     advance_amount: float = 0.0
     notes: str = ""
     room_charges: float = 0.0
+    restaurant_charges: float = 0.0  # Added for restaurant integration
     additional_charges: float = 0.0
     total_amount: float = 0.0
     created_at: datetime = Field(default_factory=datetime.utcnow)
