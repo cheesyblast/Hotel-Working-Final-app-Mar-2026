@@ -5096,6 +5096,16 @@ const Navigation = () => {
             Dashboard
           </Link>
           <Link 
+            to="/restaurant" 
+            className={`px-3 py-2 rounded-md text-sm font-medium ${
+              isActive('/restaurant') 
+                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            Restaurant
+          </Link>
+          <Link 
             to="/rooms" 
             className={`px-3 py-2 rounded-md text-sm font-medium ${
               isActive('/rooms') 
