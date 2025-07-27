@@ -2549,6 +2549,73 @@ async def initialize_sample_data():
         for channel in default_channels:
             await db.booking_channels.insert_one(channel.dict())
     
+    # Create restaurant manager user if not exists
+    restaurant_manager = await db.users.find_one({"username": "restaurant"})
+    if not restaurant_manager:
+        restaurant_user = User(
+            username="restaurant",
+            password_hash=get_password_hash("restaurant123"),
+            full_name="Restaurant Manager",
+            role="Restaurant Manager",
+            email="restaurant@hotel.com"
+        )
+        await db.users.insert_one(restaurant_user.dict())
+    
+    # Initialize default menu categories
+    existing_categories = await db.menu_categories.count_documents({})
+    if existing_categories == 0:
+        default_categories = [
+            MenuCategory(name="Appetizers", description="Start your meal right", display_order=1),
+            MenuCategory(name="Main Course", description="Hearty main dishes", display_order=2),
+            MenuCategory(name="Beverages", description="Refreshing drinks", display_order=3),
+            MenuCategory(name="Desserts", description="Sweet endings", display_order=4),
+        ]
+        
+        for category in default_categories:
+            await db.menu_categories.insert_one(category.dict())
+    
+    # Initialize sample menu items
+    existing_items = await db.menu_items.count_documents({})
+    if existing_items == 0:
+        # Get category IDs for menu items
+        categories = await db.menu_categories.find({"is_active": True}).to_list(10)
+        category_map = {cat["name"]: cat["id"] for cat in categories}
+        
+        if category_map:
+            sample_items = [
+                MenuItem(name="Spring Rolls", description="Crispy vegetable spring rolls with sweet chili sauce", 
+                        price=850.0, category_id=category_map.get("Appetizers", ""), is_vegetarian=True),
+                MenuItem(name="Chicken Wings", description="Buffalo chicken wings with blue cheese dip", 
+                        price=1200.0, category_id=category_map.get("Appetizers", "")),
+                MenuItem(name="Grilled Chicken", description="Herb marinated grilled chicken with vegetables", 
+                        price=2200.0, category_id=category_map.get("Main Course", "")),
+                MenuItem(name="Fish Curry", description="Traditional Sri Lankan fish curry with rice", 
+                        price=1800.0, category_id=category_map.get("Main Course", ""), is_spicy=True),
+                MenuItem(name="Vegetable Fried Rice", description="Wok-fried rice with fresh vegetables", 
+                        price=1400.0, category_id=category_map.get("Main Course", ""), is_vegetarian=True),
+                MenuItem(name="Fresh Lime Juice", description="Freshly squeezed lime juice", 
+                        price=450.0, category_id=category_map.get("Beverages", "")),
+                MenuItem(name="Coffee", description="Freshly brewed Ceylon coffee", 
+                        price=350.0, category_id=category_map.get("Beverages", "")),
+                MenuItem(name="Chocolate Cake", description="Rich chocolate cake with vanilla ice cream", 
+                        price=800.0, category_id=category_map.get("Desserts", "")),
+            ]
+            
+            for item in sample_items:
+                await db.menu_items.insert_one(item.dict())
+    
+    # Initialize sample restaurant staff
+    existing_staff = await db.restaurant_staff.count_documents({})
+    if existing_staff == 0:
+        sample_staff = [
+            RestaurantStaff(name="John Silva", role="Waiter", phone="+94771234567"),
+            RestaurantStaff(name="Mary Fernando", role="Waiter", phone="+94771234568"),
+            RestaurantStaff(name="Chef Kumar", role="Chef", phone="+94771234569"),
+        ]
+        
+        for staff in sample_staff:
+            await db.restaurant_staff.insert_one(staff.dict())
+    
     return {"message": "Sample data initialized successfully"}
 
 # Guest Management Routes
