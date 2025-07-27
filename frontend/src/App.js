@@ -5329,6 +5329,60 @@ const Restaurant = () => {
     }
   };
 
+  // Delete functions
+  const handleDeleteCategory = async (categoryId) => {
+    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    
+    try {
+      await axios.delete(`${API}/restaurant/categories/${categoryId}`);
+      await fetchCategories();
+      await fetchMenuItems(); // Refresh menu items as well
+      alert('Category deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Error deleting category: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleDeleteMenuItem = async (itemId) => {
+    if (!window.confirm('Are you sure you want to delete this menu item?')) return;
+    
+    try {
+      await axios.delete(`${API}/restaurant/menu-items/${itemId}`);
+      await fetchMenuItems();
+      alert('Menu item deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      alert('Error deleting menu item: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleDeleteTable = async (tableId) => {
+    if (!window.confirm('Are you sure you want to delete this table?')) return;
+    
+    try {
+      await axios.delete(`${API}/restaurant/tables/${tableId}`);
+      await fetchTables();
+      alert('Table deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting table:', error);
+      alert('Error deleting table: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleDeleteStaff = async (staffId) => {
+    if (!window.confirm('Are you sure you want to delete this staff member?')) return;
+    
+    try {
+      await axios.delete(`${API}/restaurant/staff/${staffId}`);
+      await fetchStaff();
+      alert('Staff member deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting staff:', error);
+      alert('Error deleting staff: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Order management
   const addItemToOrder = (item) => {
     const existingItem = orderItems.find(orderItem => orderItem.menu_item_id === item.id);
