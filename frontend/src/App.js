@@ -6074,15 +6074,19 @@ const Restaurant = () => {
                   {checkedInCustomers.map(customer => (
                     <button
                       key={customer.id}
-                      onClick={() => setNewOrder({...newOrder, room_number: customer.room_number, customer_name: customer.customer_name})}
+                      onClick={() => setNewOrder({
+                        ...newOrder, 
+                        room_number: customer.current_room, 
+                        customer_name: customer.name
+                      })}
                       className={`p-4 rounded-lg text-left transition-colors ${
-                        newOrder.room_number === customer.room_number
+                        newOrder.room_number === customer.current_room
                           ? 'bg-green-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
                       }`}
                     >
-                      <div className="font-bold text-lg">Room {customer.room_number}</div>
-                      <div className="text-sm">{customer.customer_name}</div>
+                      <div className="font-bold text-lg">Room {customer.current_room}</div>
+                      <div className="text-sm">{customer.name}</div>
                       <div className="text-xs text-green-400">
                         ● Live Check-in
                       </div>
