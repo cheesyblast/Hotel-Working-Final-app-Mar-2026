@@ -5884,6 +5884,33 @@ const Restaurant = () => {
                   rows="3"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preparation Time (minutes)</label>
+                <input
+                  type="number"
+                  value={newItem.prep_time}
+                  onChange={(e) => setNewItem({...newItem, prep_time: parseInt(e.target.value) || 15})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image (Max 2MB)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+                {newItem.image && (
+                  <div className="mt-2">
+                    <img 
+                      src={newItem.image} 
+                      alt="Preview" 
+                      className="w-20 h-20 object-cover rounded-md border"
+                    />
+                  </div>
+                )}
+              </div>
               <div className="flex items-center space-x-4">
                 <label className="flex items-center">
                   <input
