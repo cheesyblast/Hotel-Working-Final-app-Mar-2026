@@ -88,14 +88,32 @@ def create_test_booking(stay_type="Night Stay", booking_amount=8500.0):
         
         rooms = rooms_response.json()
         available_room = None
+        
+        # First try to find an available room
         for room in rooms:
             if room.get('status') == 'Available':
                 available_room = room
                 break
         
+        # If no available room, create a new test room
         if not available_room:
-            print("❌ No available rooms found")
-            return None
+            print("🏗️ No available rooms found, creating a test room...")
+            test_room_data = {
+                "room_number": f"TEST{len(rooms)+1}",
+                "room_type": "Double",
+                "price_per_night": 8500.0,
+                "max_occupancy": 2,
+                "amenities": ["WiFi", "AC", "TV"]
+            }
+            
+            create_room_response = requests.post(f"{API_BASE}/rooms", json=test_room_data, headers=auth_headers)
+            if create_room_response.status_code == 200:
+                available_room = create_room_response.json()
+                print(f"✅ Created test room: {available_room['room_number']}")
+            else:
+                print(f"❌ Failed to create test room - Status: {create_room_response.status_code}")
+                print(f"Response: {create_room_response.text}")
+                return None
         
         # Create booking
         today = datetime.now().date()
