@@ -2096,6 +2096,7 @@ async def checkout_customer(checkout: CheckoutRequest):
         {"id": checkout.customer_id},
         {"$set": {
             "additional_charges": additional_amount,
+            "restaurant_charges": restaurant_charges,
             "discount_amount": discount_amount,
             "total_amount": total_amount
         }}
