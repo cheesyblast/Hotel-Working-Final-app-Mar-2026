@@ -99,7 +99,7 @@ class RestaurantIntegrationTest:
                 customers_response = requests.get(f"{API_BASE}/customers/checked-in", headers=headers)
                 if customers_response.status_code == 200:
                     customers = customers_response.json()
-                    test_customer = next((c for c in customers if c.get('current_room') == '103'), None)
+                    test_customer = next((c for c in customers if c.get('current_room') == '201'), None)
                     if test_customer:
                         self.test_customer_id = test_customer['id']
                         self.log_result("Get Test Customer ID", True, f"Customer ID: {self.test_customer_id}")
