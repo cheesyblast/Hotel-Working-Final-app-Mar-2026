@@ -5161,6 +5161,907 @@ const Navigation = () => {
   );
 };
 
+// Restaurant Component  
+const Restaurant = () => {
+  // State management
+  const [categories, setCategories] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [tables, setTables] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [checkedInCustomers, setCheckedInCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Get current user context
+  const { user } = useAuth();
+  
+  // UI state
+  const [activeTab, setActiveTab] = useState('menu'); // menu, tables, orders, staff
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showAddTableModal, setShowAddTableModal] = useState(false);
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  
+  // Form states
+  const [newCategory, setNewCategory] = useState({ name: '', description: '', display_order: 0 });
+  const [newItem, setNewItem] = useState({
+    name: '', description: '', price: 0, category_id: '', 
+    is_vegetarian: false, is_spicy: false, prep_time: 15
+  });
+  const [newTable, setNewTable] = useState({ table_number: '', capacity: 4, position_x: 0, position_y: 0 });
+  const [newStaff, setNewStaff] = useState({ name: '', role: 'Waiter', phone: '' });
+  const [newOrder, setNewOrder] = useState({
+    order_type: 'table', table_id: '', room_number: '', customer_name: '',
+    items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+  });
+  const [orderItems, setOrderItems] = useState([]);
+
+  // Get financial context for cross-component refresh
+  const { triggerFinancialRefresh } = useFinancial();
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      await Promise.all([
+        fetchCategories(),
+        fetchMenuItems(), 
+        fetchTables(),
+        fetchStaff(),
+        fetchOrders(),
+        fetchCheckedInCustomers()
+      ]);
+    } catch (error) {
+      console.error('Error fetching restaurant data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchMenuItems = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/menu-items`);
+      setMenuItems(response.data);
+    } catch (error) {
+      console.error('Error fetching menu items:', error);
+    }
+  };
+
+  const fetchTables = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/tables`);
+      setTables(response.data);
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  };
+
+  const fetchStaff = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/staff`);
+      setStaff(response.data);
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/orders`);
+      setOrders(response.data);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchCheckedInCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers/checked-in`);
+      setCheckedInCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching checked-in customers:', error);
+    }
+  };
+
+  // Category management
+  const handleAddCategory = async () => {
+    try {
+      await axios.post(`${API}/restaurant/categories`, newCategory);
+      setShowAddCategoryModal(false);
+      setNewCategory({ name: '', description: '', display_order: 0 });
+      await fetchCategories();
+      alert('Category added successfully!');
+    } catch (error) {
+      console.error('Error adding category:', error);
+      alert('Error adding category: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Menu item management  
+  const handleAddItem = async () => {
+    try {
+      await axios.post(`${API}/restaurant/menu-items`, newItem);
+      setShowAddItemModal(false);
+      setNewItem({
+        name: '', description: '', price: 0, category_id: '', 
+        is_vegetarian: false, is_spicy: false, prep_time: 15
+      });
+      await fetchMenuItems();
+      alert('Menu item added successfully!');
+    } catch (error) {
+      console.error('Error adding menu item:', error);
+      alert('Error adding menu item: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Table management
+  const handleAddTable = async () => {
+    try {
+      await axios.post(`${API}/restaurant/tables`, newTable);
+      setShowAddTableModal(false);
+      setNewTable({ table_number: '', capacity: 4, position_x: 0, position_y: 0 });
+      await fetchTables();
+      alert('Table added successfully!');
+    } catch (error) {
+      console.error('Error adding table:', error);
+      alert('Error adding table: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Staff management
+  const handleAddStaff = async () => {
+    try {
+      await axios.post(`${API}/restaurant/staff`, newStaff);
+      setShowAddStaffModal(false);
+      setNewStaff({ name: '', role: 'Waiter', phone: '' });
+      await fetchStaff();
+      alert('Staff member added successfully!');
+    } catch (error) {
+      console.error('Error adding staff:', error);
+      alert('Error adding staff: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Order management
+  const addItemToOrder = (item) => {
+    const existingItem = orderItems.find(orderItem => orderItem.menu_item_id === item.id);
+    if (existingItem) {
+      setOrderItems(orderItems.map(orderItem => 
+        orderItem.menu_item_id === item.id 
+          ? { ...orderItem, quantity: orderItem.quantity + 1, total_price: (orderItem.quantity + 1) * item.price }
+          : orderItem
+      ));
+    } else {
+      setOrderItems([...orderItems, {
+        menu_item_id: item.id,
+        menu_item_name: item.name,
+        quantity: 1,
+        unit_price: item.price,
+        total_price: item.price,
+        special_notes: ''
+      }]);
+    }
+  };
+
+  const removeItemFromOrder = (menuItemId) => {
+    setOrderItems(orderItems.filter(item => item.menu_item_id !== menuItemId));
+  };
+
+  const updateItemQuantity = (menuItemId, quantity) => {
+    if (quantity <= 0) {
+      removeItemFromOrder(menuItemId);
+      return;
+    }
+    setOrderItems(orderItems.map(item => 
+      item.menu_item_id === menuItemId 
+        ? { ...item, quantity: quantity, total_price: quantity * item.unit_price }
+        : item
+    ));
+  };
+
+  const handleCreateOrder = async () => {
+    try {
+      const orderData = { ...newOrder, items: orderItems };
+      await axios.post(`${API}/restaurant/orders`, orderData);
+      setShowOrderModal(false);
+      setNewOrder({
+        order_type: 'table', table_id: '', room_number: '', customer_name: '',
+        items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+      });
+      setOrderItems([]);
+      await Promise.all([fetchOrders(), fetchTables()]);
+      alert('Order created successfully!');
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Error creating order: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handlePayOrder = async (orderId) => {
+    if (!window.confirm('Process payment for this order?')) return;
+
+    try {
+      await axios.post(`${API}/restaurant/orders/${orderId}/pay`);
+      await Promise.all([fetchOrders(), fetchTables()]);
+      
+      // Trigger financial refresh for real-time balance updates
+      triggerFinancialRefresh();
+      
+      alert('Payment processed successfully!');
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Error processing payment: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading restaurant data...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Restaurant Management</h1>
+            <p className="text-gray-300">Manage your restaurant operations</p>
+          </div>
+          {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowOrderModal(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                New Order
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex space-x-1 mb-8">
+          {['menu', 'tables', 'orders', 'staff'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                activeTab === tab
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Menu Tab */}
+        {activeTab === 'menu' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Menu Management</h2>
+              {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                <div className="space-x-4">
+                  <button
+                    onClick={() => setShowAddCategoryModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Add Category
+                  </button>
+                  <button
+                    onClick={() => setShowAddItemModal(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                  >
+                    Add Item
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Menu Categories and Items */}
+            <div className="space-y-8">
+              {categories.map(category => (
+                <div key={category.id} className="bg-gray-800 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-blue-400">{category.name}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {menuItems
+                      .filter(item => item.category_id === category.id)
+                      .map(item => (
+                        <div key={item.id} className="bg-gray-700 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-medium text-white">{item.name}</h4>
+                            <span className="text-green-400 font-bold">LKR {item.price}</span>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">{item.description}</p>
+                          <div className="flex items-center space-x-2 text-xs">
+                            {item.is_vegetarian && (
+                              <span className="bg-green-600 text-white px-2 py-1 rounded">Veg</span>
+                            )}
+                            {item.is_spicy && (
+                              <span className="bg-red-600 text-white px-2 py-1 rounded">Spicy</span>
+                            )}
+                            <span className="text-gray-400">{item.prep_time}min</span>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tables Tab */}
+        {activeTab === 'tables' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Table Management</h2>
+              {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                <button
+                  onClick={() => setShowAddTableModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Add Table
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {tables.map(table => (
+                <div
+                  key={table.id}
+                  className={`p-4 rounded-lg border-2 ${
+                    table.status === 'Available' ? 'bg-green-800 border-green-600' :
+                    table.status === 'Occupied' ? 'bg-red-800 border-red-600' :
+                    table.status === 'Reserved' ? 'bg-yellow-800 border-yellow-600' :
+                    'bg-gray-800 border-gray-600'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">T{table.table_number}</div>
+                    <div className="text-sm">{table.capacity} seats</div>
+                    <div className="text-xs mt-1 capitalize">{table.status}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Order Management</h2>
+            
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead className="bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Order #</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Table/Room</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-gray-800 divide-y divide-gray-700">
+                  {orders.map(order => (
+                    <tr key={order.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">{order.order_number}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          order.order_type === 'table' ? 'bg-blue-600' : 'bg-purple-600'
+                        }`}>
+                          {order.order_type === 'table' ? 'Table' : 'Room Service'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">
+                        {order.order_type === 'table' ? `Table ${order.table_number}` : `Room ${order.room_number}`}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">{order.customer_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-green-400">LKR {order.total_amount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          order.payment_status === 'Paid' ? 'bg-green-600' : 'bg-yellow-600'
+                        }`}>
+                          {order.payment_status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {order.payment_status === 'Pending' && (
+                          <button
+                            onClick={() => handlePayOrder(order.id)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                          >
+                            Pay
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Staff Tab */}
+        {activeTab === 'staff' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Staff Management</h2>
+              {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                <button
+                  onClick={() => setShowAddStaffModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Add Staff
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {staff.map(member => (
+                <div key={member.id} className="bg-gray-800 rounded-lg p-4">
+                  <h3 className="font-semibold text-white">{member.name}</h3>
+                  <p className="text-blue-400">{member.role}</p>
+                  <p className="text-gray-300 text-sm">{member.phone}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Add Category Modal */}
+      {showAddCategoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Add Menu Category</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newCategory.name}
+                  onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={newCategory.description}
+                  onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  rows="3"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAddCategoryModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddCategory}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Add Category
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Menu Item Modal */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Add Menu Item</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newItem.name}
+                  onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={newItem.category_id}
+                  onChange={(e) => setNewItem({...newItem, category_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price (LKR)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newItem.price}
+                  onChange={(e) => setNewItem({...newItem, price: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={newItem.description}
+                  onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  rows="3"
+                />
+              </div>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newItem.is_vegetarian}
+                    onChange={(e) => setNewItem({...newItem, is_vegetarian: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Vegetarian</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newItem.is_spicy}
+                    onChange={(e) => setNewItem({...newItem, is_spicy: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Spicy</span>
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAddItemModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddItem}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Add Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Table Modal */}
+      {showAddTableModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Add Table</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Table Number</label>
+                <input
+                  type="text"
+                  value={newTable.table_number}
+                  onChange={(e) => setNewTable({...newTable, table_number: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
+                <input
+                  type="number"
+                  value={newTable.capacity}
+                  onChange={(e) => setNewTable({...newTable, capacity: parseInt(e.target.value) || 4})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAddTableModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTable}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Add Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Staff Modal */}
+      {showAddStaffModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Add Staff Member</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newStaff.name}
+                  onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select
+                  value={newStaff.role}
+                  onChange={(e) => setNewStaff({...newStaff, role: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                >
+                  <option value="Waiter">Waiter</option>
+                  <option value="Chef">Chef</option>
+                  <option value="Manager">Manager</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={newStaff.phone}
+                  onChange={(e) => setNewStaff({...newStaff, phone: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAddStaffModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddStaff}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Add Staff
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Order Modal */}
+      {showOrderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Create New Order</h3>
+            
+            {/* Order Type Selection */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Order Type</label>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="table"
+                    checked={newOrder.order_type === 'table'}
+                    onChange={(e) => setNewOrder({...newOrder, order_type: e.target.value, room_number: ''})}
+                    className="mr-2"
+                  />
+                  <span className="text-gray-700">Table Order</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="room_service"
+                    checked={newOrder.order_type === 'room_service'}
+                    onChange={(e) => setNewOrder({...newOrder, order_type: e.target.value, table_id: ''})}
+                    className="mr-2"
+                  />
+                  <span className="text-gray-700">Room Service</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Table/Room Selection */}
+              {newOrder.order_type === 'table' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Table</label>
+                  <select
+                    value={newOrder.table_id}
+                    onChange={(e) => setNewOrder({...newOrder, table_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="">Select Table</option>
+                    {tables.filter(table => table.status === 'Available').map(table => (
+                      <option key={table.id} value={table.id}>Table {table.table_number} ({table.capacity} seats)</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                  <select
+                    value={newOrder.room_number}
+                    onChange={(e) => setNewOrder({...newOrder, room_number: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="">Select Room</option>
+                    {checkedInCustomers.map(customer => (
+                      <option key={customer.id} value={customer.current_room}>
+                        Room {customer.current_room} - {customer.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Customer Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  value={newOrder.customer_name}
+                  onChange={(e) => setNewOrder({...newOrder, customer_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                />
+              </div>
+
+              {/* Waiter Assignment */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Waiter</label>
+                <select
+                  value={newOrder.waiter_id}
+                  onChange={(e) => setNewOrder({...newOrder, waiter_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                >
+                  <option value="">Select Waiter</option>
+                  {staff.filter(member => member.role === 'Waiter').map(waiter => (
+                    <option key={waiter.id} value={waiter.id}>{waiter.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select
+                  value={newOrder.payment_method}
+                  onChange={(e) => setNewOrder({...newOrder, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Menu Items Selection */}
+            <div className="mb-4">
+              <h4 className="text-md font-medium text-gray-700 mb-2">Select Items</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto">
+                {categories.map(category => (
+                  <div key={category.id}>
+                    <h5 className="font-medium text-blue-600 mb-2">{category.name}</h5>
+                    {menuItems
+                      .filter(item => item.category_id === category.id && item.is_available)
+                      .map(item => (
+                        <div key={item.id} className="flex justify-between items-center p-2 border rounded mb-1">
+                          <div>
+                            <span className="text-sm font-medium text-gray-900">{item.name}</span>
+                            <span className="text-sm text-green-600 ml-2">LKR {item.price}</span>
+                          </div>
+                          <button
+                            onClick={() => addItemToOrder(item)}
+                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      ))
+                    }
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Order Items */}
+            {orderItems.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-md font-medium text-gray-700 mb-2">Order Items</h4>
+                <div className="space-y-2">
+                  {orderItems.map(item => (
+                    <div key={item.menu_item_id} className="flex justify-between items-center p-2 bg-gray-100 rounded">
+                      <span className="text-sm font-medium text-gray-900">{item.menu_item_name}</span>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => updateItemQuantity(item.menu_item_id, item.quantity - 1)}
+                          className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                        >
+                          -
+                        </button>
+                        <span className="text-sm">{item.quantity}</span>
+                        <button
+                          onClick={() => updateItemQuantity(item.menu_item_id, item.quantity + 1)}
+                          className="bg-green-500 text-white px-2 py-1 rounded text-xs"
+                        >
+                          +
+                        </button>
+                        <span className="text-sm text-green-600">LKR {item.total_price}</span>
+                        <button
+                          onClick={() => removeItemFromOrder(item.menu_item_id)}
+                          className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="text-right">
+                    <strong className="text-gray-900">
+                      Subtotal: LKR {orderItems.reduce((sum, item) => sum + item.total_price, 0)}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowOrderModal(false);
+                  setOrderItems([]);
+                }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateOrder}
+                disabled={orderItems.length === 0}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+              >
+                Create Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
 // Settings Component
 const Settings = () => {
   // State for different sections
