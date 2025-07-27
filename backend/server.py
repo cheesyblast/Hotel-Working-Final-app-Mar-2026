@@ -368,6 +368,7 @@ class MenuItem(BaseModel):
     is_spicy: bool = False
     prep_time: int = 15  # minutes
     image_url: str = ""
+    image: str = ""  # base64 encoded image
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class MenuItemCreate(BaseModel):
