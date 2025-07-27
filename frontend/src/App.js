@@ -7584,6 +7584,7 @@ function AppContent() {
         <main className="bg-gray-900">
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/restaurant" element={<Restaurant />} />
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/guests" element={<Guests />} />
             <Route path="/bookings" element={<Bookings />} />
