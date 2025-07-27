@@ -5506,24 +5506,24 @@ const Restaurant = () => {
 
         {/* Tables Tab */}
         {activeTab === 'tables' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Table Management</h2>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Table Management</h2>
               {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
                 <button
                   onClick={() => setShowAddTableModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-blue-700 text-sm sm:text-base"
                 >
                   Add Table
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
               {tables.map(table => (
                 <div
                   key={table.id}
-                  className={`p-4 rounded-lg border-2 ${
+                  className={`p-3 sm:p-4 rounded-lg border-2 ${
                     table.status === 'Available' ? 'bg-green-800 border-green-600' :
                     table.status === 'Occupied' ? 'bg-red-800 border-red-600' :
                     table.status === 'Reserved' ? 'bg-yellow-800 border-yellow-600' :
@@ -5531,8 +5531,8 @@ const Restaurant = () => {
                   }`}
                 >
                   <div className="text-center">
-                    <div className="text-2xl font-bold">T{table.table_number}</div>
-                    <div className="text-sm">{table.capacity} seats</div>
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">T{table.table_number}</div>
+                    <div className="text-xs sm:text-sm">{table.capacity} seats</div>
                     <div className="text-xs mt-1 capitalize">{table.status}</div>
                   </div>
                 </div>
