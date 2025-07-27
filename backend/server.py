@@ -170,13 +170,15 @@ class Customer(BaseModel):
     phone: str
     current_room: str
     check_in_date: date
-    check_out_date: Optional[date] = None  # None indicates currently checked in
+    check_out_date: date  # Planned checkout date from booking
     advance_amount: float = 0.0
     notes: str = ""
     room_charges: float = 0.0
     restaurant_charges: float = 0.0  # Added for restaurant integration
     additional_charges: float = 0.0
     total_amount: float = 0.0
+    is_checked_out: bool = False  # True when customer has checked out
+    actual_checkout_date: Optional[date] = None  # Actual checkout date when checked out
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class CheckoutRequest(BaseModel):
