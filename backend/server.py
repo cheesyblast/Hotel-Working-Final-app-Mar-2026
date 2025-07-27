@@ -1773,12 +1773,14 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
             "phone": booking.guest_phone,
             "current_room": booking.room_number,
             "check_in_date": booking_dict['check_in_date'],
-            "check_out_date": None,  # None indicates currently checked in
+            "check_out_date": booking_dict['check_out_date'],  # Keep planned checkout date
             "advance_amount": 0.0,  # No advance amount for past date check-ins
             "notes": booking.additional_notes,
             "room_charges": booking.booking_amount,
             "additional_charges": 0.0,
-            "total_amount": booking.booking_amount
+            "total_amount": booking.booking_amount,
+            "is_checked_out": False,  # Currently checked in
+            "actual_checkout_date": None  # No actual checkout yet
         }
         
         customer_obj = Customer(**customer_data)
@@ -1789,6 +1791,8 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
             customer_storage['check_in_date'] = datetime.combine(customer_storage['check_in_date'], datetime.min.time())
         if customer_storage.get('check_out_date'):
             customer_storage['check_out_date'] = datetime.combine(customer_storage['check_out_date'], datetime.min.time())
+        if customer_storage.get('actual_checkout_date'):
+            customer_storage['actual_checkout_date'] = datetime.combine(customer_storage['actual_checkout_date'], datetime.min.time())
         
         await db.customers.insert_one(customer_storage)
         
