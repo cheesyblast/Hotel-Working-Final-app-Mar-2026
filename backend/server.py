@@ -3773,10 +3773,17 @@ async def create_restaurant_order(
     order_count = await db.restaurant_orders.count_documents({})
     order_number = f"R{str(order_count + 1).zfill(4)}"
     
+    # Get hotel settings for tax calculation
+    settings = await db.settings.find_one({})
+    if not settings:
+        tax_rate = 0.0
+    else:
+        tax_rate = settings.get("tax_rate", 0.0)
+    
     # Calculate totals
     subtotal = sum(item.total_price for item in order.items)
-    tax_amount = subtotal * 0.10  # 10% tax
-    service_charge = subtotal * 0.05  # 5% service charge
+    tax_amount = subtotal * (tax_rate / 100)  # Tax from hotel settings
+    service_charge = subtotal * 0.10  # 10% service charge (configurable)
     total_amount = subtotal + tax_amount + service_charge
     
     # Get table/staff details
@@ -3812,7 +3819,7 @@ async def create_restaurant_order(
         tax_amount=tax_amount,
         service_charge=service_charge,
         total_amount=total_amount,
-        payment_method=order.payment_method,
+        payment_method="Pending",  # Will be set during payment
         waiter_id=order.waiter_id,
         waiter_name=waiter_name,
         notes=order.notes,
