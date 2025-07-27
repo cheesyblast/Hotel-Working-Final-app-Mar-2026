@@ -5448,7 +5448,7 @@ const Restaurant = () => {
       setShowOrderModal(false);
       setNewOrder({
         order_type: 'table', table_id: '', room_number: '', customer_name: '',
-        items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+        items: [], waiter_id: '', notes: ''
       });
       setOrderItems([]);
       await Promise.all([fetchOrders(), fetchTables()]);
