@@ -5604,25 +5604,25 @@ const Restaurant = () => {
 
         {/* Staff Tab */}
         {activeTab === 'staff' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Staff Management</h2>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Staff Management</h2>
               {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
                 <button
                   onClick={() => setShowAddStaffModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  className="bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-blue-700 text-sm sm:text-base"
                 >
                   Add Staff
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {staff.map(member => (
-                <div key={member.id} className="bg-gray-800 rounded-lg p-4">
-                  <h3 className="font-semibold text-white">{member.name}</h3>
-                  <p className="text-blue-400">{member.role}</p>
-                  <p className="text-gray-300 text-sm">{member.phone}</p>
+                <div key={member.id} className="bg-gray-800 rounded-lg p-3 sm:p-4">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">{member.name}</h3>
+                  <p className="text-blue-400 text-sm">{member.role}</p>
+                  <p className="text-gray-300 text-xs sm:text-sm">{member.phone}</p>
                 </div>
               ))}
             </div>
