@@ -6161,21 +6161,30 @@ const Restaurant = () => {
                       <button
                         key={item.id}
                         onClick={() => handleAddItemToOrder(item)}
-                        className="p-4 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors text-left"
+                        className="bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors text-left"
                       >
-                        <div className="font-medium text-white">{item.name}</div>
-                        <div className="text-sm text-gray-300 mt-1">{item.description}</div>
-                        <div className="text-lg font-bold text-blue-400 mt-2">
-                          LKR {item.price}
-                        </div>
-                        <div className="flex items-center space-x-2 mt-2">
-                          {item.is_vegetarian && (
-                            <span className="bg-green-600 text-green-100 px-2 py-1 rounded text-xs">Veg</span>
-                          )}
-                          {item.is_spicy && (
-                            <span className="bg-red-600 text-red-100 px-2 py-1 rounded text-xs">Spicy</span>
-                          )}
-                          <span className="text-gray-400 text-xs">{item.prep_time}min</span>
+                        {item.image && (
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            className="w-full h-32 object-cover rounded-t-lg"
+                          />
+                        )}
+                        <div className="p-4">
+                          <div className="font-medium text-white">{item.name}</div>
+                          <div className="text-sm text-gray-300 mt-1">{item.description}</div>
+                          <div className="text-lg font-bold text-blue-400 mt-2">
+                            LKR {item.price}
+                          </div>
+                          <div className="flex items-center space-x-2 mt-2">
+                            {item.is_vegetarian && (
+                              <span className="bg-green-600 text-green-100 px-2 py-1 rounded text-xs">Veg</span>
+                            )}
+                            {item.is_spicy && (
+                              <span className="bg-red-600 text-red-100 px-2 py-1 rounded text-xs">Spicy</span>
+                            )}
+                            <span className="text-gray-400 text-xs">{item.prep_time}min</span>
+                          </div>
                         </div>
                       </button>
                     ))}
