@@ -259,7 +259,7 @@ class User(BaseModel):
     username: str
     password_hash: str  # Hashed password
     full_name: str
-    role: str = "Staff"  # Admin, Manager, Staff
+    role: str = "Staff"  # Admin, Manager, Staff, Restaurant Manager
     email: str = ""
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
