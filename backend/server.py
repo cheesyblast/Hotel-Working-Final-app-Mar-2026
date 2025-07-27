@@ -2044,17 +2044,19 @@ async def update_booking(
 # Customer Management Routes
 @api_router.get("/customers/checked-in", response_model=List[Customer])
 async def get_checked_in_customers():
-    # Get only customers who are currently checked in (no check_out_date)
+    # Get only customers who are currently checked in (is_checked_out = False)
     customers = await db.customers.find({
-        "check_out_date": None  # Only customers who haven't checked out
+        "is_checked_out": False  # Only customers who haven't checked out
     }).to_list(1000)
     
     # Convert datetime back to date for response
     for customer in customers:
-        if isinstance(customer.get('check_in_date'), datetime):
-            customer['check_in_date'] = customer['check_in_date'].date()
-        if isinstance(customer.get('check_out_date'), datetime):
-            customer['check_out_date'] = customer['check_out_date'].date()
+        if customer.get('check_in_date'):
+            customer['check_in_date'] = customer['check_in_date'].date() if isinstance(customer['check_in_date'], datetime) else customer['check_in_date']
+        if customer.get('check_out_date'):
+            customer['check_out_date'] = customer['check_out_date'].date() if isinstance(customer['check_out_date'], datetime) else customer['check_out_date']
+        if customer.get('actual_checkout_date'):
+            customer['actual_checkout_date'] = customer['actual_checkout_date'].date() if isinstance(customer['actual_checkout_date'], datetime) else customer['actual_checkout_date']
     
     return [Customer(**customer) for customer in customers]
 
