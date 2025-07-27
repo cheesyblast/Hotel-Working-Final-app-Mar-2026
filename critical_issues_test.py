@@ -306,7 +306,7 @@ def test_date_extension_for_checked_in():
     
     test_results = []
     
-    # Test 2A: Short Time Booking Extension
+    # Test 2A: Short Time Booking Extension (Should be ALLOWED)
     print("\n📅 Test 2A: Short Time Booking Extension...")
     
     # Create short time booking
@@ -321,7 +321,7 @@ def test_date_extension_for_checked_in():
             print("❌ Failed to check-in short time booking")
             test_results.append(False)
         else:
-            # Try to extend dates (should fail with proper error message)
+            # Try to extend dates (should be ALLOWED for checked-in bookings)
             print("🔄 Attempting to extend dates for checked-in short time booking...")
             
             tomorrow = (datetime.now().date() + timedelta(days=1)).isoformat()
@@ -333,20 +333,20 @@ def test_date_extension_for_checked_in():
             response = requests.put(f"{API_BASE}/bookings/{short_booking['id']}", 
                                   json=update_data, headers=auth_headers)
             
-            if response.status_code == 400:
-                error_msg = response.json().get('detail', '')
-                if 'Cannot modify booking with status Checked-in' in error_msg:
-                    print("✅ Correctly prevented date extension for checked-in booking")
+            if response.status_code == 200:
+                result = response.json()
+                if "Booking updated successfully" in result.get('message', ''):
+                    print("✅ Date extension correctly allowed for checked-in booking")
                     test_results.append(True)
                 else:
-                    print(f"❌ Wrong error message: {error_msg}")
+                    print(f"❌ Unexpected response message: {result.get('message', '')}")
                     test_results.append(False)
             else:
-                print(f"❌ Expected 400 status, got {response.status_code}")
+                print(f"❌ Expected 200 status, got {response.status_code}")
                 print(f"Response: {response.text}")
                 test_results.append(False)
     
-    # Test 2B: Night Stay Booking Extension
+    # Test 2B: Night Stay Booking Extension (Should be ALLOWED)
     print("\n🌙 Test 2B: Night Stay Booking Extension...")
     
     # Create night stay booking
@@ -361,7 +361,7 @@ def test_date_extension_for_checked_in():
             print("❌ Failed to check-in night stay booking")
             test_results.append(False)
         else:
-            # Try to extend dates (should fail with proper error message)
+            # Try to extend dates (should be ALLOWED for checked-in bookings)
             print("🔄 Attempting to extend dates for checked-in night stay booking...")
             
             day_after_tomorrow = (datetime.now().date() + timedelta(days=2)).isoformat()
@@ -373,21 +373,21 @@ def test_date_extension_for_checked_in():
             response = requests.put(f"{API_BASE}/bookings/{night_booking['id']}", 
                                   json=update_data, headers=auth_headers)
             
-            if response.status_code == 400:
-                error_msg = response.json().get('detail', '')
-                if 'Cannot modify booking with status Checked-in' in error_msg:
-                    print("✅ Correctly prevented date extension for checked-in booking")
+            if response.status_code == 200:
+                result = response.json()
+                if "Booking updated successfully" in result.get('message', ''):
+                    print("✅ Date extension correctly allowed for checked-in booking")
                     test_results.append(True)
                 else:
-                    print(f"❌ Wrong error message: {error_msg}")
+                    print(f"❌ Unexpected response message: {result.get('message', '')}")
                     test_results.append(False)
             else:
-                print(f"❌ Expected 400 status, got {response.status_code}")
+                print(f"❌ Expected 200 status, got {response.status_code}")
                 print(f"Response: {response.text}")
                 test_results.append(False)
     
     if all(test_results):
-        print("\n🎉 TEST 2 PASSED: Date extension properly blocked for checked-in bookings!")
+        print("\n🎉 TEST 2 PASSED: Date extension correctly allowed for checked-in bookings!")
         return True
     else:
         print(f"\n❌ TEST 2 FAILED: {len(test_results) - sum(test_results)} out of {len(test_results)} sub-tests failed")
