@@ -5076,95 +5076,80 @@ const Rooms = () => {
 // Navigation Component
 const Navigation = () => {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const isActive = (path) => {
     return location.pathname === path;
   };
 
+  const navItems = [
+    { path: '/', label: 'Dashboard' },
+    { path: '/restaurant', label: 'Restaurant' },
+    { path: '/rooms', label: 'Rooms' },
+    { path: '/guests', label: 'Guests' },
+    { path: '/bookings', label: 'Bookings' },
+    { path: '/expenses', label: 'Inc & Exp' },
+    { path: '/reports', label: 'Reports' },
+    { path: '/settings', label: 'Settings' }
+  ];
+
   return (
     <nav className="bg-gray-800 shadow-sm border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-8">
-          <Link 
-            to="/" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Dashboard
-          </Link>
-          <Link 
-            to="/restaurant" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/restaurant') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Restaurant
-          </Link>
-          <Link 
-            to="/rooms" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/rooms') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Rooms
-          </Link>
-          <Link 
-            to="/guests" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/guests') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Guests
-          </Link>
-          <Link 
-            to="/bookings" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/bookings') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Bookings
-          </Link>
-          <Link 
-            to="/expenses" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/expenses') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Inc & Exp
-          </Link>
-          <Link 
-            to="/reports" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/reports') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Reports
-          </Link>
-          <Link 
-            to="/settings" 
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              isActive('/settings') 
-                ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
-                : 'text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Settings
-          </Link>
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex space-x-8">
+          {navItems.map((item) => (
+            <Link 
+              key={item.path}
+              to={item.path} 
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive(item.path) 
+                  ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <div className="flex items-center justify-between py-2">
+            <span className="text-white font-medium">Hotel Management</span>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-gray-400 hover:text-white focus:outline-none focus:text-white"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+          
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="pb-3 space-y-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(item.path)
+                      ? 'bg-blue-900 text-blue-300'
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </nav>
