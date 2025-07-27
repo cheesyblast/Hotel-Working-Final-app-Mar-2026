@@ -2243,7 +2243,7 @@ async def checkin_customer(checkin: CheckinRequest):
         phone=booking["guest_phone"],
         current_room=booking["room_number"],
         check_in_date=booking["check_in_date"] if isinstance(booking["check_in_date"], date) else booking["check_in_date"].date(),
-        check_out_date=booking["check_out_date"] if isinstance(booking["check_out_date"], date) else booking["check_out_date"].date(),
+        check_out_date=None,  # None indicates currently checked in
         advance_amount=advance_amount,
         notes=checkin.notes,
         room_charges=room_charges,
@@ -2253,7 +2253,7 @@ async def checkin_customer(checkin: CheckinRequest):
     # Add customer to checked-in list
     customer_dict = customer.dict()
     customer_dict['check_in_date'] = datetime.combine(customer_dict['check_in_date'], datetime.min.time())
-    customer_dict['check_out_date'] = datetime.combine(customer_dict['check_out_date'], datetime.min.time())
+    # check_out_date is None, so no need to convert
     await db.customers.insert_one(customer_dict)
     
     # Record advance amount as daily sale if amount > 0
