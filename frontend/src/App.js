@@ -1461,11 +1461,11 @@ const Dashboard = () => {
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">Recent Upcoming Bookings</h3>
+      <div className="mb-6 sm:mb-8">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Recent Upcoming Bookings</h3>
         <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
           {upcomingBookings.length === 0 ? (
-            <div className="p-6 text-center text-gray-400">
+            <div className="p-4 sm:p-6 text-center text-gray-400 text-sm">
               No upcoming bookings
             </div>
           ) : (
@@ -1473,19 +1473,19 @@ const Dashboard = () => {
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Guest Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Room
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Check-in
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Check-out
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                       Contact
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
