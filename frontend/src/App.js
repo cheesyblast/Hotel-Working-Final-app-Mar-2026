@@ -1488,28 +1488,28 @@ const Dashboard = () => {
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                       Contact
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {upcomingBookings.map((booking) => (
                     <tr key={booking.id} className="hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">{booking.guest_name}</div>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-white">{booking.guest_name}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{booking.room_number}</div>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-white">{booking.room_number}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{booking.check_in_date}</div>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-white">{booking.check_in_date}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{booking.check_out_date}</div>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-white">{booking.check_out_date}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{booking.guest_phone}</div>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                        <div className="text-xs sm:text-sm text-white">{booking.guest_phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right relative">
                         <button
