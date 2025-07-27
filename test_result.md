@@ -251,13 +251,16 @@ frontend:
         comment: "Successfully implemented complete authentication frontend system. AuthContext with JWT token management, setup status checking, login/logout functions working correctly. SetupWizard component for hotel configuration, LoginPage with forgot password functionality, ProtectedRoute component for access control. Updated RealTimeClock with user info and logout button. Added comprehensive Email Settings tab with support for SMTP, SendGrid, AWS SES, Gmail providers. Added admin-only System Management tab with complete database reset feature. App properly wrapped with AuthProvider and ProtectedRoute. Authentication system fully functional and tested."
 
   - task: "Real-time Financial Balance Updates and Booking Edit Issues"
-    implemented: false
+    implemented: true
     working: false
     file: "/app/backend/server.py, /app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL BUG IDENTIFIED - ADVANCE PAYMENT DOUBLE COUNTING: Comprehensive testing revealed a critical backend logic error in the advance payment system. The advance payment is being recorded BOTH as a daily sale (lines 2081-2096 in /app/backend/server.py) AND as an income record (lines 2065-2078), causing double counting in the daily financial summary calculation. When collecting a 750.0 advance payment via Card, the bank balance increases by 1500.0 instead of 750.0. This occurs because the daily-financial-summary endpoint (lines 3023-3029 and 3032-3038) adds both daily sales AND income records to the balance calculation. The advance payment should only be recorded in ONE place, not both. Date extension functionality is working correctly - checked-in bookings can extend dates as expected, which is the proper behavior according to the backend implementation."
       - working: false
         agent: "user"
         comment: "CRITICAL ISSUES IDENTIFIED: (1) When adding advance for checked-in guests using Get Advance feature, the Cash/Bank balance in Inc & Exp top div is not updating in real-time. The amounts are being recorded but the financial summary cards are not refreshing. (2) Dates cannot be extended for Day or Short time bookings when they're in Checked-in guests section - the booking edit functionality is still not working properly for checked-in bookings despite previous fixes."
