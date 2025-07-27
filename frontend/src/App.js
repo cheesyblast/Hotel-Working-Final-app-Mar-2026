@@ -5858,6 +5858,207 @@ const Restaurant = () => {
           </div>
         </div>
       )}
+
+      {/* Order Modal */}
+      {showOrderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Create New Order</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Order Details */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
+                  <select
+                    value={newOrder.order_type}
+                    onChange={(e) => setNewOrder({...newOrder, order_type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="table">Table Order</option>
+                    <option value="room_service">Room Service</option>
+                  </select>
+                </div>
+                
+                {newOrder.order_type === 'table' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Table</label>
+                    <select
+                      value={newOrder.table_id}
+                      onChange={(e) => setNewOrder({...newOrder, table_id: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    >
+                      <option value="">Select Table</option>
+                      {tables.filter(table => table.status === 'Available').map(table => (
+                        <option key={table.id} value={table.id}>
+                          Table {table.table_number} (Capacity: {table.capacity})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                {newOrder.order_type === 'room_service' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                    <select
+                      value={newOrder.room_number}
+                      onChange={(e) => setNewOrder({...newOrder, room_number: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    >
+                      <option value="">Select Room</option>
+                      {checkedInCustomers.map(customer => (
+                        <option key={customer.id} value={customer.room_number}>
+                          Room {customer.room_number} - {customer.customer_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                  <input
+                    type="text"
+                    value={newOrder.customer_name}
+                    onChange={(e) => setNewOrder({...newOrder, customer_name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    placeholder="Customer name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Waiter</label>
+                  <select
+                    value={newOrder.waiter_id}
+                    onChange={(e) => setNewOrder({...newOrder, waiter_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="">Select Waiter</option>
+                    {staff.filter(s => s.role === 'Waiter').map(waiter => (
+                      <option key={waiter.id} value={waiter.id}>
+                        {waiter.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                  <select
+                    value={newOrder.payment_method}
+                    onChange={(e) => setNewOrder({...newOrder, payment_method: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={newOrder.notes}
+                    onChange={(e) => setNewOrder({...newOrder, notes: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    rows="3"
+                    placeholder="Special instructions..."
+                  />
+                </div>
+              </div>
+              
+              {/* Menu Items */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-gray-900">Add Items</h4>
+                <div className="max-h-60 overflow-y-auto">
+                  {categories.map(category => (
+                    <div key={category.id} className="mb-4">
+                      <h5 className="font-medium text-gray-800 mb-2">{category.name}</h5>
+                      {menuItems.filter(item => item.category_id === category.id).map(item => (
+                        <div key={item.id} className="flex items-center justify-between py-2 border-b">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                            <div className="text-xs text-gray-500">${item.price}</div>
+                          </div>
+                          <button
+                            onClick={() => handleAddItemToOrder(item)}
+                            className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Order Items */}
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-medium text-gray-900 mb-2">Order Items</h4>
+                  {orderItems.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No items added yet</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {orderItems.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between py-2 border-b">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">{item.menu_item_name}</div>
+                            <div className="text-xs text-gray-500">${item.unit_price} each</div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => handleUpdateItemQuantity(item.menu_item_id, parseInt(e.target.value))}
+                              className="w-16 px-2 py-1 border rounded text-xs text-gray-900"
+                            />
+                            <span className="text-sm font-medium text-gray-900">${item.total_price}</span>
+                            <button
+                              onClick={() => handleRemoveItemFromOrder(item.menu_item_id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="border-t pt-2">
+                        <div className="flex justify-between font-medium text-gray-900">
+                          <span>Total:</span>
+                          <span>${orderItems.reduce((sum, item) => sum + item.total_price, 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowOrderModal(false);
+                  setNewOrder({
+                    order_type: 'table', table_id: '', room_number: '', customer_name: '',
+                    items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+                  });
+                  setOrderItems([]);
+                }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateOrder}
+                disabled={orderItems.length === 0}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                Create Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
