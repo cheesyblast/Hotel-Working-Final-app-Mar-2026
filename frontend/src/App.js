@@ -5706,9 +5706,21 @@ const Restaurant = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {staff.map(member => (
                 <div key={member.id} className="bg-gray-800 rounded-lg p-3 sm:p-4">
-                  <h3 className="font-semibold text-white text-sm sm:text-base">{member.name}</h3>
-                  <p className="text-blue-400 text-sm">{member.role}</p>
-                  <p className="text-gray-300 text-xs sm:text-sm">{member.phone}</p>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-semibold text-white text-sm sm:text-base">{member.name}</h3>
+                      <p className="text-blue-400 text-sm">{member.role}</p>
+                      <p className="text-gray-300 text-xs sm:text-sm">{member.phone}</p>
+                    </div>
+                    {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                      <button
+                        onClick={() => handleDeleteStaff(member.id)}
+                        className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
