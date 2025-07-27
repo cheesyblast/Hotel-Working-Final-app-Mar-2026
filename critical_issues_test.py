@@ -423,7 +423,7 @@ def test_validation_rules_for_checked_in():
     
     if response.status_code == 400:
         error_msg = response.json().get('detail', '')
-        if 'Cannot modify booking with status Checked-in' in error_msg:
+        if 'Cannot change check-in date for checked-in bookings' in error_msg:
             print("✅ Check-in date change correctly prevented")
             test_results.append(True)
         else:
@@ -443,7 +443,7 @@ def test_validation_rules_for_checked_in():
     
     if response.status_code == 400:
         error_msg = response.json().get('detail', '')
-        if 'Cannot modify booking with status Checked-in' in error_msg:
+        if 'Cannot shorten checkout date for checked-in bookings' in error_msg:
             print("✅ Checkout date shortening correctly prevented")
             test_results.append(True)
         else:
