@@ -2041,7 +2041,10 @@ async def update_booking(
 # Customer Management Routes
 @api_router.get("/customers/checked-in", response_model=List[Customer])
 async def get_checked_in_customers():
-    customers = await db.customers.find().to_list(1000)
+    # Get only customers who are currently checked in (no check_out_date)
+    customers = await db.customers.find({
+        "check_out_date": None  # Only customers who haven't checked out
+    }).to_list(1000)
     
     # Convert datetime back to date for response
     for customer in customers:
