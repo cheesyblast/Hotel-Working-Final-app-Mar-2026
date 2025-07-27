@@ -148,7 +148,7 @@ class RestaurantIntegrationTest:
             
             room_service_order = {
                 "order_type": "room_service",
-                "room_number": "101",
+                "room_number": "103",
                 "customer_name": "Room Service Test Guest",
                 "items": order_items,
                 "payment_method": "Room Charge",
