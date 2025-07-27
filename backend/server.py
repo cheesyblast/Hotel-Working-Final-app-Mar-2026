@@ -444,7 +444,6 @@ class RestaurantOrderCreate(BaseModel):
     room_number: Optional[str] = None
     customer_name: str = ""
     items: List[RestaurantOrderItem]
-    payment_method: str = "Cash"
     waiter_id: Optional[str] = None
     notes: str = ""
 
