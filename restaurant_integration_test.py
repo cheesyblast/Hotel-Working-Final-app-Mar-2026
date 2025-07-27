@@ -185,7 +185,7 @@ class RestaurantIntegrationTest:
                 return False
                 
             customers = customers_response.json()
-            test_customer = next((c for c in customers if c.get('current_room') == '103'), None)
+            test_customer = next((c for c in customers if c.get('current_room') == '201'), None)
             if not test_customer:
                 self.log_result("Room Service Payment - Get Customer Before", False, "Test customer not found")
                 return False
