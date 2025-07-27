@@ -5171,8 +5171,485 @@ const Navigation = () => {
   );
 };
 
-// Temporary placeholder for Restaurant component
+// Restaurant Component  
 const Restaurant = () => {
+  // State management
+  const [categories, setCategories] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [tables, setTables] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [checkedInCustomers, setCheckedInCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Get current user context
+  const { user } = useAuth();
+  
+  // Get financial context for cross-component refresh
+  const { triggerFinancialRefresh } = useFinancial();
+  
+  // UI state
+  const [activeTab, setActiveTab] = useState('menu'); // menu, tables, orders, staff
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showAddTableModal, setShowAddTableModal] = useState(false);
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  
+  // Form states
+  const [newCategory, setNewCategory] = useState({ name: '', description: '', display_order: 0 });
+  const [newItem, setNewItem] = useState({
+    name: '', description: '', price: 0, category_id: '', 
+    is_vegetarian: false, is_spicy: false, prep_time: 15
+  });
+  const [newTable, setNewTable] = useState({ table_number: '', capacity: 4, position_x: 0, position_y: 0 });
+  const [newStaff, setNewStaff] = useState({ name: '', role: 'Waiter', phone: '' });
+  const [newOrder, setNewOrder] = useState({
+    order_type: 'table', table_id: '', room_number: '', customer_name: '',
+    items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+  });
+  const [orderItems, setOrderItems] = useState([]);
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      await Promise.all([
+        fetchCategories(),
+        fetchMenuItems(), 
+        fetchTables(),
+        fetchStaff(),
+        fetchOrders(),
+        fetchCheckedInCustomers()
+      ]);
+    } catch (error) {
+      console.error('Error fetching restaurant data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchMenuItems = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/menu-items`);
+      setMenuItems(response.data);
+    } catch (error) {
+      console.error('Error fetching menu items:', error);
+    }
+  };
+
+  const fetchTables = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/tables`);
+      setTables(response.data);
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  };
+
+  const fetchStaff = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/staff`);
+      setStaff(response.data);
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/orders`);
+      setOrders(response.data);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchCheckedInCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers/checked-in`);
+      setCheckedInCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching checked-in customers:', error);
+    }
+  };
+
+  // Category management
+  const handleAddCategory = async () => {
+    try {
+      await axios.post(`${API}/restaurant/categories`, newCategory);
+      setShowAddCategoryModal(false);
+      setNewCategory({ name: '', description: '', display_order: 0 });
+      await fetchCategories();
+      alert('Category added successfully!');
+    } catch (error) {
+      console.error('Error adding category:', error);
+      alert('Error adding category: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Menu item management  
+  const handleAddItem = async () => {
+    try {
+      await axios.post(`${API}/restaurant/menu-items`, newItem);
+      setShowAddItemModal(false);
+      setNewItem({
+        name: '', description: '', price: 0, category_id: '', 
+        is_vegetarian: false, is_spicy: false, prep_time: 15
+      });
+      await fetchMenuItems();
+      alert('Menu item added successfully!');
+    } catch (error) {
+      console.error('Error adding menu item:', error);
+      alert('Error adding menu item: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Table management
+  const handleAddTable = async () => {
+    try {
+      await axios.post(`${API}/restaurant/tables`, newTable);
+      setShowAddTableModal(false);
+      setNewTable({ table_number: '', capacity: 4, position_x: 0, position_y: 0 });
+      await fetchTables();
+      alert('Table added successfully!');
+    } catch (error) {
+      console.error('Error adding table:', error);
+      alert('Error adding table: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Staff management
+  const handleAddStaff = async () => {
+    try {
+      await axios.post(`${API}/restaurant/staff`, newStaff);
+      setShowAddStaffModal(false);
+      setNewStaff({ name: '', role: 'Waiter', phone: '' });
+      await fetchStaff();
+      alert('Staff member added successfully!');
+    } catch (error) {
+      console.error('Error adding staff:', error);
+      alert('Error adding staff: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Order management
+  const addItemToOrder = (item) => {
+    const existingItem = orderItems.find(orderItem => orderItem.menu_item_id === item.id);
+    if (existingItem) {
+      setOrderItems(orderItems.map(orderItem => 
+        orderItem.menu_item_id === item.id 
+          ? { ...orderItem, quantity: orderItem.quantity + 1, total_price: (orderItem.quantity + 1) * item.price }
+          : orderItem
+      ));
+    } else {
+      setOrderItems([...orderItems, {
+        menu_item_id: item.id,
+        menu_item_name: item.name,
+        quantity: 1,
+        unit_price: item.price,
+        total_price: item.price,
+        special_notes: ''
+      }]);
+    }
+  };
+
+  const removeItemFromOrder = (menuItemId) => {
+    setOrderItems(orderItems.filter(item => item.menu_item_id !== menuItemId));
+  };
+
+  const updateItemQuantity = (menuItemId, quantity) => {
+    if (quantity <= 0) {
+      removeItemFromOrder(menuItemId);
+      return;
+    }
+    setOrderItems(orderItems.map(item => 
+      item.menu_item_id === menuItemId 
+        ? { ...item, quantity: quantity, total_price: quantity * item.unit_price }
+        : item
+    ));
+  };
+
+  const handleCreateOrder = async () => {
+    try {
+      const orderData = { ...newOrder, items: orderItems };
+      await axios.post(`${API}/restaurant/orders`, orderData);
+      setShowOrderModal(false);
+      setNewOrder({
+        order_type: 'table', table_id: '', room_number: '', customer_name: '',
+        items: [], payment_method: 'Cash', waiter_id: '', notes: ''
+      });
+      setOrderItems([]);
+      await Promise.all([fetchOrders(), fetchTables()]);
+      alert('Order created successfully!');
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Error creating order: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handlePayOrder = async (orderId) => {
+    if (!window.confirm('Process payment for this order?')) return;
+
+    try {
+      await axios.post(`${API}/restaurant/orders/${orderId}/pay`);
+      await Promise.all([fetchOrders(), fetchTables()]);
+      
+      // Trigger financial refresh for real-time balance updates
+      triggerFinancialRefresh();
+      
+      alert('Payment processed successfully!');
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Error processing payment: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading restaurant data...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Restaurant Management</h1>
+            <p className="text-gray-300">Manage your restaurant operations</p>
+          </div>
+          {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowOrderModal(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                New Order
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex space-x-1 mb-8">
+          {['menu', 'tables', 'orders', 'staff'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                activeTab === tab
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Menu Tab */}
+        {activeTab === 'menu' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Menu Management</h2>
+              {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                <div className="space-x-4">
+                  <button
+                    onClick={() => setShowAddCategoryModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Add Category
+                  </button>
+                  <button
+                    onClick={() => setShowAddItemModal(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                  >
+                    Add Item
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Menu Categories and Items */}
+            <div className="space-y-8">
+              {categories.map(category => (
+                <div key={category.id} className="bg-gray-800 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-blue-400">{category.name}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {menuItems
+                      .filter(item => item.category_id === category.id)
+                      .map(item => (
+                        <div key={item.id} className="bg-gray-700 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-medium text-white">{item.name}</h4>
+                            <span className="text-green-400 font-bold">LKR {item.price}</span>
+                          </div>
+                          <p className="text-gray-300 text-sm mb-2">{item.description}</p>
+                          <div className="flex items-center space-x-2 text-xs">
+                            {item.is_vegetarian && (
+                              <span className="bg-green-600 text-white px-2 py-1 rounded">Veg</span>
+                            )}
+                            {item.is_spicy && (
+                              <span className="bg-red-600 text-white px-2 py-1 rounded">Spicy</span>
+                            )}
+                            <span className="text-gray-400">{item.prep_time}min</span>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tables Tab */}
+        {activeTab === 'tables' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Table Management</h2>
+              {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                <button
+                  onClick={() => setShowAddTableModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Add Table
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {tables.map(table => (
+                <div
+                  key={table.id}
+                  className={`p-4 rounded-lg border-2 ${
+                    table.status === 'Available' ? 'bg-green-800 border-green-600' :
+                    table.status === 'Occupied' ? 'bg-red-800 border-red-600' :
+                    table.status === 'Reserved' ? 'bg-yellow-800 border-yellow-600' :
+                    'bg-gray-800 border-gray-600'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">T{table.table_number}</div>
+                    <div className="text-sm">{table.capacity} seats</div>
+                    <div className="text-xs mt-1 capitalize">{table.status}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Order Management</h2>
+            
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead className="bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Order #</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Table/Room</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-gray-800 divide-y divide-gray-700">
+                  {orders.map(order => (
+                    <tr key={order.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">{order.order_number}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          order.order_type === 'table' ? 'bg-blue-600' : 'bg-purple-600'
+                        }`}>
+                          {order.order_type === 'table' ? 'Table' : 'Room Service'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">
+                        {order.order_type === 'table' ? `Table ${order.table_number}` : `Room ${order.room_number}`}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-white">{order.customer_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-green-400">LKR {order.total_amount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          order.payment_status === 'Paid' ? 'bg-green-600' : 'bg-yellow-600'
+                        }`}>
+                          {order.payment_status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {order.payment_status === 'Pending' && (
+                          <button
+                            onClick={() => handlePayOrder(order.id)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                          >
+                            Pay
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Staff Tab */}
+        {activeTab === 'staff' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Staff Management</h2>
+              {(user?.role === 'Admin' || user?.role === 'Restaurant Manager') && (
+                <button
+                  onClick={() => setShowAddStaffModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Add Staff
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {staff.map(member => (
+                <div key={member.id} className="bg-gray-800 rounded-lg p-4">
+                  <h3 className="font-semibold text-white">{member.name}</h3>
+                  <p className="text-blue-400">{member.role}</p>
+                  <p className="text-gray-300 text-sm">{member.phone}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* All Modals will be added in the next part */}
+    </div>
+  );
+};
+
+// Temporary placeholder for Restaurant component
+const RestaurantOld = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-7xl mx-auto">
