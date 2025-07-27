@@ -5210,16 +5210,26 @@ const Restaurant = () => {
     try {
       await Promise.all([
         fetchCategories(),
-        fetchMenuItems(), 
+        fetchMenuItems(),
         fetchTables(),
         fetchStaff(),
         fetchOrders(),
-        fetchCheckedInCustomers()
+        fetchCheckedInCustomers(),
+        fetchHotelSettings()
       ]);
     } catch (error) {
-      console.error('Error fetching restaurant data:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHotelSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setHotelSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching hotel settings:', error);
     }
   };
 
