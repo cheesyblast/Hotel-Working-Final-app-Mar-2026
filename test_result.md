@@ -252,12 +252,15 @@ frontend:
 
   - task: "Real-time Financial Balance Updates and Booking Edit Issues"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 1
     priority: "critical"
     needs_retesting: false
     status_history:
+      - working: true
+        agent: "testing"
+        comment: "CRITICAL FIXES VERIFIED SUCCESSFULLY - 100% SUCCESS RATE (24/24 tests passed): Both critical user-reported issues have been completely resolved. ✅ ADVANCE PAYMENT DOUBLE COUNTING FIX VERIFIED: Comprehensive testing confirmed advance payments are now recorded correctly without double counting. Check-in advance payments (750.0 Cash) correctly increased cash balance by exactly 750.0, and additional advance payments (500.0 Card) correctly increased bank balance by exactly 500.0. No double counting detected - each payment method routes to correct balance (Cash→cash_balance, Card→bank_balance). Real-time balance updates working perfectly. ✅ CHECKED-IN BOOKING DATE EXTENSION FIX VERIFIED: Both Short Time and Night Stay bookings can now successfully extend checkout dates when in checked-in status. Short time booking extended from same-day to 2 days later, Night stay booking extended to 3 days later - both working correctly. ✅ VALIDATION RULES WORKING CORRECTLY: All validation rules properly prevent invalid modifications - check-in date changes blocked, checkout date shortening blocked, room changes blocked for checked-in bookings. The system correctly allows only date extensions for checked-in bookings while preventing other modifications. Both critical user-reported issues are completely resolved and the system is production-ready."
       - working: false
         agent: "testing"
         comment: "CRITICAL BUG IDENTIFIED - ADVANCE PAYMENT DOUBLE COUNTING: Comprehensive testing revealed a critical backend logic error in the advance payment system. The advance payment is being recorded BOTH as a daily sale (lines 2081-2096 in /app/backend/server.py) AND as an income record (lines 2065-2078), causing double counting in the daily financial summary calculation. When collecting a 750.0 advance payment via Card, the bank balance increases by 1500.0 instead of 750.0. This occurs because the daily-financial-summary endpoint (lines 3023-3029 and 3032-3038) adds both daily sales AND income records to the balance calculation. The advance payment should only be recorded in ONE place, not both. Date extension functionality is working correctly - checked-in bookings can extend dates as expected, which is the proper behavior according to the backend implementation."
