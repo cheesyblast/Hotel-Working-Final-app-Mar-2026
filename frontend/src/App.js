@@ -5188,7 +5188,7 @@ const Restaurant = () => {
   const [newCategory, setNewCategory] = useState({ name: '', description: '', display_order: 0 });
   const [newItem, setNewItem] = useState({
     name: '', description: '', price: 0, category_id: '', 
-    is_vegetarian: false, is_spicy: false, prep_time: 15
+    is_vegetarian: false, is_spicy: false, prep_time: 15, image: ''
   });
   const [newTable, setNewTable] = useState({ table_number: '', capacity: 4, position_x: 0, position_y: 0 });
   const [newStaff, setNewStaff] = useState({ name: '', role: 'Waiter', phone: '' });
