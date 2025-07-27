@@ -1412,36 +1412,36 @@ const Dashboard = () => {
       </div>
 
       {/* Room Availability Checker */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">🔍 Check Room Availability</h3>
-        <p className="text-gray-300 mb-4">Select dates to check which rooms are available for booking</p>
+      <div className="bg-gray-800 p-4 sm:p-6 rounded-lg shadow mb-6 sm:mb-8">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-4">🔍 Check Room Availability</h3>
+        <p className="text-sm text-gray-300 mb-4">Select dates to check which rooms are available for booking</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Check-in Date</label>
             <input
               type="date"
               value={availabilityDates.check_in_date}
               onChange={(e) => handleDateChange('check_in_date', e.target.value)}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Check-out Date</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Check-out Date</label>
             <input
               type="date"
               value={availabilityDates.check_out_date}
               onChange={(e) => handleDateChange('check_out_date', e.target.value)}
               min={availabilityDates.check_in_date || new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end sm:col-span-2 lg:col-span-1">
             <button
               onClick={checkRoomAvailability}
               disabled={checkingAvailability || !availabilityDates.check_in_date || !availabilityDates.check_out_date}
-              className={`w-full px-4 py-2 rounded-md font-medium ${
+              className={`w-full px-4 py-2 rounded-md font-medium text-sm ${
                 checkingAvailability || !availabilityDates.check_in_date || !availabilityDates.check_out_date
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
