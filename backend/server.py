@@ -790,6 +790,33 @@ async def complete_setup(setup_request: SetupWizardRequest):
     else:
         await db.users.insert_one(admin_user.dict())
     
+    # Create initial balance records if any balance is provided
+    setup_date = datetime.utcnow().date()
+    
+    if setup_request.cash_balance > 0:
+        initial_cash_income = Income(
+            description="Initial Cash Balance - Setup",
+            amount=setup_request.cash_balance,
+            category="Initial Setup",
+            payment_method="Cash",
+            income_date=setup_date,
+            guest_name="",
+            created_by="System"
+        )
+        await db.incomes.insert_one(initial_cash_income.dict())
+    
+    if setup_request.bank_balance > 0:
+        initial_bank_income = Income(
+            description="Initial Bank Balance - Setup",
+            amount=setup_request.bank_balance,
+            category="Initial Setup",
+            payment_method="Bank Transfer",
+            income_date=setup_date,
+            guest_name="",
+            created_by="System"
+        )
+        await db.incomes.insert_one(initial_bank_income.dict())
+
     # Mark setup as completed
     setup_wizard = SetupWizard(
         is_completed=True,
@@ -797,6 +824,8 @@ async def complete_setup(setup_request: SetupWizardRequest):
         hotel_address=setup_request.hotel_address,
         hotel_email=setup_request.hotel_email,
         timezone=setup_request.timezone,
+        cash_balance=setup_request.cash_balance,
+        bank_balance=setup_request.bank_balance,
         admin_created=True,
         completed_at=datetime.utcnow()
     )
