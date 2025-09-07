@@ -803,7 +803,11 @@ async def complete_setup(setup_request: SetupWizardRequest):
             guest_name="",
             created_by="System"
         )
-        await db.incomes.insert_one(initial_cash_income.dict())
+        # Convert date to datetime for MongoDB compatibility
+        income_dict = initial_cash_income.dict()
+        if isinstance(income_dict['income_date'], date):
+            income_dict['income_date'] = datetime.combine(income_dict['income_date'], datetime.min.time())
+        await db.incomes.insert_one(income_dict)
     
     if setup_request.bank_balance > 0:
         initial_bank_income = Income(
@@ -815,7 +819,11 @@ async def complete_setup(setup_request: SetupWizardRequest):
             guest_name="",
             created_by="System"
         )
-        await db.incomes.insert_one(initial_bank_income.dict())
+        # Convert date to datetime for MongoDB compatibility
+        income_dict = initial_bank_income.dict()
+        if isinstance(income_dict['income_date'], date):
+            income_dict['income_date'] = datetime.combine(income_dict['income_date'], datetime.min.time())
+        await db.incomes.insert_one(income_dict)
 
     # Mark setup as completed
     setup_wizard = SetupWizard(
