@@ -165,7 +165,9 @@ const SetupWizard = () => {
     hotel_name: '',
     hotel_address: '',
     hotel_email: '',
-    timezone: 'Asia/Colombo'  // Default to Sri Lanka timezone
+    timezone: 'Asia/Colombo',  // Default to Sri Lanka timezone
+    cash_balance: 0,
+    bank_balance: 0
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
