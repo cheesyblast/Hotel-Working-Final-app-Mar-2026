@@ -201,6 +201,8 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Setup Wizard with Cash and Bank Balance Initialization"
+    - "Setup Wizard Cash and Bank Balance Input Fields"
     - "Restaurant Order Management System"
     - "Restaurant Menu Category and Item Deletion with Validation"
     - "Restaurant Item and Category Delete Functionality"
