@@ -1114,7 +1114,8 @@ async def complete_database_reset(current_user: UserResponse = Depends(get_curre
         return {
             "message": "Complete system reset successful",
             "reset_summary": reset_results,
-            "note": "Hotel settings preserved, admin account preserved, setup status preserved. Auto-initialization disabled - data will only appear when manually added."
+            "note": "Hotel settings preserved, admin account preserved. Setup wizard reset - you will need to reconfigure hotel including initial cash and bank balances.",
+            "requires_setup": True
         }
         
     except Exception as e:
