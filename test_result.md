@@ -169,6 +169,18 @@ frontend:
         agent: "main"
         comment: "Fixed missing restaurant order modal that was causing the New Order button to not work. Added comprehensive order modal with order details form (order type, table/room selection, customer name, waiter, payment method, notes) and menu items section for adding items to orders. Added missing handler functions: handleAddItemToOrder, handleRemoveItemFromOrder, handleUpdateItemQuantity. The modal now opens correctly when New Order button is clicked, allows item selection, quantity adjustment, and order creation. Tested successfully - modal opens and closes properly."
 
+  - task: "Setup Wizard Cash and Bank Balance Input Fields"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Enhanced SetupWizard component to include initial Cash and Bank balance input fields. Added cash_balance and bank_balance to formData state with default values of 0. Added two new input fields in the setup form after timezone selection - 'Initial Cash Balance' and 'Initial Bank Balance' with number type, min=0, step=0.01 for proper decimal handling. Updated handleChange function to properly parse numeric values for balance fields using parseFloat. Added helpful placeholder text and descriptions. The setup wizard now allows hotels to initialize their financial system with opening balances during first-time setup, which will be reflected immediately in the financial dashboard and reports."
+
   - task: "Restaurant Item and Category Delete Functionality"
     implemented: true
     working: true
