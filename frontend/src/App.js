@@ -366,7 +366,10 @@ const SetupWizard = () => {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Setting up...' : 'Complete Setup'}
+            {loading 
+              ? (isPostReset ? 'Re-initializing...' : 'Setting up...') 
+              : (isPostReset ? 'Complete Re-initialization' : 'Complete Setup')
+            }
           </button>
         </form>
 
