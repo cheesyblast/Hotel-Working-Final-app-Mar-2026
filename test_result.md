@@ -120,6 +120,18 @@ backend:
         agent: "main"
         comment: "Implemented comprehensive JWT authentication system with password hashing using bcrypt, JWT token generation, authentication middleware, and protected endpoints. Added authentication models (User with hashed passwords, UserLogin, Token, UserResponse) and authentication dependencies (get_current_user, get_current_active_admin). Updated all user management endpoints to use hashed passwords and require admin authentication. Added JWT_SECRET_KEY to .env file. Authentication endpoints working: login returns JWT token, protected endpoints require bearer token authentication."
 
+  - task: "Setup Wizard with Cash and Bank Balance Initialization"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented Cash and Bank balance setup during startup wizard. Extended SetupWizardRequest model to include cash_balance and bank_balance fields with default values of 0.0. Updated SetupWizard model to store these values. Modified complete_setup endpoint to create initial income records when balances are provided - creates 'Initial Setup' category income records with appropriate payment methods (Cash for cash_balance, Bank Transfer for bank_balance) to establish opening balances. These records integrate seamlessly with existing financial system that calculates running balances from all transactions. Added enhanced activity logging to track initial balance setup. This allows hotels to initialize their financial system with proper opening balances during first-time setup instead of starting from zero."
+
   - task: "Restaurant Order Management System"
     implemented: true
     working: true
