@@ -185,6 +185,9 @@ frontend:
     status_history:
       - working: true
         agent: "main"
+        comment: "Enhanced Setup Wizard for post-reset scenarios. Added intelligent detection of post-reset setup by checking existing hotel settings and pre-filling form data when settings exist. Updated UI with contextual messaging - shows 'Re-initialize Your Hotel' title and 'After the complete reset...' description for post-reset scenarios. Enhanced balance input fields with '(Post-Reset)' labels and updated help text explaining balance re-initialization. Modified complete reset flow to redirect users to setup wizard with requires_setup flag. Updated submit button text to show 'Complete Re-initialization' for post-reset scenarios. This ensures seamless user experience when re-initializing cash and bank balances after complete database reset."
+      - working: true
+        agent: "main"
         comment: "Enhanced SetupWizard component to include initial Cash and Bank balance input fields. Added cash_balance and bank_balance to formData state with default values of 0. Added two new input fields in the setup form after timezone selection - 'Initial Cash Balance' and 'Initial Bank Balance' with number type, min=0, step=0.01 for proper decimal handling. Updated handleChange function to properly parse numeric values for balance fields using parseFloat. Added helpful placeholder text and descriptions. The setup wizard now allows hotels to initialize their financial system with opening balances during first-time setup, which will be reflected immediately in the financial dashboard and reports."
 
   - task: "Restaurant Item and Category Delete Functionality"
