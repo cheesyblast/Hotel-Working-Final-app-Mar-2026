@@ -839,9 +839,13 @@ async def complete_setup(setup_request: SetupWizardRequest):
         await db.setup_wizard.insert_one(setup_wizard.dict())
     
     # Log activity
+    balance_info = ""
+    if setup_request.cash_balance > 0 or setup_request.bank_balance > 0:
+        balance_info = f" with initial balances - Cash: {setup_request.cash_balance}, Bank: {setup_request.bank_balance}"
+    
     await log_activity(
         action="setup_completed",
-        description=f"Initial setup completed for {setup_request.hotel_name}",
+        description=f"Initial setup completed for {setup_request.hotel_name}{balance_info}",
         entity_type="setup"
     )
     
