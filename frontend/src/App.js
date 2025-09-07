@@ -6822,20 +6822,41 @@ const Settings = () => {
     setResetting(true);
     try {
       const response = await axios.post(`${API}/admin/complete-reset`);
-      alert(
-        '✅ COMPLETE RESET SUCCESSFUL!\n\n' +
-        'All data has been cleared:\n' +
-        `• Rooms cleared: ${response.data.reset_summary.rooms || 0}\n` +
-        `• Bookings cleared: ${response.data.reset_summary.bookings || 0}\n` +
-        `• Customers cleared: ${response.data.reset_summary.customers || 0}\n` +
-        `• Expenses cleared: ${response.data.reset_summary.expenses || 0}\n` +
-        `• Users cleared: ${response.data.reset_summary.users_except_admin || 0}\n\n` +
-        'Hotel name and admin account preserved.\n' +
-        'Refreshing page...'
-      );
       
-      // Refresh the page to show clean state
-      window.location.reload();
+      // Check if setup is required
+      if (response.data.requires_setup) {
+        alert(
+          '✅ COMPLETE RESET SUCCESSFUL!\n\n' +
+          'All data has been cleared:\n' +
+          `• Rooms cleared: ${response.data.reset_summary.rooms || 0}\n` +
+          `• Bookings cleared: ${response.data.reset_summary.bookings || 0}\n` +
+          `• Customers cleared: ${response.data.reset_summary.customers || 0}\n` +
+          `• Expenses cleared: ${response.data.reset_summary.expenses || 0}\n` +
+          `• Incomes cleared: ${response.data.reset_summary.incomes || 0}\n` +
+          `• Users cleared: ${response.data.reset_summary.users_except_admin || 0}\n\n` +
+          'Hotel settings and admin account preserved.\n' +
+          'You will now be redirected to setup wizard to reconfigure hotel and set initial cash/bank balances.'
+        );
+        
+        // Force logout and redirect to setup wizard
+        localStorage.removeItem('token');
+        window.location.reload();
+      } else {
+        alert(
+          '✅ COMPLETE RESET SUCCESSFUL!\n\n' +
+          'All data has been cleared:\n' +
+          `• Rooms cleared: ${response.data.reset_summary.rooms || 0}\n` +
+          `• Bookings cleared: ${response.data.reset_summary.bookings || 0}\n` +
+          `• Customers cleared: ${response.data.reset_summary.customers || 0}\n` +
+          `• Expenses cleared: ${response.data.reset_summary.expenses || 0}\n` +
+          `• Users cleared: ${response.data.reset_summary.users_except_admin || 0}\n\n` +
+          'Hotel name and admin account preserved.\n' +
+          'Refreshing page...'
+        );
+        
+        // Refresh the page to show clean state
+        window.location.reload();
+      }
       
     } catch (error) {
       alert('Reset failed: ' + (error.response?.data?.detail || error.message));
