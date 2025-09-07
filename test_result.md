@@ -187,6 +187,9 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Fixed restaurant page functionality issues: 1. Added missing order modal to fix non-responsive New Order button - modal now opens correctly with comprehensive order form 2. Added delete functionality for categories, menu items, tables, and staff with proper validation 3. Enhanced backend validation to prevent deletion of items/categories in active orders. Ready for backend testing of order management system and delete validation functionality."
+  
+  - agent: "main"  
+    message: "Implemented Cash and Bank balance setup during startup wizard. Backend: Extended SetupWizardRequest and SetupWizard models to include cash_balance and bank_balance fields. Updated complete_setup endpoint to create initial income records for cash and bank balances, which integrates with existing financial system that calculates running balances from all transactions. Frontend: Added input fields for initial cash and bank balances in SetupWizard component with proper numeric handling and validation. This ensures hotels can initialize their financial system with opening balances during first-time setup."
 
   - task: "Setup Wizard Backend Implementation"
     implemented: true
