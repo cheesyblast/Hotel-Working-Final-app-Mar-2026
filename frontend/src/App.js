@@ -282,6 +282,44 @@ const SetupWizard = () => {
             </p>
           </div>
 
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Initial Cash Balance
+            </label>
+            <input
+              type="number"
+              name="cash_balance"
+              value={formData.cash_balance}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="0.00"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Starting cash balance for your hotel
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              Initial Bank Balance
+            </label>
+            <input
+              type="number"
+              name="bank_balance"
+              value={formData.bank_balance}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+              className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="0.00"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Starting bank balance for your hotel
+            </p>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
