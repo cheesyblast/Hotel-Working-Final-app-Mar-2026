@@ -226,8 +226,15 @@ const SetupWizard = () => {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome!</h1>
-          <p className="text-gray-400">Let's set up your hotel management system</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {isPostReset ? 'Re-initialize Your Hotel' : 'Welcome!'}
+          </h1>
+          <p className="text-gray-400">
+            {isPostReset 
+              ? 'After the complete reset, please set your initial cash and bank balances to restart your financial tracking'
+              : "Let's set up your hotel management system"
+            }
+          </p>
         </div>
 
         {error && (
