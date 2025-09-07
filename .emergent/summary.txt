@@ -1,36 +1,30 @@
 <analysis>
-The trajectory details the AI engineer's progression on a hotel management application. Initially, work focused on enhancing booking functionality, specifically allowing past-dated bookings with dynamic status assignment and fixing a critical bug in booking amount recalculation for edited bookings. This involved extensive modifications to  and , including adding new models, endpoints, and UI elements.
+The provided trajectory details the iterative development of a hotel management application by an AI engineer. Initially, the engineer was tasked with implementing mobile responsiveness, but the focus quickly shifted to addressing critical user feedback regarding the Restaurant Management System and guest display.
 
-Subsequently, the engineer addressed several user-reported issues and enhancements, such as refining checked-in guest actions (adding advance payment and admin-only cancellation features), ensuring real-time financial updates, and fixing short-time booking date extension logic.
+The work began by resolving a non-responsive New Order button and implementing add/delete functionality for menu items and categories with backend validation. This led to a major feature addition: a professional POS-style interface for restaurant orders, incorporating table and room service, and attempting real-time checked-in guest display. Subsequent iterations involved refining this POS system, including dark theme, dynamic tax/service charge from hotel settings, and a comprehensive payment modal with add to room bill functionality.
 
-The most significant recent development is the comprehensive implementation of a Restaurant Management System, encompassing menu, table, order, and staff management with dual billing and a dedicated user role. This required substantial additions to both backend models/endpoints and a new complex frontend component. The current task involves making the entire application mobile responsive, which is actively in progress, with the Restaurant component being the immediate focus.
+Persistent issues with real-time guest display and data integrity were then tackled. This involved debugging customer creation logic and modifying the  model to correctly identify checked-in guests while preserving crucial checkout dates. A data migration was performed to update existing records. The final resolution ensured consistent display of checked-in guests and accurate checkout dates across the Dashboard and Restaurant POS. The project is currently stable and all recent user-reported issues have been successfully resolved.
 </analysis>
 
 <product_requirements>
-The application is a hotel management system with modules for Dashboard, Booking, Checkout, Room, Guest, Financial, and Reporting. Core features include an Initial Setup Wizard, JWT-based Authentication with password reset, System Management (complete reset), and enhanced Booking Functionality (Short Time bookings, room changes with availability validation, past-date bookings with Upcoming/Checked In status). Reporting provides downloadable daily/monthly Excel reports with detailed income/expense and balances. Invoice printing is customizable, and the system uses a user-selected Timezone. Booking Channels can be managed and are integrated into new bookings and reports.
+The application is a comprehensive hotel management system. Initial requirements included a Dashboard, Booking (with advanced features like short-time, room changes, past-date bookings, dynamic status), Checkout, Room, Guest, Financial, and Reporting modules. Key functionalities: Initial Setup Wizard, JWT Authentication, System Management, customizable Invoice printing, user-selected Timezone, and Booking Channel management.
 
-Recent major requests and issues include:
--   **Past Date Bookings**: Allow bookings with check-in dates prior to current date, prompting for Upcoming or Checked In status.
--   **Booking Amount Recalculation Bug**: Ensure  correctly recalculates upon date changes for edited bookings, especially when  changes (e.g., Short Time to Night Stay).
--   **Checked-in Guest Actions Enhancement**: Remove the standard Edit Booking button, replace with a dropdown offering Edit Booking, Get Advance (to record payments to income), and Cancel Booking (Admin only).
--   **Dark Theme for Income Records**: Fix the Inc & Exp page to correctly apply dark theme to income records.
--   **Checked-in Booking Date Extension**: Allow extending dates for checked-in guests, with proper validation (cannot change check-in date, only extend check-out, cannot shorten stay, cannot change room).
--   **Real-time Financial Balance Update**: Ensure advance payments (from check-in or Get Advance) immediately reflect in Cash/Bank balances on the Inc & Exp page.
--   **Restaurant Management System**: Add a new module including:
-    -   Menu management (add/remove items, categories).
-    -   Table arrangement (custom tables, numbers matter for orders).
-    -   Bill generation for tables (immediate, updates daily revenue) and room orders (updates guest data, shows on checkout).
-    -   Staff management (waiter/staff assignment).
-    -   Dedicated Restaurant Manager user role.
--   **Mobile Responsiveness**: Make the entire application mobile responsive.
+Recent, detailed user requests and implemented features include:
+-   **Restaurant Management System**: A full module for menu, table, order, and staff management. This involved a POS-style interface for order creation, dynamic order types (table/room service), real-time display of checked-in guests for room orders, image upload for menu items, and a robust payment system with options for immediate payment or adding to room bills. Deletion of categories/items should be prevented if in active orders.
+-   **Real-time Guest Display**: Ensure checked-in guests are accurately displayed on the Dashboard and within the Restaurant POS for room service, including auto-filling guest names upon room selection. Critical check-in and check-out dates must be preserved and visible.
+-   **Financials Integration**: Advance payments and restaurant charges should update financial balances in real-time.
+-   **UI/UX Enhancements**: Implement dark theme for the restaurant POS, dynamic tax calculation based on hotel settings, and a configurable service charge.
+-   **Bug Fixes**: Address issues like non-responsive order buttons, incorrect payment modal data, and errors during item/category deletion.
+-   **Mobile Responsiveness**: Make the entire application mobile responsive (this was the initial request but got deferred by other critical tasks).
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-stack Development**: React.js (frontend), FastAPI (Python backend), MongoDB (NoSQL).
--   **Authentication & Authorization**: JWT (JSON Web Tokens), Bcrypt hashing, role-based access control.
--   **Data Management**: Pydantic models for validation, Motor for async MongoDB interactions.
--   **Frontend State Management**: React , ,  (AuthContext, FinancialContext).
--   **Responsive Design**: Tailwind CSS for UI styling.
+-   **Authentication**: JWT, Bcrypt hashing, role-based access control.
+-   **Data Management**: Pydantic models, Motor for async MongoDB.
+-   **Frontend State Management**: React Hooks (, , ).
+-   **Responsive Design**: Tailwind CSS.
+-   **Image Handling**: Base64 encoding for image storage.
 </key_technical_concepts>
 
 <code_architecture>
@@ -39,29 +33,31 @@ Recent major requests and issues include:
 -   ****:
     -   **Summary**: The core FastAPI backend, handling all API logic, MongoDB interactions, and business rules.
     -   **Changes Made**:
-        -   **Booking Management**: Modified  to accept  and create customer records for Checked In status. Introduced  for validation. Enhanced  to recalculate  and  on date changes, and update  for checked-in customers. Logic was added to allow *extension* of checkout dates for checked-in bookings (preventing check-in date changes, shortening stays, or room changes).
-        -   **Financials**: Added  endpoint to record advance payments as income. Modified the advance payment logic to prevent double-counting (ensuring payments are recorded only as , not  simultaneously). Updated checkout endpoint to factor in  into customer billing.
-        -   **User Management**: Modified  enum to include Restaurant Manager. Updated  endpoint to create a default restaurant user and sample restaurant data.
-        -   **Cancellation**: Modified  to require admin role and handle checked-in customer records.
-        -   **Restaurant Management**: Added new Pydantic models: , , , , . Implemented comprehensive CRUD (Create, Read, Update, Delete) API endpoints for all these models (, , , , ). Includes endpoints for order creation, payment processing, and room service integration.
+        -   **Restaurant Management**: Added Pydantic models for ,  (now includes  field for base64 strings, ), , ,  (now includes ). Implemented comprehensive CRUD endpoints.
+        -   **Validation**: Added validation to DELETE endpoints for categories and menu items, preventing deletion if they are part of active orders.
+        -   **Booking/Customer Management**: Refactored customer creation logic for Checked In bookings and regular check-ins to correctly set  and preserve . Modified  model to include , , and make  optional.
+        -   **Checked-in Customers Endpoint**: Updated  to filter for  (instead of ).
+        -   **Checkout Process**: Modified checkout to set  and record , instead of deleting the customer record.
+        -   **Financials**: Integrated  from hotel settings and  into order and payment processing.
+        -   **Payment Endpoint**: Updated to handle payment processing for room service orders, including options to add to room bill or process immediate payment.
+        -   **Data Migration**: Added a temporary  endpoint to update existing customer records with the new  field and restore  from bookings.
 -   ****:
     -   **Summary**: The main React component for UI rendering, state management, and client-side API interactions.
     -   **Changes Made**:
-        -   **Booking Management**: Refactored  to show  for past-dated bookings. Introduced . Modified  to correctly find  for checked-in guests (previously used ).
-        -   **UI Enhancements**: Replaced the Edit Booking button for checked-in guests with a dropdown containing Edit Booking, Get Advance, and Cancel Booking options. Added UI for  and . Integrated  to conditionally show Cancel Booking for admins.
-        -   **Financial Real-time Updates**: Introduced  and  to enable cross-component communication for refreshing financial data. The Dashboard component now triggers financial data refresh after advance payments, and the Expenses component listens for these triggers via a new  hook.
-        -   **Dark Theme**: Updated classes in the Income Records section ( page) to correctly apply dark theme styling to tables and headers.
-        -   **Restaurant Management**: Added a new  functional component with four main tabs: Menu, Tables, Orders, and Staff. This component includes forms and display logic for managing categories, items, tables, staff, and orders. Integrated the Restaurant component into the main navigation (). Added state variables and handler functions for all restaurant-related operations (e.g., , ).
-        -   **Mobile Responsiveness**: Initiated a refactor to add responsive classes (Tailwind CSS) to main navigation, header, , Dashboard component (main layout, cards, room availability, tables), and the Restaurant component (main layout, menu, tables, orders, staff sections).
--   ****:
-    -   **Summary**: Root HTML file.
-    -   **Changes Made**: Footer branding text changed from Made with Emergent to Made with Mount-Edge.
--   ****:
-    -   **Summary**: Lists Python dependencies.
-    -   **Changes Made**: Implicitly updated with new libraries as features were added.
+        -   **Restaurant Component (POS Interface)**:
+            -   Implemented a full-screen, POS-style order interface () with left menu panel and right order summary.
+            -   Added order type selection (Table Orders, Room Service).
+            -   Integrated real-time display of checked-in guests for room service, with auto-fill of customer names.
+            -   Implemented dark theme styling.
+            -   Removed payment method selection from order creation, deferring it to a dedicated payment modal.
+            -   Updated tax calculation to fetch  from hotel settings, and added a 10% service charge display.
+        -   **Menu Management**: Added UI for image upload (base64, 2MB limit) and preparation time field in the add menu item modal. Display menu item images in the POS interface.
+        -   **Delete Functionality**: Added delete buttons for menu categories, menu items, tables, and staff, along with corresponding handler functions (, ).
+        -   **Payment Modal**: Implemented a comprehensive payment modal with detailed order information, payment method selection, and an Add to Room Bill option for room service.
+        -   **Guest Display**: Ensured proper mapping of customer data (, ) for real-time display on the Dashboard and Restaurant POS.
 -   ****:
     -   **Summary**: Environment variables for backend.
-    -   **Changes Made**: Added  for authentication.
+    -   **Changes Made**: Implicitly updated with  for authentication. (No new specific changes mentioned in the trajectory related to restaurant features).
 </code_architecture>
 
 <pending_tasks>
@@ -71,23 +67,23 @@ Recent major requests and issues include:
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was actively working on making the entire application mobile responsive as requested by the user. This task involves updating all relevant React components with appropriate responsive design classes (likely using Tailwind CSS, given the existing styling).
+Immediately prior to this summary, the AI engineer successfully addressed critical issues concerning the display of checked-in guests and the visibility of checkout dates across the application. The primary problem was that  was incorrectly set to  for actively checked-in guests, leading to loss of crucial planned checkout information and preventing accurate display.
 
-The work has progressed through several key areas in :
-1.  **Main Navigation and Layout**: Initial steps were taken to adjust the overall app structure for responsiveness.
-2.  **App Header**: Modifications were made to the main header component to ensure it adapts to different screen sizes.
-3.  **RealTimeClock Component**: This UI element was updated for mobile responsiveness.
-4.  **Dashboard Component**: This major component's layout, including cards, room availability sections, and various tables (Upcoming Bookings, Checked-in Customers), has been adapted for mobile views. Headers and table cells were specifically targeted for responsiveness.
-5.  **Restaurant Component**: This is the current focus of the responsiveness efforts. The engineer is systematically going through its sub-sections:
-    *   The main container of the Restaurant component has been modified.
-    *   The menu section is being updated to display responsively.
-    *   The tables section is also undergoing responsive adjustments.
-    *   The orders table within the Restaurant component recently caused a parsing error due to an incomplete structure, which was then fixed.
-    *   The staff section is also being made responsive.
+The engineer implemented a significant refactor of the backend customer management:
+1.  **Customer Model Update**: Modified the  Pydantic model in  to include  and . The original  was preserved and made optional.
+2.  **Backend Logic Adjustment**:
+    *   The customer creation logic during booking status changes (Checked In) and the regular check-in process was updated to correctly set  and retain the planned  from the booking.
+    *   The  endpoint was modified to filter customers based on .
+    *   The checkout process was updated to mark  and set , rather than deleting the customer record.
+3.  **Data Migration**: A temporary API endpoint () was created and executed to update existing customer records in the database with the new  field and restore  values from their corresponding bookings.
 
-The last action recorded was successfully fixing a parsing error related to the orders table within the Restaurant component, indicating that the task is ongoing within this specific component. The next step is to continue with the remaining responsiveness adjustments for the Restaurant component and then proceed with testing.
+On the frontend, existing logic in  was confirmed to be capable of displaying the  once the backend provided the correct data.
+
+The final verification confirmed that:
+*   All checked-in guests (including DURGA) are now correctly displayed on the Dashboard with their respective, visible checkout dates.
+*   The Restaurant POS's room service feature accurately shows all live checked-in guests and their details, with the auto-fill functionality working as expected.
 </current_work>
 
 <optional_next_step>
-Continue making the Restaurant component mobile responsive, specifically verifying the orders table and remaining sections.
+Resume the task of making the entire application mobile responsive, starting with the Restaurant component.
 </optional_next_step>
