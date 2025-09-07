@@ -303,6 +303,8 @@ class SetupWizard(BaseModel):
     hotel_address: str = ""
     hotel_email: str = ""
     timezone: str = "UTC"
+    cash_balance: float = 0.0  # Initial cash balance
+    bank_balance: float = 0.0  # Initial bank balance
     admin_created: bool = False
     completed_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
