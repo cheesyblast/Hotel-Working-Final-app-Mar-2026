@@ -233,6 +233,9 @@ agent_communication:
   - agent: "testing"
     message: "COMPLETED - Setup Wizard with Cash and Bank Balance Initialization testing finished successfully with 100% pass rate (7/7 tests). All key features verified: ✅ Setup endpoint accepts balance fields ✅ Income records created with correct categories/payment methods ✅ Balances reflected in financial summary ✅ Zero/partial balance scenarios work ✅ Activity logging includes balance info ✅ Data storage working correctly. Feature is production-ready and fully functional. Removed from current_focus as testing is complete."
 
+  - agent: "testing"
+    message: "COMPLETED - Enhanced Complete Database Reset with Cash and Bank Balance Re-initialization testing finished successfully with 100% pass rate (17/17 tests). All review request scenarios verified: ✅ POST /admin/complete-reset clears setup_wizard and returns requires_setup: true ✅ GET /setup/status returns is_completed: false after reset ✅ All expected collections cleared (rooms, bookings, customers, expenses, incomes, activity_logs, daily_sales) ✅ Hotel settings preserved, setup_wizard reset ✅ reset_summary includes setup_wizard_reset: true ✅ Activity logging includes appropriate reset information ✅ Admin authentication required ✅ Post-reset setup functionality works with new balance initialization. Fixed MongoDB BSON date encoding issue during testing. Feature is production-ready and fully functional."
+
   - task: "Setup Wizard Backend Implementation"
     implemented: true
     working: true
