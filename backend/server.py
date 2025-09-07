@@ -312,6 +312,8 @@ class SetupWizardRequest(BaseModel):
     hotel_address: str
     hotel_email: str
     timezone: str = "UTC"  # Timezone for the hotel (e.g., "Asia/Colombo", "America/New_York")
+    cash_balance: float = 0.0  # Initial cash balance
+    bank_balance: float = 0.0  # Initial bank balance
 
 class EmailSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
