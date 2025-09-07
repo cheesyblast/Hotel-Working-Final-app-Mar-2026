@@ -171,7 +171,32 @@ const SetupWizard = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isPostReset, setIsPostReset] = useState(false);
   const { completeSetup } = useAuth();
+
+  // Check if this is a post-reset setup and pre-fill data
+  useEffect(() => {
+    const checkPostResetSetup = async () => {
+      try {
+        // Check if hotel settings exist (indicating post-reset scenario)
+        const settingsResponse = await axios.get(`${API}/settings`);
+        if (settingsResponse.data && settingsResponse.data.hotel_name) {
+          setIsPostReset(true);
+          setFormData(prev => ({
+            ...prev,
+            hotel_name: settingsResponse.data.hotel_name || '',
+            hotel_address: settingsResponse.data.hotel_address || '',
+            hotel_email: settingsResponse.data.hotel_email || '',
+            timezone: settingsResponse.data.timezone || 'Asia/Colombo'
+          }));
+        }
+      } catch (error) {
+        // If settings don't exist, this is a fresh setup
+        console.log('Fresh setup - no existing settings');
+      }
+    };
+    checkPostResetSetup();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
