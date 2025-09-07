@@ -1098,7 +1098,9 @@ async def complete_database_reset(current_user: UserResponse = Depends(get_curre
         await db.settings.insert_one(default_settings.dict())
         reset_results['settings_reset'] = True
         
-        # Don't clear setup_wizard - keep hotel configured
+        # Reset setup_wizard to require re-initialization including balances
+        await db.setup_wizard.delete_many({})
+        reset_results['setup_wizard_reset'] = True
         
         # Log the reset activity
         await log_activity(
