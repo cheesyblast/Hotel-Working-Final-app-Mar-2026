@@ -223,6 +223,9 @@ agent_communication:
   
   - agent: "main"  
     message: "Implemented Cash and Bank balance setup during startup wizard. Backend: Extended SetupWizardRequest and SetupWizard models to include cash_balance and bank_balance fields. Updated complete_setup endpoint to create initial income records for cash and bank balances, which integrates with existing financial system that calculates running balances from all transactions. Frontend: Added input fields for initial cash and bank balances in SetupWizard component with proper numeric handling and validation. This ensures hotels can initialize their financial system with opening balances during first-time setup."
+  
+  - agent: "main"
+    message: "Enhanced complete database reset functionality to include balance re-initialization. Backend: Modified /admin/complete-reset endpoint to reset setup_wizard along with other data and return requires_setup flag. Frontend: Updated reset flow to redirect users to enhanced setup wizard after reset. Setup wizard now intelligently detects post-reset scenarios, pre-fills hotel information, and prominently requests new cash and bank balances with contextual UI messaging. This ensures that after complete database reset, hotels can properly restart their financial tracking system with correct opening balances."
 
   - agent: "testing"
     message: "COMPLETED - Setup Wizard with Cash and Bank Balance Initialization testing finished successfully with 100% pass rate (7/7 tests). All key features verified: ✅ Setup endpoint accepts balance fields ✅ Income records created with correct categories/payment methods ✅ Balances reflected in financial summary ✅ Zero/partial balance scenarios work ✅ Activity logging includes balance info ✅ Data storage working correctly. Feature is production-ready and fully functional. Removed from current_focus as testing is complete."
