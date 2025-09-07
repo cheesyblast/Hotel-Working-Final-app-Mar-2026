@@ -188,9 +188,12 @@ const SetupWizard = () => {
   };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: name === 'cash_balance' || name === 'bank_balance' 
+        ? parseFloat(value) || 0 
+        : value
     });
   };
 
