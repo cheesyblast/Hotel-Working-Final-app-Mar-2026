@@ -319,7 +319,7 @@ const SetupWizard = () => {
 
           <div>
             <label className="block text-gray-300 text-sm font-medium mb-2">
-              Initial Cash Balance
+              Initial Cash Balance {isPostReset ? '(Post-Reset)' : ''}
             </label>
             <input
               type="number"
@@ -332,13 +332,16 @@ const SetupWizard = () => {
               placeholder="0.00"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Starting cash balance for your hotel
+              {isPostReset 
+                ? 'Enter your current cash balance to restart financial tracking'
+                : 'Starting cash balance for your hotel'
+              }
             </p>
           </div>
 
           <div>
             <label className="block text-gray-300 text-sm font-medium mb-2">
-              Initial Bank Balance
+              Initial Bank Balance {isPostReset ? '(Post-Reset)' : ''}
             </label>
             <input
               type="number"
@@ -351,7 +354,10 @@ const SetupWizard = () => {
               placeholder="0.00"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Starting bank balance for your hotel
+              {isPostReset 
+                ? 'Enter your current bank balance to restart financial tracking'
+                : 'Starting bank balance for your hotel'
+              }
             </p>
           </div>
 
