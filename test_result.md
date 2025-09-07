@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: Restaurant page functionality fixes: 1. New order button is not responding/working 2. Need option to add or delete item and category with validation (can't delete if item/category is in an active order) 3. Add Cash and Bank balance setup during initial startup setup wizard to initialize the financial system with opening balances
+user_problem_statement: Restaurant page functionality fixes: 1. New order button is not responding/working 2. Need option to add or delete item and category with validation (can't delete if item/category is in an active order) 3. Add Cash and Bank balance setup during initial startup setup wizard to initialize the financial system with opening balances 4. Cash and Bank balance details should be asked after complete database reset also
 
 backend:
   - task: "JWT Authentication System Implementation"
