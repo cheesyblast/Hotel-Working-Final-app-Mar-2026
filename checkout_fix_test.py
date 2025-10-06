@@ -147,7 +147,7 @@ def test_check_in_booking(booking):
             "payment_method": "Cash"
         }
         
-        response = requests.post(f"{API_BASE}/checkin", json=checkin_data)
+        response = requests.post(f"{API_BASE}/checkin", json=checkin_data, headers=AUTH_HEADERS)
         print(f"Check-in status: {response.status_code}")
         
         if response.status_code == 200:
