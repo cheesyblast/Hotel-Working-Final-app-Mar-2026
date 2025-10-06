@@ -200,7 +200,7 @@ def test_checkout_with_payment_methods(customer):
                 "payment_method": payment_method
             }
             
-            response = requests.post(f"{API_BASE}/checkout", json=checkout_data)
+            response = requests.post(f"{API_BASE}/checkout", json=checkout_data, headers=AUTH_HEADERS)
             print(f"   Checkout status: {response.status_code}")
             
             if response.status_code == 200:
