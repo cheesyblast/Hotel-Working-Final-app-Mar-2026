@@ -374,7 +374,7 @@ def test_guest_with_no_email():
         # with empty email. Let's create another one to be thorough.
         
         # Get available room
-        rooms_response = requests.get(f"{API_BASE}/rooms")
+        rooms_response = requests.get(f"{API_BASE}/rooms", headers=AUTH_HEADERS)
         if rooms_response.status_code != 200:
             print("❌ Could not get rooms list")
             return False
