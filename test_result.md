@@ -341,6 +341,21 @@ agent_communication:
         agent: "main"
         comment: "Fixed Short Time booking creation error. Backend: Enhanced date handling logic to properly process Short Time bookings by ensuring check_out_date is set to same day as check_in_date, improved date string to date object conversion, and added proper MongoDB datetime storage format. Frontend: Added logic to properly handle check_out_date for Short Time bookings by removing the field from request (letting backend set it) and converting empty strings to null for proper backend processing. Tested both Short Time and Night Stay bookings - both working correctly with proper date handling."
 
+  - task: "Checkout Functionality Fix for Short Time Bookings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "PASSED - CRITICAL CHECKOUT FIX VERIFIED SUCCESSFULLY - 100% SUCCESS RATE (8/8 tests passed). ✅ MONGODB ENCODING ISSUE RESOLVED: The critical issue where actual_checkout_date was being set to a Python date object instead of datetime, causing MongoDB BSON encoding error, has been completely fixed. All checkout operations now complete successfully without 500 errors. ✅ SHORT TIME BOOKING CHECKOUT: Successfully tested complete short time booking workflow - created short time booking (same check-in/check-out date), checked in guest, performed checkout with all payment methods (Cash, Card, Bank Transfer) - all working perfectly. ✅ PAYMENT METHOD VERIFICATION: All three payment methods (Cash, Card, Bank Transfer) tested successfully with proper billing calculations and payment method recording. ✅ CUSTOMER RECORD UPDATES: Customer records properly updated with is_checked_out: true status and removed from checked-in customers list after checkout. ✅ DAILY SALES INTEGRATION: Daily sales records created correctly with all required fields (date, customer_name, room_number, room_charges, additional_charges, discount_amount, advance_amount, total_amount, payment_method). ✅ GUESTS WITH NO EMAIL: Successfully tested checkout process with guests having empty email addresses - no errors occurred, confirming the fix handles edge cases properly. ✅ DATETIME ENCODING CONSISTENCY: Tested multiple checkout scenarios across all payment methods - all completed successfully without MongoDB encoding errors, confirming the actual_checkout_date is now properly stored as datetime object. The checkout functionality fix is production-ready and resolves the critical MongoDB encoding issue that was causing 500 errors during short time booking checkouts."
+      - working: true
+        agent: "main"
+        comment: "Fixed critical MongoDB encoding error in checkout process where actual_checkout_date was being stored as Python date object instead of datetime, causing BSON serialization failures. Updated checkout endpoint to ensure actual_checkout_date is properly converted to datetime format before database storage. This resolves the 500 internal server errors that were occurring during short time booking checkouts."
+
   - task: "Complete Database Reset Feature - Admin Only"
     implemented: true
     working: true
