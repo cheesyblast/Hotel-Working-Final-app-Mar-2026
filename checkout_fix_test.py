@@ -243,7 +243,7 @@ def test_actual_checkout_date_storage(customer):
             "payment_method": "Cash"
         }
         
-        response = requests.post(f"{API_BASE}/checkout", json=checkout_data)
+        response = requests.post(f"{API_BASE}/checkout", json=checkout_data, headers=AUTH_HEADERS)
         print(f"Checkout status: {response.status_code}")
         
         if response.status_code == 200:
