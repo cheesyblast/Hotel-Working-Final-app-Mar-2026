@@ -435,7 +435,7 @@ def test_guest_with_no_email():
             "payment_method": "Card"
         }
         
-        checkout_response = requests.post(f"{API_BASE}/checkout", json=checkout_data)
+        checkout_response = requests.post(f"{API_BASE}/checkout", json=checkout_data, headers=AUTH_HEADERS)
         
         if checkout_response.status_code == 200:
             print(f"✅ Checkout successful for guest with no email")
