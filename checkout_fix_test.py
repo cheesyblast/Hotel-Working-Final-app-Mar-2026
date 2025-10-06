@@ -315,7 +315,7 @@ def test_daily_sales_record_creation():
     try:
         # Get today's daily sales
         today = datetime.now().date()
-        response = requests.get(f"{API_BASE}/daily-sales?start_date={today}&end_date={today}")
+        response = requests.get(f"{API_BASE}/daily-sales?start_date={today}&end_date={today}", headers=AUTH_HEADERS)
         
         if response.status_code == 200:
             daily_sales = response.json()
