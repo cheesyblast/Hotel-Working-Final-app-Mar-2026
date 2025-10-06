@@ -441,6 +441,19 @@ def test_guest_with_no_email():
         checkin_result = checkin_response.json()
         customer_id = checkin_result.get('customer_id')
         
+        # If customer_id is not in response, find it by getting checked-in customers
+        if not customer_id:
+            customers_response = requests.get(f"{API_BASE}/customers/checked-in", headers=AUTH_HEADERS)
+            if customers_response.status_code == 200:
+                customers = customers_response.json()
+                customer = next((c for c in customers if c['name'] == "No Email Guest"), None)
+                if customer:
+                    customer_id = customer['id']
+        
+        if not customer_id:
+            print("❌ Could not get customer_id for no-email guest")
+            return False
+        
         # Checkout
         checkout_data = {
             "customer_id": customer_id,
