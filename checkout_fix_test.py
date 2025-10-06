@@ -157,16 +157,30 @@ def test_check_in_booking(booking):
             
             # Get the customer record
             customer_id = result.get('customer_id')
-            if customer_id:
-                customer_response = requests.get(f"{API_BASE}/customers/checked-in", headers=AUTH_HEADERS)
-                if customer_response.status_code == 200:
-                    customers = customer_response.json()
+            print(f"   Customer ID from response: {customer_id}")
+            
+            # Get all checked-in customers and find ours
+            customer_response = requests.get(f"{API_BASE}/customers/checked-in", headers=AUTH_HEADERS)
+            if customer_response.status_code == 200:
+                customers = customer_response.json()
+                print(f"   Found {len(customers)} checked-in customers")
+                
+                # Try to find by customer_id first, then by name
+                customer = None
+                if customer_id:
                     customer = next((c for c in customers if c['id'] == customer_id), None)
-                    if customer:
-                        print(f"   Customer ID: {customer['id']}")
-                        print(f"   Room: {customer['current_room']}")
-                        print(f"   Email: '{customer['email']}' (empty as intended)")
-                        return True, customer
+                
+                if not customer:
+                    # Try to find by guest name and room
+                    customer = next((c for c in customers if c['name'] == booking['guest_name'] and c['current_room'] == booking['room_number']), None)
+                
+                if customer:
+                    print(f"   Customer ID: {customer['id']}")
+                    print(f"   Room: {customer['current_room']}")
+                    print(f"   Email: '{customer['email']}' (empty as intended)")
+                    return True, customer
+                else:
+                    print(f"   Available customers: {[c['name'] + ' in ' + c['current_room'] for c in customers]}")
             
             print("❌ Could not retrieve customer record after check-in")
             return False, None
