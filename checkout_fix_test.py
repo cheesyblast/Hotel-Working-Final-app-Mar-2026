@@ -288,7 +288,7 @@ def test_customer_checkout_status(customer_id):
     
     try:
         # Check that customer is no longer in checked-in list
-        response = requests.get(f"{API_BASE}/customers/checked-in")
+        response = requests.get(f"{API_BASE}/customers/checked-in", headers=AUTH_HEADERS)
         if response.status_code == 200:
             checked_in_customers = response.json()
             still_checked_in = any(c['id'] == customer_id for c in checked_in_customers)
