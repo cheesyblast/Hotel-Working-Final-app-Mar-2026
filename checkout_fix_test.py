@@ -76,7 +76,7 @@ def test_create_short_time_booking():
     
     try:
         # Get available rooms first
-        rooms_response = requests.get(f"{API_BASE}/rooms")
+        rooms_response = requests.get(f"{API_BASE}/rooms", headers=AUTH_HEADERS)
         if rooms_response.status_code != 200:
             print("❌ Could not get rooms list")
             return False, None
