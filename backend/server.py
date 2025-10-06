@@ -2190,7 +2190,7 @@ async def checkout_customer(checkout: CheckoutRequest):
             "discount_amount": discount_amount,
             "total_amount": total_amount,
             "is_checked_out": True,  # Mark as checked out
-            "actual_checkout_date": datetime.now().date()  # Set actual checkout date
+            "actual_checkout_date": datetime.now()  # Set actual checkout date
         }}
     )
     
