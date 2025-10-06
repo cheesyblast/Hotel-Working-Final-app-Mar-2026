@@ -405,7 +405,7 @@ def test_guest_with_no_email():
             "booking_amount": 1500.0
         }
         
-        booking_response = requests.post(f"{API_BASE}/bookings", json=booking_data)
+        booking_response = requests.post(f"{API_BASE}/bookings", json=booking_data, headers=AUTH_HEADERS)
         if booking_response.status_code != 200:
             print("❌ Could not create no-email booking")
             return False
