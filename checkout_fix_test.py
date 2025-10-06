@@ -42,6 +42,34 @@ API_BASE = f"{BASE_URL}/api"
 print(f"Testing Checkout Fix at: {API_BASE}")
 print("=" * 80)
 
+# Authentication
+def get_auth_token():
+    """Get authentication token"""
+    try:
+        login_data = {"username": "admin", "password": "admin123"}
+        response = requests.post(f"{API_BASE}/auth/login", json=login_data)
+        if response.status_code == 200:
+            token_data = response.json()
+            return token_data.get("access_token")
+        else:
+            print(f"❌ Authentication failed: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"❌ Authentication error: {e}")
+        return None
+
+# Get auth token
+AUTH_TOKEN = get_auth_token()
+if not AUTH_TOKEN:
+    print("❌ Could not authenticate - exiting")
+    sys.exit(1)
+
+# Headers with authentication
+AUTH_HEADERS = {
+    "Authorization": f"Bearer {AUTH_TOKEN}",
+    "Content-Type": "application/json"
+}
+
 def test_create_short_time_booking():
     """Test creating a short time booking"""
     print("\n1. Testing Short Time Booking Creation")
