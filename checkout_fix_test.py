@@ -419,7 +419,7 @@ def test_guest_with_no_email():
             "payment_method": "Card"
         }
         
-        checkin_response = requests.post(f"{API_BASE}/checkin", json=checkin_data)
+        checkin_response = requests.post(f"{API_BASE}/checkin", json=checkin_data, headers=AUTH_HEADERS)
         if checkin_response.status_code != 200:
             print("❌ Could not check in no-email guest")
             return False
