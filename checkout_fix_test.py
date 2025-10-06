@@ -108,7 +108,7 @@ def test_create_short_time_booking():
             "additional_notes": "Short time booking test"
         }
         
-        response = requests.post(f"{API_BASE}/bookings", json=booking_data)
+        response = requests.post(f"{API_BASE}/bookings", json=booking_data, headers=AUTH_HEADERS)
         print(f"Booking creation status: {response.status_code}")
         
         if response.status_code == 200:
