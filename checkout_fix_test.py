@@ -158,7 +158,7 @@ def test_check_in_booking(booking):
             # Get the customer record
             customer_id = result.get('customer_id')
             if customer_id:
-                customer_response = requests.get(f"{API_BASE}/customers/checked-in")
+                customer_response = requests.get(f"{API_BASE}/customers/checked-in", headers=AUTH_HEADERS)
                 if customer_response.status_code == 200:
                     customers = customer_response.json()
                     customer = next((c for c in customers if c['id'] == customer_id), None)
