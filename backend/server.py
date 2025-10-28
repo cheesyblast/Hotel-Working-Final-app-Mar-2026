@@ -3981,12 +3981,12 @@ async def pay_restaurant_order(
     # Handle room service billing
     if order["order_type"] == "room_service" and add_to_room_bill:
         # Add to customer's room charges
-        customer = await db.customers.find_one({"room_number": order["room_number"]})
+        customer = await db.customers.find_one({"current_room": order["room_number"]})
         if customer:
             current_charges = customer.get("restaurant_charges", 0.0)
             new_charges = current_charges + order["total_amount"]
             await db.customers.update_one(
-                {"room_number": order["room_number"]},
+                {"current_room": order["room_number"]},
                 {"$set": {"restaurant_charges": new_charges}}
             )
         
