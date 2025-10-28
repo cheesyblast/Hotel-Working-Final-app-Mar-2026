@@ -5278,7 +5278,7 @@ const Restaurant = () => {
   const [newStaff, setNewStaff] = useState({ name: '', role: 'Waiter', phone: '' });
   const [newOrder, setNewOrder] = useState({
     order_type: 'table', table_id: '', room_number: '', customer_name: '',
-    items: [], waiter_id: '', notes: ''
+    items: [], waiter_id: '', notes: '', service_charge_rate: 10
   });
   const [orderItems, setOrderItems] = useState([]);
   const [paymentData, setPaymentData] = useState({
