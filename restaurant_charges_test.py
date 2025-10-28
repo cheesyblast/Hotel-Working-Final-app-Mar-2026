@@ -80,45 +80,38 @@ def setup_test_data():
         print(f"❌ Setup failed - Exception: {e}")
         return False
 
-def test_room_203_customer_status():
-    """Test 1: Check if there's a customer checked into room 203"""
-    print("\n1. Testing Room 203 Customer Status")
+def test_get_checked_in_customers():
+    """Get checked-in customers to verify room 203 customer exists"""
+    print("\n1. Testing Get Checked-in Customers (Verify Room 203)")
+    
     try:
-        response = requests.get(f"{API_BASE}/customers/checked-in")
+        response = requests.get(f"{API_BASE}/customers/checked-in", headers=auth_headers)
         print(f"Status Code: {response.status_code}")
         
         if response.status_code == 200:
             customers = response.json()
-            print(f"Total checked-in customers: {len(customers)}")
+            print(f"Number of checked-in customers: {len(customers)}")
             
-            # Look for room 203 customer
-            room_203_customers = [c for c in customers if c.get('current_room') == '203']
+            # Look for customer in room 203
+            room_203_customer = None
+            for customer in customers:
+                print(f"  Customer: {customer['name']} - Room {customer['current_room']}")
+                print(f"    Restaurant charges: {customer.get('restaurant_charges', 0.0)}")
+                if customer['current_room'] == '203':
+                    room_203_customer = customer
             
-            if room_203_customers:
-                customer = room_203_customers[0]
-                print(f"✅ Found customer in room 203:")
-                print(f"  Name: {customer.get('name')}")
-                print(f"  Email: {customer.get('email')}")
-                print(f"  Phone: {customer.get('phone')}")
-                print(f"  Check-in Date: {customer.get('check_in_date')}")
-                print(f"  Check-out Date: {customer.get('check_out_date')}")
-                print(f"  Room Charges: {customer.get('room_charges', 0)}")
-                print(f"  Restaurant Charges: {customer.get('restaurant_charges', 0)}")
-                print(f"  Additional Charges: {customer.get('additional_charges', 0)}")
-                print(f"  Total Amount: {customer.get('total_amount', 0)}")
-                return True, customer
+            if room_203_customer:
+                print(f"✅ Found customer in room 203: {room_203_customer['name']}")
+                return True, customers, room_203_customer
             else:
                 print("❌ No customer found in room 203")
-                print("Available rooms with customers:")
-                for customer in customers:
-                    print(f"  Room {customer.get('current_room')}: {customer.get('name')}")
-                return False, None
+                return False, customers, None
         else:
-            print(f"❌ Failed to get checked-in customers - Status code: {response.status_code}")
-            return False, None
+            print(f"❌ Failed to get customers - Status: {response.status_code}")
+            return False, [], None
     except Exception as e:
-        print(f"❌ Exception: {e}")
-        return False, None
+        print(f"❌ Get customers failed - Exception: {e}")
+        return False, [], None
 
 def test_restaurant_orders_for_room_203():
     """Test 2: Look for restaurant orders for room 203"""
