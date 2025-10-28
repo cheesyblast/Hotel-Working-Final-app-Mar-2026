@@ -314,59 +314,72 @@ def test_checkout_includes_restaurant_charges(room_number="203"):
         print(f"❌ Checkout test failed - Exception: {e}")
         return False
 
-def test_checkout_integration_with_restaurant_charges(customer):
-    """Test 6: Verify checkout process includes restaurant charges"""
-    print("\n6. Testing Checkout Integration with Restaurant Charges")
+def test_multiple_room_numbers():
+    """Test the fix works for different room numbers"""
+    print("\n6. Testing Multiple Room Numbers (Universal Fix Verification)")
     
-    if not customer:
-        print("❌ No customer data available for checkout test")
-        return False
+    test_rooms = ["201", "202", "204"]  # Test different rooms
+    results = []
     
-    customer_id = customer.get('id')
-    print(f"Testing checkout for customer: {customer.get('name')} (ID: {customer_id})")
-    print(f"Current restaurant charges: {customer.get('restaurant_charges', 0)}")
-    
-    try:
-        # Perform checkout
-        checkout_data = {
-            "customer_id": customer_id,
-            "additional_amount": 0.0,
-            "discount_amount": 0.0,
-            "payment_method": "Cash"
-        }
+    for room_num in test_rooms:
+        print(f"\n  Testing Room {room_num}:")
         
-        checkout_response = requests.post(f"{API_BASE}/checkout", json=checkout_data)
-        print(f"Checkout Status Code: {checkout_response.status_code}")
-        
-        if checkout_response.status_code == 200:
-            checkout_result = checkout_response.json()
-            print(f"Checkout Response: {checkout_result}")
+        try:
+            # Check if there's a customer in this room
+            response = requests.get(f"{API_BASE}/customers/checked-in", headers=auth_headers)
+            if response.status_code != 200:
+                print(f"    ❌ Failed to get customers")
+                results.append(False)
+                continue
             
-            billing_details = checkout_result.get('billing_details', {})
-            if billing_details:
-                restaurant_charges_in_bill = billing_details.get('restaurant_charges', 0)
-                total_amount = billing_details.get('total_amount', 0)
-                
-                print(f"Restaurant charges in bill: {restaurant_charges_in_bill}")
-                print(f"Total amount in bill: {total_amount}")
-                
-                if restaurant_charges_in_bill > 0:
-                    print("✅ Restaurant charges are included in checkout bill")
-                    return True
-                else:
-                    print("❌ Restaurant charges are NOT included in checkout bill")
-                    print("This is the root cause of the issue!")
-                    return False
+            customers = response.json()
+            room_customer = None
+            for customer in customers:
+                if customer['current_room'] == room_num:
+                    room_customer = customer
+                    break
+            
+            if not room_customer:
+                print(f"    ⚠️ No customer in room {room_num} - skipping")
+                results.append(True)  # Not a failure, just no customer
+                continue
+            
+            print(f"    Found customer: {room_customer['name']}")
+            
+            # Create and pay room service order
+            order_success, order = test_create_room_service_order(room_num, room_customer['name'])
+            if not order_success:
+                print(f"    ❌ Failed to create order for room {room_num}")
+                results.append(False)
+                continue
+            
+            payment_success = test_pay_room_service_order_with_room_bill(order, room_num)
+            if not payment_success:
+                print(f"    ❌ Failed to pay order for room {room_num}")
+                results.append(False)
+                continue
+            
+            # Verify charges updated
+            charges_success, charges = test_verify_customer_restaurant_charges(room_num, order['total_amount'])
+            if charges_success:
+                print(f"    ✅ Room {room_num} test passed - charges updated to {charges}")
+                results.append(True)
             else:
-                print("❌ No billing details in checkout response")
-                return False
-        else:
-            print(f"❌ Checkout failed - Status code: {checkout_response.status_code}")
-            print(f"Response: {checkout_response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Exception during checkout test: {e}")
+                print(f"    ❌ Room {room_num} test failed - charges not updated")
+                results.append(False)
+                
+        except Exception as e:
+            print(f"    ❌ Room {room_num} test failed - Exception: {e}")
+            results.append(False)
+    
+    success_count = sum(results)
+    total_count = len(results)
+    
+    if success_count == total_count:
+        print(f"\n✅ Multiple room test PASSED ({success_count}/{total_count})")
+        return True
+    else:
+        print(f"\n❌ Multiple room test FAILED ({success_count}/{total_count})")
         return False
 
 def main():
