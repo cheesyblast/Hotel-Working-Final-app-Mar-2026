@@ -383,41 +383,56 @@ def test_multiple_room_numbers():
         return False
 
 def main():
-    """Run comprehensive restaurant charges integration test"""
-    print("Starting Restaurant Charges Integration Investigation")
-    print("Focus: Room 203 Restaurant Charges Issue")
-    print("=" * 70)
+    """Run all restaurant charges integration tests"""
+    print("Starting Restaurant Charges Integration Tests")
+    print("Testing the critical fix for room service order billing")
+    print("=" * 80)
+    
+    # Authenticate first
+    if not authenticate():
+        print("❌ Authentication failed - cannot proceed with tests")
+        return False
+    
+    # Setup test data
+    if not setup_test_data():
+        print("❌ Test data setup failed - cannot proceed with tests")
+        return False
     
     test_results = []
     
-    # Test 1: Check Room 203 Customer Status
-    customer_found, customer_data = test_room_203_customer_status()
-    test_results.append(("Room 203 Customer Check", customer_found))
+    # Test 1: Get checked-in customers and verify room 203
+    customers_success, customers, room_203_customer = test_get_checked_in_customers()
+    test_results.append(("Get Checked-in Customers", customers_success))
     
-    # Test 2: Check Restaurant Orders for Room 203
-    orders_found, orders_data = test_restaurant_orders_for_room_203()
-    test_results.append(("Restaurant Orders for Room 203", orders_found))
+    if not customers_success or not room_203_customer:
+        print("❌ Cannot proceed with room 203 specific tests - no customer in room 203")
+        # Still continue with other tests
+    else:
+        # Test 2: Create room service order for room 203
+        order_success, order = test_create_room_service_order("203", room_203_customer['name'])
+        test_results.append(("Create Room Service Order", order_success))
+        
+        if order_success and order:
+            # Test 3: Pay with add to room bill
+            payment_success = test_pay_room_service_order_with_room_bill(order, "203")
+            test_results.append(("Pay with Add to Room Bill", payment_success))
+            
+            # Test 4: Verify customer restaurant charges updated
+            charges_success, charges = test_verify_customer_restaurant_charges("203", order['total_amount'])
+            test_results.append(("Verify Restaurant Charges Updated", charges_success))
+            
+            # Test 5: Verify checkout includes restaurant charges
+            checkout_success = test_checkout_includes_restaurant_charges("203")
+            test_results.append(("Checkout Includes Restaurant Charges", checkout_success))
     
-    # Test 3: Check Unpaid Restaurant Orders
-    unpaid_found, unpaid_orders, unpaid_amount = test_unpaid_restaurant_orders()
-    test_results.append(("Unpaid Restaurant Orders", unpaid_found))
+    # Test 6: Test multiple room numbers (universal fix verification)
+    multiple_rooms_success = test_multiple_room_numbers()
+    test_results.append(("Multiple Room Numbers Test", multiple_rooms_success))
     
-    # Test 4: Check Customer Restaurant Charges Field
-    charges_updated = test_customer_restaurant_charges_field(customer_data)
-    test_results.append(("Customer Restaurant Charges Field", charges_updated))
-    
-    # Test 5: Test Restaurant Order Payment Process
-    payment_process_works = test_restaurant_order_payment_process()
-    test_results.append(("Restaurant Order Payment Process", payment_process_works))
-    
-    # Test 6: Test Checkout Integration
-    checkout_integration_works = test_checkout_integration_with_restaurant_charges(customer_data)
-    test_results.append(("Checkout Integration", checkout_integration_works))
-    
-    # Summary and Diagnosis
-    print("\n" + "=" * 70)
-    print("RESTAURANT CHARGES INTEGRATION TEST RESULTS")
-    print("=" * 70)
+    # Summary
+    print("\n" + "=" * 80)
+    print("RESTAURANT CHARGES INTEGRATION TEST SUMMARY")
+    print("=" * 80)
     
     passed_tests = 0
     total_tests = len(test_results)
@@ -428,61 +443,24 @@ def main():
         if passed:
             passed_tests += 1
     
-    print("-" * 70)
+    print("-" * 80)
     print(f"Total Tests: {total_tests}")
     print(f"Passed: {passed_tests}")
     print(f"Failed: {total_tests - passed_tests}")
+    print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
     
-    # Diagnosis
-    print("\n" + "=" * 70)
-    print("DIAGNOSIS AND FINDINGS")
-    print("=" * 70)
-    
-    if not customer_found:
-        print("🔍 ISSUE: No customer found in room 203")
-        print("   - Check if customer is properly checked in")
-        print("   - Verify room number is correct")
-    
-    if not orders_found:
-        print("🔍 ISSUE: No restaurant orders found for room 203")
-        print("   - Check if orders were created with correct room number")
-        print("   - Verify order creation process")
-    
-    if not charges_updated:
-        print("🔍 ISSUE: Customer restaurant_charges field not updated")
-        print("   - Restaurant orders are not being linked to customer records")
-        print("   - Payment process may not be updating customer charges")
-    
-    if not checkout_integration_works:
-        print("🔍 CRITICAL ISSUE: Restaurant charges not included in checkout")
-        print("   - This is likely the root cause of the reported problem")
-        print("   - Checkout process needs to include restaurant_charges in billing")
-    
-    if unpaid_found:
-        print(f"🔍 FINDING: {len(unpaid_orders)} unpaid restaurant orders found")
-        print(f"   - Total unpaid amount: {unpaid_amount}")
-        print("   - These orders should be added to customer bill")
-    
-    print("\n" + "=" * 70)
-    print("RECOMMENDATIONS")
-    print("=" * 70)
-    
-    if not checkout_integration_works:
-        print("1. ✅ PRIORITY: Fix checkout process to include restaurant_charges")
-        print("   - Update checkout endpoint to add restaurant_charges to billing")
-        print("   - Ensure restaurant_charges are included in total_amount calculation")
-    
-    if not charges_updated:
-        print("2. ✅ Fix restaurant order payment process")
-        print("   - Ensure room service orders update customer restaurant_charges")
-        print("   - Link paid restaurant orders to customer records")
-    
-    if unpaid_found:
-        print("3. ✅ Handle unpaid restaurant orders")
-        print("   - Add unpaid restaurant orders to customer bill during checkout")
-        print("   - Or require payment of restaurant orders before checkout")
-    
-    return passed_tests == total_tests
+    if passed_tests == total_tests:
+        print("\n🎉 ALL TESTS PASSED!")
+        print("✅ Restaurant charges integration fix is working correctly")
+        print("✅ Room service orders properly add charges to customer records")
+        print("✅ Customer restaurant_charges field updates correctly")
+        print("✅ Checkout process includes restaurant charges")
+        print("✅ Fix works universally across different room numbers")
+        return True
+    else:
+        print(f"\n⚠️ {total_tests - passed_tests} test(s) failed.")
+        print("❌ Restaurant charges integration may still have issues")
+        return False
 
 if __name__ == "__main__":
     success = main()
