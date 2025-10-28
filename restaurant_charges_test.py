@@ -113,59 +113,63 @@ def test_get_checked_in_customers():
         print(f"❌ Get customers failed - Exception: {e}")
         return False, [], None
 
-def test_restaurant_orders_for_room_203():
-    """Test 2: Look for restaurant orders for room 203"""
-    print("\n2. Testing Restaurant Orders for Room 203")
+def test_create_room_service_order(room_number="203", customer_name="Test Customer"):
+    """Create a room service order for testing"""
+    print(f"\n2. Creating Room Service Order for Room {room_number}")
+    
     try:
-        response = requests.get(f"{API_BASE}/restaurant/orders")
-        print(f"Status Code: {response.status_code}")
+        # First get menu items
+        menu_response = requests.get(f"{API_BASE}/restaurant/menu-items", headers=auth_headers)
+        if menu_response.status_code != 200:
+            print("❌ Failed to get menu items")
+            return False, None
+        
+        menu_items = menu_response.json()
+        if not menu_items:
+            print("❌ No menu items available")
+            return False, None
+        
+        # Use first menu item for the order
+        test_item = menu_items[0]
+        print(f"Using menu item: {test_item['name']} - Price: {test_item['price']}")
+        
+        # Create room service order
+        order_data = {
+            "order_type": "room_service",
+            "room_number": room_number,
+            "customer_name": customer_name,
+            "items": [
+                {
+                    "menu_item_id": test_item["id"],
+                    "menu_item_name": test_item["name"],
+                    "quantity": 2,
+                    "unit_price": test_item["price"],
+                    "total_price": test_item["price"] * 2,
+                    "special_notes": "Test order for room service"
+                }
+            ],
+            "notes": "Test room service order for restaurant charges integration"
+        }
+        
+        response = requests.post(f"{API_BASE}/restaurant/orders", json=order_data, headers=auth_headers)
+        print(f"Create Order Status Code: {response.status_code}")
         
         if response.status_code == 200:
-            orders = response.json()
-            print(f"Total restaurant orders: {len(orders)}")
-            
-            # Look for room 203 orders
-            room_203_orders = [o for o in orders if o.get('room_number') == '203']
-            
-            if room_203_orders:
-                print(f"✅ Found {len(room_203_orders)} restaurant order(s) for room 203:")
-                for i, order in enumerate(room_203_orders):
-                    print(f"\n  Order {i+1}:")
-                    print(f"    Order ID: {order.get('id')}")
-                    print(f"    Order Number: {order.get('order_number')}")
-                    print(f"    Order Type: {order.get('order_type')}")
-                    print(f"    Customer Name: {order.get('customer_name')}")
-                    print(f"    Room Number: {order.get('room_number')}")
-                    print(f"    Payment Status: {order.get('payment_status')}")
-                    print(f"    Order Status: {order.get('order_status')}")
-                    print(f"    Total Amount: {order.get('total_amount')}")
-                    print(f"    Payment Method: {order.get('payment_method')}")
-                    print(f"    Order Date: {order.get('order_date')}")
-                    
-                    # Check items
-                    items = order.get('items', [])
-                    print(f"    Items ({len(items)}):")
-                    for item in items:
-                        print(f"      - {item.get('menu_item_name')} x{item.get('quantity')} = {item.get('total_price')}")
-                        if 'Sun Crush' in item.get('menu_item_name', ''):
-                            print(f"        ✅ Found Sun Crush item!")
-                
-                return True, room_203_orders
-            else:
-                print("❌ No restaurant orders found for room 203")
-                
-                # Show all orders for debugging
-                print("All restaurant orders:")
-                for order in orders:
-                    print(f"  Order {order.get('order_number')}: Room {order.get('room_number')} - {order.get('customer_name')} - Status: {order.get('payment_status')}")
-                
-                return False, []
+            order = response.json()
+            print(f"✅ Room service order created successfully")
+            print(f"  Order ID: {order['id']}")
+            print(f"  Order Number: {order['order_number']}")
+            print(f"  Room Number: {order['room_number']}")
+            print(f"  Total Amount: {order['total_amount']}")
+            print(f"  Payment Status: {order['payment_status']}")
+            return True, order
         else:
-            print(f"❌ Failed to get restaurant orders - Status code: {response.status_code}")
-            return False, []
+            print(f"❌ Failed to create order - Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False, None
     except Exception as e:
-        print(f"❌ Exception: {e}")
-        return False, []
+        print(f"❌ Create order failed - Exception: {e}")
+        return False, None
 
 def test_unpaid_restaurant_orders():
     """Test 3: Check for unpaid restaurant orders for room 203"""
