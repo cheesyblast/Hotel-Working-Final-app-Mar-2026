@@ -239,6 +239,9 @@ agent_communication:
   - agent: "testing"
     message: "COMPLETED - Enhanced Complete Database Reset with Cash and Bank Balance Re-initialization testing finished successfully with 100% pass rate (17/17 tests). All review request scenarios verified: ✅ POST /admin/complete-reset clears setup_wizard and returns requires_setup: true ✅ GET /setup/status returns is_completed: false after reset ✅ All expected collections cleared (rooms, bookings, customers, expenses, incomes, activity_logs, daily_sales) ✅ Hotel settings preserved, setup_wizard reset ✅ reset_summary includes setup_wizard_reset: true ✅ Activity logging includes appropriate reset information ✅ Admin authentication required ✅ Post-reset setup functionality works with new balance initialization. Fixed MongoDB BSON date encoding issue during testing. Feature is production-ready and fully functional."
 
+  - agent: "testing"
+    message: "CRITICAL BUG FOUND - Restaurant charges integration for room 203 is broken due to field mismatch in payment processing. Investigation revealed: ✅ Customer 'Thota Kumar' is checked into room 203 ✅ Found 3 unpaid Sun Crush orders totaling 1050 LKR ✅ Payment processing endpoint works but customer lookup fails ❌ ROOT CAUSE: Lines 3984 and 3989 in /app/backend/server.py use 'room_number' field but Customer model uses 'current_room' field ❌ This prevents restaurant charges from being added to customer records ❌ Checkout shows 0 restaurant charges because they were never added to customer. IMMEDIATE FIX: Change 'room_number' to 'current_room' in restaurant payment code. This explains why restaurant items don't show during checkout - the integration is broken at the database level."
+
   - task: "Setup Wizard Backend Implementation"
     implemented: true
     working: true
