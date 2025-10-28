@@ -3880,7 +3880,7 @@ async def create_restaurant_order(
     # Calculate totals
     subtotal = sum(item.total_price for item in order.items)
     tax_amount = subtotal * (tax_rate / 100)  # Tax from hotel settings
-    service_charge = subtotal * 0.10  # 10% service charge (configurable)
+    service_charge = subtotal * (order.service_charge_rate / 100)  # Configurable service charge rate
     total_amount = subtotal + tax_amount + service_charge
     
     # Get table/staff details
