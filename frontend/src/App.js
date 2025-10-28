@@ -6397,12 +6397,12 @@ const Restaurant = () => {
                   <span className="font-medium text-white">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (hotelSettings.tax_rate || 0) / 100).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Service Charge (10%):</span>
-                  <span className="font-medium text-white">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * 0.1).toFixed(2)}</span>
+                  <span className="text-gray-400">Service Charge ({newOrder.service_charge_rate}%):</span>
+                  <span className="font-medium text-white">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (newOrder.service_charge_rate / 100)).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold">
                   <span className="text-white">Total:</span>
-                  <span className="text-blue-400">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (1 + (hotelSettings.tax_rate || 0) / 100 + 0.1)).toFixed(2)}</span>
+                  <span className="text-blue-400">LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (1 + (hotelSettings.tax_rate || 0) / 100 + newOrder.service_charge_rate / 100)).toFixed(2)}</span>
                 </div>
               </div>
               
