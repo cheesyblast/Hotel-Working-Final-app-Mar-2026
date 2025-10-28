@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Restaurant Charges Integration Test for Room 203
-Investigates the specific issue where restaurant items (Sun Crush) were added for 
-a checked-in customer in room 203, but charges are not showing during checkout.
+Restaurant Charges Integration Test for Room Service Orders
+Tests the critical fix for restaurant charges integration where payment processing
+now correctly uses "current_room" field to find customers instead of "room_number".
 """
 
 import requests
@@ -30,8 +30,55 @@ if not BASE_URL:
 API_BASE = f"{BASE_URL}/api"
 
 print(f"Testing Restaurant Charges Integration at: {API_BASE}")
-print("Investigating Room 203 Restaurant Charges Issue")
+print("Testing the critical fix for room service order billing")
 print("=" * 80)
+
+# Global variables for authentication
+auth_token = None
+auth_headers = {}
+
+def authenticate():
+    """Authenticate as admin to get access token"""
+    global auth_token, auth_headers
+    print("\n🔐 Authenticating as admin...")
+    
+    try:
+        login_data = {
+            "username": "admin",
+            "password": "admin123"
+        }
+        response = requests.post(f"{API_BASE}/auth/login", json=login_data)
+        
+        if response.status_code == 200:
+            token_data = response.json()
+            auth_token = token_data["access_token"]
+            auth_headers = {"Authorization": f"Bearer {auth_token}"}
+            print("✅ Authentication successful")
+            return True
+        else:
+            print(f"❌ Authentication failed - Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Authentication failed - Exception: {e}")
+        return False
+
+def setup_test_data():
+    """Initialize test data and ensure we have the required setup"""
+    print("\n📋 Setting up test data...")
+    
+    try:
+        # Initialize sample data
+        response = requests.post(f"{API_BASE}/init-data", headers=auth_headers)
+        if response.status_code != 200:
+            print(f"❌ Failed to initialize sample data - Status: {response.status_code}")
+            return False
+        
+        print("✅ Sample data initialized")
+        return True
+    except Exception as e:
+        print(f"❌ Setup failed - Exception: {e}")
+        return False
 
 def test_room_203_customer_status():
     """Test 1: Check if there's a customer checked into room 203"""
