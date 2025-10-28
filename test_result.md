@@ -143,12 +143,15 @@ backend:
 
   - task: "Restaurant Order Management System"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
+    stuck_count: 1
+    priority: "critical"
+    needs_retesting: false
     status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL BUG IDENTIFIED - Restaurant charges integration for room service orders is broken. Root cause: In the restaurant order payment endpoint (POST /api/restaurant/orders/{order_id}/pay), lines 3984 and 3989 use 'room_number' field to find customers, but the Customer model uses 'current_room' field. This field mismatch prevents restaurant charges from being added to customer records during room service order payments. Investigation findings: 1) Found 3 unpaid Sun Crush orders for room 203 totaling 1050 LKR, 2) Payment processing succeeds but customer lookup fails due to field mismatch, 3) Restaurant charges remain at 0 in customer records, 4) Checkout process doesn't include restaurant charges because they were never added to customer record. FIX NEEDED: Change lines 3984 and 3989 in /app/backend/server.py from 'room_number' to 'current_room' to match Customer model field name."
       - working: true
         agent: "main"
         comment: "Implemented comprehensive restaurant order management system with RestaurantOrder, RestaurantOrderItem, and RestaurantOrderCreate models. Added CRUD endpoints for restaurant orders: GET /api/restaurant/orders, POST /api/restaurant/orders, POST /api/restaurant/orders/{order_id}/pay. Order creation includes automatic order number generation, subtotal calculation, and table/room service support. Payment processing updates order status and creates income records. All endpoints require Admin or Restaurant Manager authentication."
