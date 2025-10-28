@@ -199,24 +199,51 @@ def test_pay_room_service_order_with_room_bill(order, room_number="203"):
         print(f"❌ Payment failed - Exception: {e}")
         return False
 
-def test_customer_restaurant_charges_field(customer):
-    """Test 4: Check if customer record has restaurant_charges field updated"""
-    print("\n4. Testing Customer Restaurant Charges Field")
+def test_verify_customer_restaurant_charges(room_number="203", expected_amount=None):
+    """Verify that customer restaurant_charges field is updated correctly"""
+    print(f"\n4. Verifying Customer Restaurant Charges for Room {room_number}")
     
-    if not customer:
-        print("❌ No customer data available for testing")
-        return False
-    
-    restaurant_charges = customer.get('restaurant_charges', 0)
-    print(f"Customer restaurant_charges field: {restaurant_charges}")
-    
-    if restaurant_charges > 0:
-        print(f"✅ Customer has restaurant charges: {restaurant_charges}")
-        return True
-    else:
-        print("❌ Customer restaurant_charges field is 0 or missing")
-        print("This indicates restaurant orders are not being added to customer bill")
-        return False
+    try:
+        response = requests.get(f"{API_BASE}/customers/checked-in", headers=auth_headers)
+        
+        if response.status_code == 200:
+            customers = response.json()
+            
+            # Find customer in specified room
+            target_customer = None
+            for customer in customers:
+                if customer['current_room'] == room_number:
+                    target_customer = customer
+                    break
+            
+            if target_customer:
+                restaurant_charges = target_customer.get('restaurant_charges', 0.0)
+                print(f"✅ Found customer: {target_customer['name']}")
+                print(f"  Current restaurant charges: {restaurant_charges}")
+                
+                if expected_amount is not None:
+                    if restaurant_charges >= expected_amount:
+                        print(f"✅ Restaurant charges updated correctly (>= {expected_amount})")
+                        return True, restaurant_charges
+                    else:
+                        print(f"❌ Restaurant charges not updated correctly. Expected >= {expected_amount}, got {restaurant_charges}")
+                        return False, restaurant_charges
+                else:
+                    if restaurant_charges > 0:
+                        print(f"✅ Restaurant charges updated (amount: {restaurant_charges})")
+                        return True, restaurant_charges
+                    else:
+                        print(f"❌ Restaurant charges not updated (still 0)")
+                        return False, restaurant_charges
+            else:
+                print(f"❌ Customer not found in room {room_number}")
+                return False, 0
+        else:
+            print(f"❌ Failed to get customers - Status: {response.status_code}")
+            return False, 0
+    except Exception as e:
+        print(f"❌ Verify charges failed - Exception: {e}")
+        return False, 0
 
 def test_restaurant_order_payment_process():
     """Test 5: Test restaurant order payment process for room service orders"""
