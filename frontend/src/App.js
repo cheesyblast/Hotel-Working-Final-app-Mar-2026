@@ -6145,7 +6145,7 @@ const Restaurant = () => {
                   setShowOrderModal(false);
                   setNewOrder({
                     order_type: 'table', table_id: '', room_number: '', customer_name: '',
-                    items: [], waiter_id: '', notes: ''
+                    items: [], waiter_id: '', notes: '', service_charge_rate: 10
                   });
                   setOrderItems([]);
                 }}
