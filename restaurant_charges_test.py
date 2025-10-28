@@ -171,53 +171,33 @@ def test_create_room_service_order(room_number="203", customer_name="Test Custom
         print(f"❌ Create order failed - Exception: {e}")
         return False, None
 
-def test_unpaid_restaurant_orders():
-    """Test 3: Check for unpaid restaurant orders for room 203"""
-    print("\n3. Testing Unpaid Restaurant Orders for Room 203")
+def test_pay_room_service_order_with_room_bill(order, room_number="203"):
+    """Pay room service order with 'add to room bill' option"""
+    print(f"\n3. Paying Room Service Order with 'Add to Room Bill'")
+    
     try:
-        response = requests.get(f"{API_BASE}/restaurant/orders")
-        print(f"Status Code: {response.status_code}")
+        order_id = order["id"]
+        payment_data = {
+            "payment_method": "Cash",
+            "add_to_room_bill": True
+        }
+        
+        response = requests.post(f"{API_BASE}/restaurant/orders/{order_id}/pay", 
+                               json=payment_data, headers=auth_headers)
+        print(f"Payment Status Code: {response.status_code}")
         
         if response.status_code == 200:
-            orders = response.json()
-            
-            # Look for unpaid room 203 orders
-            unpaid_room_203_orders = [
-                o for o in orders 
-                if o.get('room_number') == '203' and o.get('payment_status') == 'Pending'
-            ]
-            
-            if unpaid_room_203_orders:
-                print(f"✅ Found {len(unpaid_room_203_orders)} unpaid restaurant order(s) for room 203:")
-                total_unpaid_amount = 0
-                for order in unpaid_room_203_orders:
-                    amount = order.get('total_amount', 0)
-                    total_unpaid_amount += amount
-                    print(f"  Order {order.get('order_number')}: {amount} - Status: {order.get('payment_status')}")
-                
-                print(f"  Total unpaid amount: {total_unpaid_amount}")
-                return True, unpaid_room_203_orders, total_unpaid_amount
-            else:
-                print("❌ No unpaid restaurant orders found for room 203")
-                
-                # Check if there are paid orders
-                paid_room_203_orders = [
-                    o for o in orders 
-                    if o.get('room_number') == '203' and o.get('payment_status') == 'Paid'
-                ]
-                
-                if paid_room_203_orders:
-                    print(f"ℹ️ Found {len(paid_room_203_orders)} paid restaurant order(s) for room 203")
-                    for order in paid_room_203_orders:
-                        print(f"  Order {order.get('order_number')}: {order.get('total_amount')} - Status: {order.get('payment_status')}")
-                
-                return False, [], 0
+            result = response.json()
+            print(f"✅ Payment processed successfully")
+            print(f"Response: {result}")
+            return True
         else:
-            print(f"❌ Failed to get restaurant orders - Status code: {response.status_code}")
-            return False, [], 0
+            print(f"❌ Payment failed - Status: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
     except Exception as e:
-        print(f"❌ Exception: {e}")
-        return False, [], 0
+        print(f"❌ Payment failed - Exception: {e}")
+        return False
 
 def test_customer_restaurant_charges_field(customer):
     """Test 4: Check if customer record has restaurant_charges field updated"""
