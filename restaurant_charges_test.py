@@ -245,99 +245,73 @@ def test_verify_customer_restaurant_charges(room_number="203", expected_amount=N
         print(f"❌ Verify charges failed - Exception: {e}")
         return False, 0
 
-def test_restaurant_order_payment_process():
-    """Test 5: Test restaurant order payment process for room service orders"""
-    print("\n5. Testing Restaurant Order Payment Process")
-    
-    # First, create a test room service order for room 203
-    print("Creating test room service order for room 203...")
+def test_checkout_includes_restaurant_charges(room_number="203"):
+    """Test that checkout process includes restaurant charges"""
+    print(f"\n5. Testing Checkout Process Includes Restaurant Charges")
     
     try:
-        # Get menu items first
-        menu_response = requests.get(f"{API_BASE}/restaurant/menu-items")
-        if menu_response.status_code != 200:
-            print("❌ Failed to get menu items")
+        # Get customer for checkout
+        response = requests.get(f"{API_BASE}/customers/checked-in", headers=auth_headers)
+        if response.status_code != 200:
+            print("❌ Failed to get customers for checkout test")
             return False
         
-        menu_items = menu_response.json()
-        if not menu_items:
-            print("❌ No menu items available")
+        customers = response.json()
+        target_customer = None
+        for customer in customers:
+            if customer['current_room'] == room_number:
+                target_customer = customer
+                break
+        
+        if not target_customer:
+            print(f"❌ No customer found in room {room_number} for checkout test")
             return False
         
-        # Use first menu item for test
-        test_item = menu_items[0]
+        customer_id = target_customer['id']
+        restaurant_charges_before = target_customer.get('restaurant_charges', 0.0)
         
-        # Create room service order
-        order_data = {
-            "order_type": "room_service",
-            "room_number": "203",
-            "customer_name": "Test Customer Room 203",
-            "items": [
-                {
-                    "menu_item_id": test_item['id'],
-                    "menu_item_name": test_item['name'],
-                    "quantity": 2,
-                    "unit_price": test_item['price'],
-                    "total_price": test_item['price'] * 2,
-                    "special_notes": "Test order for room 203"
-                }
-            ],
-            "notes": "Test room service order for integration testing"
+        print(f"Customer: {target_customer['name']}")
+        print(f"Restaurant charges before checkout: {restaurant_charges_before}")
+        
+        # Perform checkout
+        checkout_data = {
+            "customer_id": customer_id,
+            "additional_amount": 0.0,
+            "discount_amount": 0.0,
+            "payment_method": "Cash"
         }
         
-        create_response = requests.post(f"{API_BASE}/restaurant/orders", json=order_data)
-        print(f"Create Order Status Code: {create_response.status_code}")
+        checkout_response = requests.post(f"{API_BASE}/checkout", json=checkout_data, headers=auth_headers)
+        print(f"Checkout Status Code: {checkout_response.status_code}")
         
-        if create_response.status_code == 200:
-            order_result = create_response.json()
-            order_id = order_result.get('id')
-            print(f"✅ Created test order: {order_id}")
-            print(f"Order total: {order_result.get('total_amount')}")
+        if checkout_response.status_code == 200:
+            checkout_result = checkout_response.json()
+            print(f"✅ Checkout completed successfully")
             
-            # Now test payment process
-            print("Testing order payment process...")
-            payment_response = requests.post(f"{API_BASE}/restaurant/orders/{order_id}/pay")
-            print(f"Payment Status Code: {payment_response.status_code}")
-            
-            if payment_response.status_code == 200:
-                payment_result = payment_response.json()
-                print(f"✅ Payment processed: {payment_result}")
+            # Check if billing details include restaurant charges
+            billing_details = checkout_result.get("billing_details", {})
+            if billing_details:
+                restaurant_charges_in_bill = billing_details.get("restaurant_charges", 0.0)
+                total_amount = billing_details.get("total_amount", 0.0)
                 
-                # Check if customer charges were updated
-                print("Checking if customer charges were updated...")
-                customers_response = requests.get(f"{API_BASE}/customers/checked-in")
-                if customers_response.status_code == 200:
-                    customers = customers_response.json()
-                    room_203_customers = [c for c in customers if c.get('current_room') == '203']
-                    
-                    if room_203_customers:
-                        updated_customer = room_203_customers[0]
-                        new_restaurant_charges = updated_customer.get('restaurant_charges', 0)
-                        print(f"Updated customer restaurant_charges: {new_restaurant_charges}")
-                        
-                        if new_restaurant_charges > 0:
-                            print("✅ Restaurant charges were added to customer record")
-                            return True
-                        else:
-                            print("❌ Restaurant charges were NOT added to customer record")
-                            return False
-                    else:
-                        print("❌ Could not find room 203 customer after payment")
-                        return False
+                print(f"  Restaurant charges in bill: {restaurant_charges_in_bill}")
+                print(f"  Total amount: {total_amount}")
+                
+                if restaurant_charges_in_bill > 0:
+                    print(f"✅ Restaurant charges included in checkout ({restaurant_charges_in_bill})")
+                    return True
                 else:
-                    print("❌ Failed to get updated customer data")
+                    print(f"❌ Restaurant charges not included in checkout")
                     return False
             else:
-                print(f"❌ Payment failed - Status code: {payment_response.status_code}")
-                print(f"Response: {payment_response.text}")
+                print("❌ No billing details in checkout response")
                 return False
         else:
-            print(f"❌ Failed to create test order - Status code: {create_response.status_code}")
-            print(f"Response: {create_response.text}")
+            print(f"❌ Checkout failed - Status: {checkout_response.status_code}")
+            print(f"Response: {checkout_response.text}")
             return False
-            
     except Exception as e:
-        print(f"❌ Exception during payment process test: {e}")
+        print(f"❌ Checkout test failed - Exception: {e}")
         return False
 
 def test_checkout_integration_with_restaurant_charges(customer):
