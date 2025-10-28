@@ -400,30 +400,37 @@ def main():
     
     test_results = []
     
-    # Test 1: Get checked-in customers and verify room 203
+    # Test 1: Get checked-in customers
     customers_success, customers, room_203_customer = test_get_checked_in_customers()
     test_results.append(("Get Checked-in Customers", customers_success))
     
-    if not customers_success or not room_203_customer:
-        print("❌ Cannot proceed with room 203 specific tests - no customer in room 203")
-        # Still continue with other tests
-    else:
-        # Test 2: Create room service order for room 203
-        order_success, order = test_create_room_service_order("203", room_203_customer['name'])
+    # Use any available customer for testing
+    test_customer = None
+    test_room = None
+    
+    if customers_success and customers:
+        test_customer = customers[0]  # Use first available customer
+        test_room = test_customer['current_room']
+        print(f"\n🎯 Using customer {test_customer['name']} in room {test_room} for testing")
+        
+        # Test 2: Create room service order for available room
+        order_success, order = test_create_room_service_order(test_room, test_customer['name'])
         test_results.append(("Create Room Service Order", order_success))
         
         if order_success and order:
             # Test 3: Pay with add to room bill
-            payment_success = test_pay_room_service_order_with_room_bill(order, "203")
+            payment_success = test_pay_room_service_order_with_room_bill(order, test_room)
             test_results.append(("Pay with Add to Room Bill", payment_success))
             
             # Test 4: Verify customer restaurant charges updated
-            charges_success, charges = test_verify_customer_restaurant_charges("203", order['total_amount'])
+            charges_success, charges = test_verify_customer_restaurant_charges(test_room, order['total_amount'])
             test_results.append(("Verify Restaurant Charges Updated", charges_success))
             
             # Test 5: Verify checkout includes restaurant charges
-            checkout_success = test_checkout_includes_restaurant_charges("203")
+            checkout_success = test_checkout_includes_restaurant_charges(test_room)
             test_results.append(("Checkout Includes Restaurant Charges", checkout_success))
+    else:
+        print("❌ No customers available for testing")
     
     # Test 6: Test multiple room numbers (universal fix verification)
     multiple_rooms_success = test_multiple_room_numbers()
