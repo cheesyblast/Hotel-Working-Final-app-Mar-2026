@@ -6407,6 +6407,32 @@ const Restaurant = () => {
               </div>
               
               <div className="mb-4">
+                <label className="block text-sm text-gray-400 mb-1">Service Charge Rate (%)</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={newOrder.service_charge_rate}
+                    onChange={(e) => setNewOrder({...newOrder, service_charge_rate: parseFloat(e.target.value) || 0})}
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    placeholder="10"
+                  />
+                  <button
+                    onClick={() => setNewOrder({...newOrder, service_charge_rate: 0})}
+                    className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+                    title="Remove service charge"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Service charge: LKR {(orderItems.reduce((sum, item) => sum + item.total_price, 0) * (newOrder.service_charge_rate / 100)).toFixed(2)}
+                </div>
+              </div>
+              
+              <div className="mb-4">
                 <label className="block text-sm text-gray-400 mb-1">Special Notes</label>
                 <textarea
                   value={newOrder.notes}
