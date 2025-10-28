@@ -453,6 +453,7 @@ class RestaurantOrderCreate(BaseModel):
     items: List[RestaurantOrderItem]
     waiter_id: Optional[str] = None
     notes: str = ""
+    service_charge_rate: float = 10.0  # Service charge percentage (default 10%)
 
 # Authentication dependency
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
