@@ -216,10 +216,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Restaurant Order Management System"
     - "Restaurant Menu Category and Item Deletion with Validation"
     - "Restaurant Item and Category Delete Functionality"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Restaurant Order Management System"
   test_all: false
   test_priority: "high_first"
 
