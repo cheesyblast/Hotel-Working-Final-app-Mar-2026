@@ -37,14 +37,26 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 **Files Modified**:
 - `/app/frontend/src/App.js` - Login function now sets Authorization header immediately
-- `/app/backend/server.py` - Status checks updated to handle both variants:
-  - `check_room_availability_for_booking` (line 664)
-  - `check_room_availability` (line 1551)  
-  - `checkout_customer` booking update (line 2208)
-  - `checkin_customer` (line 2385)
-  - `cancel_booking` (line 2435)
+- `/app/backend/server.py` - Status checks updated to handle both variants
 
 **Tests**: All 6 backend tests pass (100% success rate)
+
+### 2026-01-05 - Restaurant Integration with Room Checkout
+**Issue Fixed**: Restaurant room service bills were not showing up during customer checkout.
+
+**Changes Implemented**:
+1. **Auto-add restaurant charges**: Room service orders now automatically add to the customer's `restaurant_charges` when created
+2. **Display in checkout**: Checkout modal now shows "Restaurant Charges" line item in billing details
+3. **Auto-mark as paid**: After checkout, all pending restaurant orders for that room are automatically marked as "Paid" with payment method "Room Bill - [payment method]"
+4. **Total calculation**: Updated `calculateTotal()` to include restaurant charges
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - `create_restaurant_order` - Auto-adds charges to customer record for room service
+  - `checkout_customer` - Auto-marks restaurant orders as paid, returns restaurant_charges in billing
+- `/app/frontend/src/App.js`:
+  - `calculateTotal` - Now includes restaurant_charges
+  - Checkout modal - Added "Restaurant Charges" display line
 
 ---
 
