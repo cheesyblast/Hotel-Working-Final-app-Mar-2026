@@ -661,7 +661,7 @@ async def check_room_availability_for_booking(room_number: str, check_in_date: d
         conflict_query = {
             "$and": [
                 {"room_number": room_number},
-                {"status": {"$in": ["Upcoming", "Checked-in"]}},
+                {"status": {"$in": ["Upcoming", "Checked-in", "Checked In"]}},
                 {
                     "$or": [
                         # Booking starts during requested period
@@ -1548,7 +1548,7 @@ async def check_room_availability(
         # Find conflicting bookings (bookings that overlap with requested dates)
         conflicting_bookings = await db.bookings.find({
             "$and": [
-                {"status": {"$in": ["Upcoming", "Checked-in"]}},
+                {"status": {"$in": ["Upcoming", "Checked-in", "Checked In"]}},
                 {
                     "$or": [
                         # Booking starts during requested period
