@@ -1080,10 +1080,11 @@ const Dashboard = () => {
   const calculateTotal = () => {
     if (!selectedCustomer) return 0;
     const roomCharges = selectedCustomer.room_charges || 500;
+    const restaurantCharges = selectedCustomer.restaurant_charges || 0;
     const advanceAmount = selectedCustomer.advance_amount || 0;
     const additionalAmount = parseFloat(checkoutData.additional_amount) || 0;
     const discountAmount = parseFloat(checkoutData.discount_amount) || 0;
-    return roomCharges + additionalAmount - advanceAmount - discountAmount;
+    return roomCharges + restaurantCharges + additionalAmount - advanceAmount - discountAmount;
   };
 
   const handleNewBooking = async () => {
