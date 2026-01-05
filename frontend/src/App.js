@@ -98,6 +98,10 @@ const AuthProvider = ({ children }) => {
       
       const { access_token } = response.data;
       localStorage.setItem('token', access_token);
+      
+      // Set authorization header immediately before making the next request
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      
       setToken(access_token);
       
       // Get user info
