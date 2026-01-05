@@ -64,7 +64,7 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ### P0 - Verified/User Testing Pending
 - [x] Past-date booking bug fix (COMPLETED & TESTED)
-- [ ] Restaurant charges appearing at checkout (USER VERIFICATION PENDING)
+- [x] Restaurant charges appearing at checkout (COMPLETED & TESTED)
 - [ ] Short-time booking checkout fix (USER VERIFICATION PENDING)
 - [ ] Initial cash/bank balance in setup wizard (USER VERIFICATION PENDING)
 
