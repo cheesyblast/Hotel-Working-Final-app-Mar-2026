@@ -2432,7 +2432,7 @@ async def cancel_booking(
             {"room_number": room_number, "status": "Reserved"},
             {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
         )
-    elif booking_status == "Checked-in":
+    elif booking_status in ["Checked-in", "Checked In"]:
         # If guest is currently checked in, remove from customers and free up room
         await db.customers.delete_one({
             "name": guest_name,
