@@ -2205,7 +2205,7 @@ async def checkout_customer(checkout: CheckoutRequest):
         {
             "guest_name": customer.get('name'),
             "room_number": customer.get('current_room'),
-            "status": "Checked-in"
+            "status": {"$in": ["Checked-in", "Checked In"]}
         },
         {"$set": {"status": "Completed"}}
     )
