@@ -3925,6 +3925,17 @@ async def create_restaurant_order(
     
     await db.restaurant_orders.insert_one(new_order.dict())
     
+    # For room service orders, automatically add to customer's restaurant charges
+    if order.order_type == "room_service" and order.room_number:
+        customer = await db.customers.find_one({"current_room": order.room_number, "is_checked_out": False})
+        if customer:
+            current_charges = customer.get("restaurant_charges", 0.0)
+            new_charges = current_charges + total_amount
+            await db.customers.update_one(
+                {"id": customer["id"]},
+                {"$set": {"restaurant_charges": new_charges}}
+            )
+    
     return new_order
 
 @api_router.put("/restaurant/orders/{order_id}/status")
