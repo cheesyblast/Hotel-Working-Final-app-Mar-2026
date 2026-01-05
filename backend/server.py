@@ -2382,7 +2382,7 @@ async def checkin_customer(checkin: CheckinRequest):
     # Update booking status to checked-in
     await db.bookings.update_one(
         {"id": checkin.booking_id},
-        {"$set": {"status": "Checked-in"}}
+        {"$set": {"status": "Checked In"}}
     )
     
     # Log activity
