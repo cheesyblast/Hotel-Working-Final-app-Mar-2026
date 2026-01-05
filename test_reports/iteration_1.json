@@ -1,0 +1,37 @@
+{
+  "summary": "Completed testing of Hotel Management System past-date booking bug fix. All backend API tests pass (6/6). The fix addresses: 1) Race condition in frontend login where axios Authorization header wasn't set before /api/auth/me call, 2) Status inconsistency in backend where 'Checked-in' and 'Checked In' were used interchangeably.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_past_date_booking.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "The fix correctly sets axios.defaults.headers.common['Authorization'] immediately after login before calling /api/auth/me",
+    "Backend now handles both 'Checked-in' and 'Checked In' status variants in all queries",
+    "Past-date booking with 'Checked In' status correctly creates customer record and updates room status to 'Occupied'"
+  ],
+  "updated_files": [
+    "/app/tests/test_past_date_booking.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "admin_username": "admin",
+    "admin_password": "admin123"
+  },
+  "seed_data_creation": "Test bookings created with TEST_ prefix for cleanup",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Past-date booking bug fix verified. All 6 backend tests pass: login, /api/auth/me endpoint (no 403), past-date booking with 'Checked In' status, past-date booking with 'Upcoming' status, regular check-in flow, and status variant queries. Frontend login and dashboard work correctly. The fix ensures axios Authorization header is set immediately after login before making authenticated requests."
+}
