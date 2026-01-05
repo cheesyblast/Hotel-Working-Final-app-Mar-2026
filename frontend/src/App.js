@@ -1906,6 +1906,10 @@ const Dashboard = () => {
                     <span>LKR {selectedCustomer?.room_charges || 500}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span>Restaurant Charges:</span>
+                    <span>LKR {selectedCustomer?.restaurant_charges || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span>Advance Paid:</span>
                     <span>-LKR {selectedCustomer?.advance_amount || 0}</span>
                   </div>
