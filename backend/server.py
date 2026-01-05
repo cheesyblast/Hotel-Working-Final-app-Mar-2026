@@ -2230,10 +2230,24 @@ async def checkout_customer(checkout: CheckoutRequest):
         }
     )
     
+    # Mark all pending restaurant orders for this room as paid
+    await db.restaurant_orders.update_many(
+        {
+            "room_number": customer.get('current_room'),
+            "payment_status": "Pending"
+        },
+        {"$set": {
+            "payment_status": "Paid",
+            "payment_method": f"Room Bill - {checkout.payment_method}",
+            "order_status": "Completed"
+        }}
+    )
+    
     return {
         "message": "Customer checked out successfully",
         "billing_details": {
             "room_charges": base_room_charges,
+            "restaurant_charges": restaurant_charges,
             "advance_amount": advance_amount,
             "additional_charges": additional_amount,
             "discount_amount": discount_amount,
