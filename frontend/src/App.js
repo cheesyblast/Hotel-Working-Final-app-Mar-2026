@@ -1162,6 +1162,7 @@ const Dashboard = () => {
         stay_type: 'Night Stay',
         rate_per_night: '',
         booking_amount: 0,
+        commission_amount: 0,
         booking_channel_id: '',
         booking_channel_name: 'Direct',
         additional_notes: ''
