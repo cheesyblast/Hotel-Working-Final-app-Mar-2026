@@ -1133,6 +1133,7 @@ const Dashboard = () => {
       const bookingData = {
         ...newBookingData,
         booking_amount: newBookingData.booking_amount, // This is the calculated total
+        commission_amount: parseFloat(newBookingData.commission_amount) || 0,
         booking_status: status
       };
 
