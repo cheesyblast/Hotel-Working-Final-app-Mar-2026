@@ -1349,13 +1349,14 @@ async def get_commission_monthly_breakdown(
     """
     target_year = year or datetime.now().year
     
-    # Get bookings for the year
+    # Get bookings for the year (exclude cancelled bookings)
     start_date = datetime(target_year, 1, 1)
     end_date = datetime(target_year + 1, 1, 1)
     
     bookings = await db.bookings.find({
         "created_at": {"$gte": start_date, "$lt": end_date},
-        "commission_amount": {"$gt": 0}
+        "commission_amount": {"$gt": 0},
+        "status": {"$ne": "Cancelled"}
     }).to_list(10000)
     
     # Aggregate by month and channel
