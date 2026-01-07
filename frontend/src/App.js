@@ -8155,6 +8155,7 @@ function AppContent() {
             <Route path="/guests" element={<Guests />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/commissions" element={<Commissions />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
