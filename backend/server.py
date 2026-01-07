@@ -1264,6 +1264,194 @@ async def toggle_booking_channel_status(
     
     return {"message": f"Booking channel {'activated' if new_status else 'deactivated'} successfully"}
 
+# Commission Tracking Routes
+@api_router.get("/commissions/summary")
+async def get_commission_summary(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """
+    Get commission summary by booking channel
+    Returns total commissions payable per channel, optionally filtered by year/month
+    """
+    # Default to current year/month if not specified
+    now = datetime.now()
+    target_year = year or now.year
+    target_month = month  # None means all months for the year
+    
+    # Build date filter for bookings
+    if target_month:
+        # Filter for specific month
+        start_date = datetime(target_year, target_month, 1)
+        if target_month == 12:
+            end_date = datetime(target_year + 1, 1, 1)
+        else:
+            end_date = datetime(target_year, target_month + 1, 1)
+    else:
+        # Filter for entire year
+        start_date = datetime(target_year, 1, 1)
+        end_date = datetime(target_year + 1, 1, 1)
+    
+    # Get all booking channels
+    channels = await db.booking_channels.find().to_list(1000)
+    channel_map = {ch['id']: ch for ch in channels}
+    
+    # Get bookings with commission for the period
+    bookings = await db.bookings.find({
+        "created_at": {"$gte": start_date, "$lt": end_date},
+        "commission_amount": {"$gt": 0}
+    }).to_list(10000)
+    
+    # Aggregate commissions by channel
+    channel_commissions = {}
+    for booking in bookings:
+        channel_id = booking.get('booking_channel_id', '')
+        channel_name = booking.get('booking_channel_name', 'Direct')
+        commission = booking.get('commission_amount', 0)
+        
+        if channel_name not in channel_commissions:
+            channel_commissions[channel_name] = {
+                'channel_id': channel_id,
+                'channel_name': channel_name,
+                'total_commission': 0,
+                'booking_count': 0,
+                'total_booking_amount': 0
+            }
+        
+        channel_commissions[channel_name]['total_commission'] += commission
+        channel_commissions[channel_name]['booking_count'] += 1
+        channel_commissions[channel_name]['total_booking_amount'] += booking.get('booking_amount', 0)
+    
+    # Convert to list and sort by total commission
+    summary = list(channel_commissions.values())
+    summary.sort(key=lambda x: x['total_commission'], reverse=True)
+    
+    # Calculate grand total
+    grand_total = sum(ch['total_commission'] for ch in summary)
+    
+    return {
+        'year': target_year,
+        'month': target_month,
+        'channels': summary,
+        'grand_total': grand_total,
+        'total_bookings': sum(ch['booking_count'] for ch in summary)
+    }
+
+@api_router.get("/commissions/monthly-breakdown")
+async def get_commission_monthly_breakdown(
+    year: Optional[int] = None,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """
+    Get monthly commission breakdown for all channels for a given year
+    """
+    target_year = year or datetime.now().year
+    
+    # Get bookings for the year
+    start_date = datetime(target_year, 1, 1)
+    end_date = datetime(target_year + 1, 1, 1)
+    
+    bookings = await db.bookings.find({
+        "created_at": {"$gte": start_date, "$lt": end_date},
+        "commission_amount": {"$gt": 0}
+    }).to_list(10000)
+    
+    # Aggregate by month and channel
+    monthly_data = {}
+    for month in range(1, 13):
+        monthly_data[month] = {}
+    
+    for booking in bookings:
+        booking_month = booking['created_at'].month
+        channel_name = booking.get('booking_channel_name', 'Direct')
+        commission = booking.get('commission_amount', 0)
+        
+        if channel_name not in monthly_data[booking_month]:
+            monthly_data[booking_month][channel_name] = 0
+        monthly_data[booking_month][channel_name] += commission
+    
+    # Format response
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 
+              'July', 'August', 'September', 'October', 'November', 'December']
+    
+    result = []
+    for month_num in range(1, 13):
+        month_entry = {
+            'month': month_num,
+            'month_name': months[month_num - 1],
+            'channels': monthly_data[month_num],
+            'total': sum(monthly_data[month_num].values())
+        }
+        result.append(month_entry)
+    
+    return {
+        'year': target_year,
+        'monthly_breakdown': result,
+        'year_total': sum(m['total'] for m in result)
+    }
+
+@api_router.get("/commissions/channel-details/{channel_id}")
+async def get_channel_commission_details(
+    channel_id: str,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """
+    Get detailed commission bookings for a specific channel
+    """
+    target_year = year or datetime.now().year
+    
+    # Build date filter
+    if month:
+        start_date = datetime(target_year, month, 1)
+        if month == 12:
+            end_date = datetime(target_year + 1, 1, 1)
+        else:
+            end_date = datetime(target_year, month + 1, 1)
+    else:
+        start_date = datetime(target_year, 1, 1)
+        end_date = datetime(target_year + 1, 1, 1)
+    
+    # Get channel info
+    channel = await db.booking_channels.find_one({"id": channel_id})
+    
+    # Get bookings for this channel
+    bookings = await db.bookings.find({
+        "booking_channel_id": channel_id,
+        "created_at": {"$gte": start_date, "$lt": end_date},
+        "commission_amount": {"$gt": 0}
+    }).sort("created_at", -1).to_list(1000)
+    
+    # Format bookings
+    formatted_bookings = []
+    total_commission = 0
+    for booking in bookings:
+        commission = booking.get('commission_amount', 0)
+        total_commission += commission
+        
+        formatted_bookings.append({
+            'id': booking['id'],
+            'guest_name': booking['guest_name'],
+            'room_number': booking['room_number'],
+            'check_in_date': booking['check_in_date'].isoformat() if isinstance(booking['check_in_date'], (date, datetime)) else str(booking['check_in_date']),
+            'check_out_date': booking['check_out_date'].isoformat() if isinstance(booking['check_out_date'], (date, datetime)) else str(booking['check_out_date']),
+            'booking_amount': booking.get('booking_amount', 0),
+            'commission_amount': commission,
+            'status': booking.get('status', 'Unknown'),
+            'created_at': booking['created_at'].isoformat() if isinstance(booking['created_at'], datetime) else str(booking['created_at'])
+        })
+    
+    return {
+        'channel': channel if channel else {'channel_name': 'Unknown'},
+        'year': target_year,
+        'month': month,
+        'bookings': formatted_bookings,
+        'total_commission': total_commission,
+        'booking_count': len(formatted_bookings)
+    }
+
 # User Management Routes
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_users(current_user: UserResponse = Depends(get_current_active_admin)):
