@@ -153,6 +153,7 @@ class BookingCreate(BaseModel):
     check_out_date: Optional[date] = None
     stay_type: str = "Night Stay"
     booking_amount: float = 0.0
+    commission_amount: float = 0.0  # Commission payable to booking channel
     booking_channel_id: str = ""  # ID of the booking channel
     booking_channel_name: str = "Direct"  # Name of the booking channel for display
     additional_notes: str = ""
