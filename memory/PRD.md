@@ -41,6 +41,29 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 **Tests**: All 6 backend tests pass (100% success rate)
 
+### 2026-01-07 - Commission Tracking Feature
+**Feature**: Added booking channel commission tracking system
+
+**Changes Implemented**:
+1. **Commission Field in Bookings**: Added `commission_amount` field to Booking model and booking form
+2. **Commissions Page**: New page accessible from navigation bar (before Reports)
+   - Channel commission summary with real-time totals
+   - Monthly breakdown table for year-over-year tracking
+   - Detailed view per channel showing individual bookings
+3. **API Endpoints**:
+   - `GET /api/commissions/summary` - Summary by channel with filters
+   - `GET /api/commissions/monthly-breakdown` - Monthly totals for a year
+   - `GET /api/commissions/channel-details/{channel_id}` - Booking details per channel
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - Added `commission_amount` to Booking and BookingCreate models
+  - Added 3 new API endpoints for commission tracking
+- `/app/frontend/src/App.js`:
+  - Added Commission field to new booking form
+  - Created Commissions component with summary, breakdown, and details views
+  - Added "Commissions" navigation tab before "Reports"
+
 ### 2026-01-05 - Restaurant Integration with Room Checkout
 **Issue Fixed**: Restaurant room service bills were not showing up during customer checkout.
 
