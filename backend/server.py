@@ -1419,11 +1419,12 @@ async def get_channel_commission_details(
     # Get channel info
     channel = await db.booking_channels.find_one({"id": channel_id}, {"_id": 0})
     
-    # Get bookings for this channel
+    # Get bookings for this channel (exclude cancelled bookings)
     bookings = await db.bookings.find({
         "booking_channel_id": channel_id,
         "created_at": {"$gte": start_date, "$lt": end_date},
-        "commission_amount": {"$gt": 0}
+        "commission_amount": {"$gt": 0},
+        "status": {"$ne": "Cancelled"}
     }).sort("created_at", -1).to_list(1000)
     
     # Format bookings
