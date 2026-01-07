@@ -5200,6 +5200,7 @@ const Navigation = () => {
     { path: '/guests', label: 'Guests' },
     { path: '/bookings', label: 'Bookings' },
     { path: '/expenses', label: 'Inc & Exp' },
+    { path: '/commissions', label: 'Commissions' },
     { path: '/reports', label: 'Reports' },
     { path: '/settings', label: 'Settings' }
   ];
