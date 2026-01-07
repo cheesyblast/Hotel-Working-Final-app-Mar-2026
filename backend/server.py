@@ -1297,10 +1297,11 @@ async def get_commission_summary(
     channels = await db.booking_channels.find().to_list(1000)
     channel_map = {ch['id']: ch for ch in channels}
     
-    # Get bookings with commission for the period
+    # Get bookings with commission for the period (exclude cancelled bookings)
     bookings = await db.bookings.find({
         "created_at": {"$gte": start_date, "$lt": end_date},
-        "commission_amount": {"$gt": 0}
+        "commission_amount": {"$gt": 0},
+        "status": {"$ne": "Cancelled"}
     }).to_list(10000)
     
     # Aggregate commissions by channel
