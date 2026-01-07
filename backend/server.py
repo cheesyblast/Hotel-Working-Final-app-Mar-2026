@@ -1415,7 +1415,7 @@ async def get_channel_commission_details(
         end_date = datetime(target_year + 1, 1, 1)
     
     # Get channel info
-    channel = await db.booking_channels.find_one({"id": channel_id})
+    channel = await db.booking_channels.find_one({"id": channel_id}, {"_id": 0})
     
     # Get bookings for this channel
     bookings = await db.bookings.find({
