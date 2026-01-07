@@ -2682,6 +2682,297 @@ const Dashboard = () => {
   );
 };
 
+// Commissions Component
+const Commissions = () => {
+  const [commissionSummary, setCommissionSummary] = useState(null);
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [channelDetails, setChannelDetails] = useState(null);
+
+  const months = [
+    { value: null, label: 'All Months' },
+    { value: 1, label: 'January' },
+    { value: 2, label: 'February' },
+    { value: 3, label: 'March' },
+    { value: 4, label: 'April' },
+    { value: 5, label: 'May' },
+    { value: 6, label: 'June' },
+    { value: 7, label: 'July' },
+    { value: 8, label: 'August' },
+    { value: 9, label: 'September' },
+    { value: 10, label: 'October' },
+    { value: 11, label: 'November' },
+    { value: 12, label: 'December' }
+  ];
+
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
+  useEffect(() => {
+    fetchCommissionData();
+  }, [selectedYear, selectedMonth]);
+
+  const fetchCommissionData = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('year', selectedYear);
+      if (selectedMonth) params.append('month', selectedMonth);
+
+      const [summaryRes, breakdownRes] = await Promise.all([
+        axios.get(`${API}/commissions/summary?${params.toString()}`),
+        axios.get(`${API}/commissions/monthly-breakdown?year=${selectedYear}`)
+      ]);
+
+      setCommissionSummary(summaryRes.data);
+      setMonthlyBreakdown(breakdownRes.data);
+    } catch (error) {
+      console.error('Error fetching commission data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchChannelDetails = async (channelId, channelName) => {
+    try {
+      const params = new URLSearchParams();
+      params.append('year', selectedYear);
+      if (selectedMonth) params.append('month', selectedMonth);
+
+      const response = await axios.get(`${API}/commissions/channel-details/${channelId}?${params.toString()}`);
+      setChannelDetails(response.data);
+      setSelectedChannel(channelName);
+    } catch (error) {
+      console.error('Error fetching channel details:', error);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return `LKR ${(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 min-h-screen bg-gray-900">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-white">Loading commission data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 min-h-screen bg-gray-900">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-800 to-indigo-800 rounded-lg p-6 mb-6">
+        <h2 className="text-2xl font-bold text-white mb-2">Commission Tracking</h2>
+        <p className="text-purple-200">Track and manage booking channel commissions</p>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gray-800 rounded-lg p-4 mb-6">
+        <div className="flex flex-wrap gap-4 items-center">
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Year</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="bg-gray-700 text-white px-4 py-2 rounded-md border border-gray-600 focus:ring-2 focus:ring-purple-500"
+            >
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Month</label>
+            <select
+              value={selectedMonth || ''}
+              onChange={(e) => setSelectedMonth(e.target.value ? parseInt(e.target.value) : null)}
+              className="bg-gray-700 text-white px-4 py-2 rounded-md border border-gray-600 focus:ring-2 focus:ring-purple-500"
+            >
+              {months.map(month => (
+                <option key={month.value || 'all'} value={month.value || ''}>{month.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="ml-auto">
+            <div className="text-sm text-gray-400">Grand Total Payable</div>
+            <div className="text-2xl font-bold text-purple-400">
+              {formatCurrency(commissionSummary?.grand_total)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Channel Summary */}
+        <div className="bg-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Commission by Channel</h3>
+          {commissionSummary?.channels?.length > 0 ? (
+            <div className="space-y-3">
+              {commissionSummary.channels.map((channel, index) => (
+                <div 
+                  key={index}
+                  onClick={() => channel.channel_id && fetchChannelDetails(channel.channel_id, channel.channel_name)}
+                  className={`bg-gray-700 rounded-lg p-4 ${channel.channel_id ? 'cursor-pointer hover:bg-gray-600 transition-colors' : ''}`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-white font-medium">{channel.channel_name}</div>
+                      <div className="text-sm text-gray-400">{channel.booking_count} booking(s)</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-purple-400 font-semibold">{formatCurrency(channel.total_commission)}</div>
+                      <div className="text-xs text-gray-500">from {formatCurrency(channel.total_booking_amount)}</div>
+                    </div>
+                  </div>
+                  {/* Progress bar showing percentage of total */}
+                  <div className="mt-2 bg-gray-600 rounded-full h-2">
+                    <div 
+                      className="bg-purple-500 h-2 rounded-full"
+                      style={{ width: `${(channel.total_commission / (commissionSummary.grand_total || 1)) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-400 text-center py-8">
+              No commission data for selected period
+            </div>
+          )}
+        </div>
+
+        {/* Monthly Breakdown */}
+        <div className="bg-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Monthly Breakdown - {selectedYear}</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="text-left py-2 text-gray-400 font-medium">Month</th>
+                  <th className="text-right py-2 text-gray-400 font-medium">Commission</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthlyBreakdown?.monthly_breakdown?.map((month) => (
+                  <tr 
+                    key={month.month} 
+                    className={`border-b border-gray-700 hover:bg-gray-700 cursor-pointer ${
+                      month.total > 0 ? '' : 'opacity-50'
+                    }`}
+                    onClick={() => setSelectedMonth(month.month)}
+                  >
+                    <td className="py-3 text-white">{month.month_name}</td>
+                    <td className="py-3 text-right">
+                      <span className={month.total > 0 ? 'text-purple-400 font-medium' : 'text-gray-500'}>
+                        {formatCurrency(month.total)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-gray-600">
+                  <td className="py-3 text-white font-semibold">Year Total</td>
+                  <td className="py-3 text-right text-purple-400 font-bold">
+                    {formatCurrency(monthlyBreakdown?.year_total)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Channel Details Modal */}
+      {selectedChannel && channelDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-xl font-semibold text-white">{selectedChannel} - Commission Details</h3>
+                <p className="text-sm text-gray-400">
+                  {selectedMonth ? months.find(m => m.value === selectedMonth)?.label : 'All Months'} {selectedYear}
+                </p>
+              </div>
+              <button
+                onClick={() => { setSelectedChannel(null); setChannelDetails(null); }}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="text-sm text-gray-400">Total Bookings</div>
+                <div className="text-2xl font-bold text-white">{channelDetails.booking_count}</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="text-sm text-gray-400">Total Commission</div>
+                <div className="text-2xl font-bold text-purple-400">{formatCurrency(channelDetails.total_commission)}</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="text-sm text-gray-400">Status</div>
+                <div className="text-xl font-bold text-yellow-400">Payable</div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-2 text-gray-400 font-medium">Guest</th>
+                    <th className="text-left py-2 text-gray-400 font-medium">Room</th>
+                    <th className="text-left py-2 text-gray-400 font-medium">Check-in</th>
+                    <th className="text-right py-2 text-gray-400 font-medium">Booking Amt</th>
+                    <th className="text-right py-2 text-gray-400 font-medium">Commission</th>
+                    <th className="text-center py-2 text-gray-400 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {channelDetails.bookings?.map((booking) => (
+                    <tr key={booking.id} className="border-b border-gray-700 hover:bg-gray-700">
+                      <td className="py-3 text-white">{booking.guest_name}</td>
+                      <td className="py-3 text-gray-300">{booking.room_number}</td>
+                      <td className="py-3 text-gray-300">{booking.check_in_date}</td>
+                      <td className="py-3 text-right text-gray-300">{formatCurrency(booking.booking_amount)}</td>
+                      <td className="py-3 text-right text-purple-400 font-medium">{formatCurrency(booking.commission_amount)}</td>
+                      <td className="py-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          booking.status === 'Completed' ? 'bg-green-900 text-green-300' :
+                          booking.status === 'Checked In' ? 'bg-blue-900 text-blue-300' :
+                          booking.status === 'Cancelled' ? 'bg-red-900 text-red-300' :
+                          'bg-yellow-900 text-yellow-300'
+                        }`}>
+                          {booking.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => { setSelectedChannel(null); setChannelDetails(null); }}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Reports Component
 const Reports = () => {
   const [dailyReports, setDailyReports] = useState([]);
