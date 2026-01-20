@@ -41,6 +41,39 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 **Tests**: All 6 backend tests pass (100% success rate)
 
+### 2026-01-20 - Stay Extension & Early Checkout Feature
+**Feature**: Added ability to extend stay or checkout early with proper billing adjustments
+
+**Changes Implemented**:
+1. **Extend Stay**: 
+   - New "Extend Stay" option in customer Actions dropdown
+   - Modal shows current guest info, checkout date, and charges
+   - Calculates additional nights and charges automatically
+   - Updates customer record, booking, and room checkout date
+
+2. **Early Checkout**:
+   - New "Early Checkout" option in customer Actions dropdown
+   - Preview modal shows planned vs actual charges breakdown
+   - Option to refund excess amount if customer overpaid
+   - Records refund as expense if given
+   - Automatically marks restaurant orders as paid
+
+3. **Backend Endpoints**:
+   - `POST /api/extend-stay` - Extend customer stay
+   - `POST /api/early-checkout` - Process early checkout with refund handling
+   - `GET /api/customer/{id}/checkout-preview` - Preview checkout calculations
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - Added ExtendStayRequest and EarlyCheckoutRequest models
+  - Added extend-stay, early-checkout, and checkout-preview endpoints
+- `/app/frontend/src/App.js`:
+  - Added state for extend stay and early checkout modals
+  - Added handler functions for extend/early checkout
+  - Added "Extend Stay" and "Early Checkout" buttons to customer dropdown
+  - Created Extend Stay modal with date picker
+  - Created Early Checkout modal with charges breakdown and refund option
+
 ### 2026-01-07 - Commission Tracking Feature
 **Feature**: Added booking channel commission tracking system
 
