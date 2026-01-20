@@ -2460,7 +2460,329 @@ async def checkout_customer(checkout: CheckoutRequest):
         }
     }
 
-@api_router.post("/advance-payment")
+@api_router.post("/extend-stay")
+async def extend_customer_stay(
+    extend_request: ExtendStayRequest,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Extend a checked-in customer's stay and update room charges accordingly"""
+    # Find the customer
+    customer = await db.customers.find_one({"id": extend_request.customer_id, "is_checked_out": False})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Checked-in customer not found")
+    
+    current_checkout = customer.get('check_out_date')
+    if isinstance(current_checkout, datetime):
+        current_checkout = current_checkout.date()
+    
+    new_checkout = extend_request.new_checkout_date
+    
+    # Validate new checkout date is after current checkout
+    if new_checkout <= current_checkout:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"New checkout date must be after current checkout date ({current_checkout})"
+        )
+    
+    # Get room to calculate additional charges
+    room = await db.rooms.find_one({"room_number": customer.get('current_room')})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    price_per_night = room.get('price_per_night', 0.0)
+    
+    # Calculate additional nights and charges
+    additional_nights = (new_checkout - current_checkout).days
+    additional_charges = price_per_night * additional_nights
+    
+    # Update customer record
+    current_room_charges = customer.get('room_charges', 0.0)
+    new_room_charges = current_room_charges + additional_charges
+    
+    await db.customers.update_one(
+        {"id": extend_request.customer_id},
+        {"$set": {
+            "check_out_date": datetime.combine(new_checkout, datetime.min.time()),
+            "room_charges": new_room_charges
+        }}
+    )
+    
+    # Update room checkout date
+    await db.rooms.update_one(
+        {"room_number": customer.get('current_room')},
+        {"$set": {"check_out_date": datetime.combine(new_checkout, datetime.min.time())}}
+    )
+    
+    # Update corresponding booking
+    await db.bookings.update_one(
+        {
+            "guest_name": customer.get('name'),
+            "room_number": customer.get('current_room'),
+            "status": {"$in": ["Checked-in", "Checked In"]}
+        },
+        {"$set": {
+            "check_out_date": datetime.combine(new_checkout, datetime.min.time()),
+            "booking_amount": new_room_charges
+        }}
+    )
+    
+    # Log activity
+    await log_activity(
+        action="stay_extended",
+        description=f"Extended stay for {customer.get('name')} from {current_checkout} to {new_checkout}",
+        user_name=current_user.username,
+        entity_type="customer",
+        entity_id=extend_request.customer_id,
+        details={
+            "guest_name": customer.get('name'),
+            "room_number": customer.get('current_room'),
+            "old_checkout": str(current_checkout),
+            "new_checkout": str(new_checkout),
+            "additional_nights": additional_nights,
+            "additional_charges": additional_charges
+        }
+    )
+    
+    return {
+        "message": "Stay extended successfully",
+        "details": {
+            "guest_name": customer.get('name'),
+            "room_number": customer.get('current_room'),
+            "old_checkout_date": str(current_checkout),
+            "new_checkout_date": str(new_checkout),
+            "additional_nights": additional_nights,
+            "additional_charges": additional_charges,
+            "previous_room_charges": current_room_charges,
+            "new_room_charges": new_room_charges
+        }
+    }
+
+@api_router.post("/early-checkout")
+async def early_checkout_customer(
+    checkout_request: EarlyCheckoutRequest,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Handle early checkout with potential refund calculation"""
+    # Find customer
+    customer = await db.customers.find_one({"id": checkout_request.customer_id, "is_checked_out": False})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Checked-in customer not found")
+    
+    planned_checkout = customer.get('check_out_date')
+    if isinstance(planned_checkout, datetime):
+        planned_checkout = planned_checkout.date()
+    
+    check_in_date = customer.get('check_in_date')
+    if isinstance(check_in_date, datetime):
+        check_in_date = check_in_date.date()
+    
+    actual_checkout = datetime.now().date()
+    
+    # Get room for rate calculation
+    room = await db.rooms.find_one({"room_number": customer.get('current_room')})
+    price_per_night = room.get('price_per_night', 0.0) if room else 0.0
+    
+    # Calculate actual stay duration
+    actual_nights = (actual_checkout - check_in_date).days
+    if actual_nights < 1:
+        actual_nights = 1  # Minimum 1 night charge
+    
+    # Calculate charges based on actual stay
+    actual_room_charges = price_per_night * actual_nights
+    original_room_charges = customer.get('room_charges', 0.0)
+    
+    # Calculate difference (positive = customer overpaid, negative = customer owes more)
+    charge_difference = original_room_charges - actual_room_charges
+    
+    restaurant_charges = customer.get('restaurant_charges', 0.0)
+    advance_amount = customer.get('advance_amount', 0.0)
+    additional_amount = checkout_request.additional_amount
+    discount_amount = checkout_request.discount_amount
+    
+    # Final room charges based on actual stay
+    final_room_charges = actual_room_charges
+    
+    # Calculate total
+    total_amount = final_room_charges + restaurant_charges + additional_amount - advance_amount - discount_amount
+    
+    # Handle refund logic
+    refund_amount = 0.0
+    if charge_difference > 0:  # Customer overpaid
+        if checkout_request.refund_excess:
+            refund_amount = charge_difference
+            # If refunding, we use actual charges
+        else:
+            # Keep the excess - use original charges
+            final_room_charges = original_room_charges
+            total_amount = final_room_charges + restaurant_charges + additional_amount - advance_amount - discount_amount
+    
+    # Create daily sales record
+    daily_sale = DailySale(
+        date=datetime.now().date(),
+        customer_name=customer.get('name', ''),
+        room_number=customer.get('current_room', ''),
+        room_charges=final_room_charges,
+        additional_charges=restaurant_charges + additional_amount,
+        discount_amount=discount_amount,
+        advance_amount=advance_amount,
+        total_amount=total_amount,
+        payment_method=checkout_request.payment_method
+    )
+    
+    daily_sale_dict = daily_sale.dict()
+    daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
+    await db.daily_sales.insert_one(daily_sale_dict)
+    
+    # If refunding, record as expense
+    if refund_amount > 0:
+        expense_id = str(uuid.uuid4())
+        await db.expenses.insert_one({
+            "id": expense_id,
+            "date": datetime.combine(datetime.now().date(), datetime.min.time()),
+            "category": "Refund",
+            "description": f"Early checkout refund for {customer.get('name')} - Room {customer.get('current_room')}",
+            "amount": refund_amount,
+            "payment_method": checkout_request.payment_method,
+            "created_by": current_user.username,
+            "created_at": datetime.now()
+        })
+    
+    # Update customer record
+    await db.customers.update_one(
+        {"id": checkout_request.customer_id},
+        {"$set": {
+            "room_charges": final_room_charges,
+            "additional_charges": additional_amount,
+            "discount_amount": discount_amount,
+            "total_amount": total_amount,
+            "is_checked_out": True,
+            "actual_checkout_date": datetime.now()
+        }}
+    )
+    
+    # Update booking status
+    await db.bookings.update_one(
+        {
+            "guest_name": customer.get('name'),
+            "room_number": customer.get('current_room'),
+            "status": {"$in": ["Checked-in", "Checked In"]}
+        },
+        {"$set": {"status": "Completed"}}
+    )
+    
+    # Update room status
+    await db.rooms.update_one(
+        {"room_number": customer.get('current_room')},
+        {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
+    )
+    
+    # Mark restaurant orders as paid
+    await db.restaurant_orders.update_many(
+        {
+            "room_number": customer.get('current_room'),
+            "payment_status": "Pending"
+        },
+        {"$set": {
+            "payment_status": "Paid",
+            "payment_method": f"Room Bill - {checkout_request.payment_method}",
+            "order_status": "Completed"
+        }}
+    )
+    
+    # Log activity
+    await log_activity(
+        action="early_checkout",
+        description=f"Early checkout for {customer.get('name')} from room {customer.get('current_room')}",
+        user_name=current_user.username,
+        entity_type="checkout",
+        entity_id=checkout_request.customer_id,
+        details={
+            "guest_name": customer.get('name'),
+            "room_number": customer.get('current_room'),
+            "planned_checkout": str(planned_checkout),
+            "actual_checkout": str(actual_checkout),
+            "days_early": (planned_checkout - actual_checkout).days,
+            "original_charges": original_room_charges,
+            "actual_charges": actual_room_charges,
+            "refund_amount": refund_amount,
+            "refund_given": checkout_request.refund_excess
+        }
+    )
+    
+    return {
+        "message": "Early checkout completed successfully",
+        "billing_details": {
+            "planned_checkout_date": str(planned_checkout),
+            "actual_checkout_date": str(actual_checkout),
+            "days_early": (planned_checkout - actual_checkout).days,
+            "original_room_charges": original_room_charges,
+            "actual_room_charges": actual_room_charges,
+            "charge_difference": charge_difference,
+            "refund_given": checkout_request.refund_excess,
+            "refund_amount": refund_amount if checkout_request.refund_excess else 0,
+            "final_room_charges": final_room_charges,
+            "restaurant_charges": restaurant_charges,
+            "additional_charges": additional_amount,
+            "discount_amount": discount_amount,
+            "advance_amount": advance_amount,
+            "total_amount": total_amount,
+            "payment_method": checkout_request.payment_method
+        }
+    }
+
+@api_router.get("/customer/{customer_id}/checkout-preview")
+async def preview_checkout(
+    customer_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Preview checkout details including early checkout calculations"""
+    customer = await db.customers.find_one({"id": customer_id, "is_checked_out": False})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Checked-in customer not found")
+    
+    planned_checkout = customer.get('check_out_date')
+    if isinstance(planned_checkout, datetime):
+        planned_checkout = planned_checkout.date()
+    
+    check_in_date = customer.get('check_in_date')
+    if isinstance(check_in_date, datetime):
+        check_in_date = check_in_date.date()
+    
+    actual_checkout = datetime.now().date()
+    
+    # Get room for rate
+    room = await db.rooms.find_one({"room_number": customer.get('current_room')})
+    price_per_night = room.get('price_per_night', 0.0) if room else 0.0
+    
+    # Calculate stays
+    planned_nights = (planned_checkout - check_in_date).days
+    actual_nights = (actual_checkout - check_in_date).days
+    if actual_nights < 1:
+        actual_nights = 1
+    
+    original_room_charges = customer.get('room_charges', 0.0)
+    actual_room_charges = price_per_night * actual_nights
+    
+    is_early_checkout = actual_checkout < planned_checkout
+    charge_difference = original_room_charges - actual_room_charges if is_early_checkout else 0
+    
+    return {
+        "customer_name": customer.get('name'),
+        "room_number": customer.get('current_room'),
+        "check_in_date": str(check_in_date),
+        "planned_checkout_date": str(planned_checkout),
+        "actual_checkout_date": str(actual_checkout),
+        "is_early_checkout": is_early_checkout,
+        "planned_nights": planned_nights,
+        "actual_nights": actual_nights,
+        "days_early": (planned_checkout - actual_checkout).days if is_early_checkout else 0,
+        "price_per_night": price_per_night,
+        "original_room_charges": original_room_charges,
+        "actual_room_charges": actual_room_charges,
+        "potential_refund": charge_difference if charge_difference > 0 else 0,
+        "restaurant_charges": customer.get('restaurant_charges', 0.0),
+        "advance_amount": customer.get('advance_amount', 0.0)
+    }
 async def collect_advance_payment(
     advance_request: AdvancePaymentRequest, 
     current_user: UserResponse = Depends(get_current_user)
