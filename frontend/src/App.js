@@ -998,6 +998,101 @@ const Dashboard = () => {
     }
   };
 
+  // Handle extend stay
+  const handleExtendStay = (customer) => {
+    setSelectedCustomer(customer);
+    // Set default to current checkout date + 1 day
+    const currentCheckout = new Date(customer.check_out_date);
+    currentCheckout.setDate(currentCheckout.getDate() + 1);
+    setExtendStayData({ 
+      new_checkout_date: currentCheckout.toISOString().split('T')[0]
+    });
+    setShowExtendStayModal(true);
+  };
+
+  const confirmExtendStay = async () => {
+    try {
+      const response = await axios.post(`${API}/extend-stay`, {
+        customer_id: selectedCustomer.id,
+        new_checkout_date: extendStayData.new_checkout_date
+      });
+      
+      setShowExtendStayModal(false);
+      setSelectedCustomer(null);
+      
+      // Refresh data
+      await Promise.all([
+        fetchCheckedInCustomers(),
+        fetchRooms(),
+        fetchBookings()
+      ]);
+      
+      const details = response.data.details;
+      alert(`Stay extended successfully!\n\nAdditional nights: ${details.additional_nights}\nAdditional charges: LKR ${details.additional_charges}\nNew total: LKR ${details.new_room_charges}`);
+    } catch (error) {
+      console.error('Error extending stay:', error);
+      alert('Error extending stay: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Handle early checkout
+  const handleEarlyCheckout = async (customer) => {
+    setSelectedCustomer(customer);
+    try {
+      // Get checkout preview
+      const response = await axios.get(`${API}/customer/${customer.id}/checkout-preview`);
+      setEarlyCheckoutPreview(response.data);
+      setEarlyCheckoutData({
+        additional_amount: 0,
+        discount_amount: 0,
+        payment_method: 'Cash',
+        refund_excess: false
+      });
+      setShowEarlyCheckoutModal(true);
+    } catch (error) {
+      console.error('Error getting checkout preview:', error);
+      alert('Error getting checkout details: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const confirmEarlyCheckout = async () => {
+    try {
+      const response = await axios.post(`${API}/early-checkout`, {
+        customer_id: selectedCustomer.id,
+        additional_amount: parseFloat(earlyCheckoutData.additional_amount) || 0,
+        discount_amount: parseFloat(earlyCheckoutData.discount_amount) || 0,
+        payment_method: earlyCheckoutData.payment_method,
+        refund_excess: earlyCheckoutData.refund_excess
+      });
+      
+      setShowEarlyCheckoutModal(false);
+      setSelectedCustomer(null);
+      setEarlyCheckoutPreview(null);
+      
+      // Refresh data
+      await Promise.all([
+        fetchCheckedInCustomers(),
+        fetchRooms(),
+        fetchBookings()
+      ]);
+      
+      triggerFinancialRefresh();
+      
+      const billing = response.data.billing_details;
+      let message = `Early checkout completed!\n\n`;
+      message += `Days early: ${billing.days_early}\n`;
+      message += `Final charges: LKR ${billing.final_room_charges}\n`;
+      message += `Total amount: LKR ${billing.total_amount}`;
+      if (billing.refund_given && billing.refund_amount > 0) {
+        message += `\n\nRefund given: LKR ${billing.refund_amount}`;
+      }
+      alert(message);
+    } catch (error) {
+      console.error('Error processing early checkout:', error);
+      alert('Error processing early checkout: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Handle booking cancellation (admin only)
   const handleCancelBookingForCustomer = async (customer) => {
     if (!window.confirm(`Are you sure you want to cancel the booking for ${customer.name}? This will remove the guest from the room and cannot be undone.`)) {
