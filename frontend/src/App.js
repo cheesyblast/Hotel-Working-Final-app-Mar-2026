@@ -1850,7 +1850,7 @@ const Dashboard = () => {
                             </button>
                             
                             {openCustomerDropdowns[customer.id] && (
-                              <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-50 border border-gray-600">
+                              <div className="absolute right-0 bottom-full mb-2 w-48 bg-gray-700 rounded-md shadow-lg z-50 border border-gray-600 max-h-64 overflow-y-auto">
                                 <div className="py-1">
                                   <button
                                     onClick={async () => {
