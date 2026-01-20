@@ -1779,13 +1779,13 @@ const Dashboard = () => {
       {/* Checked-in Customers */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-white mb-4">Checked-in Customers</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 overflow-visible">
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 min-h-[500px]">
           {checkedInCustomers.length === 0 ? (
             <div className="p-6 text-center text-gray-400">
               No customers currently checked in
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-visible">
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-700">
                   <tr>
