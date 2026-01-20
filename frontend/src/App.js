@@ -6598,12 +6598,12 @@ const Restaurant = () => {
           </div>
 
           {/* Right Panel - Order Summary */}
-          <div className="w-1/3 bg-gray-900 p-6 flex flex-col">
-            <div className="mb-6">
+          <div className="w-1/3 bg-gray-900 p-6 flex flex-col h-full max-h-[calc(100vh-200px)]">
+            <div className="mb-4">
               <h3 className="text-xl font-bold text-white mb-4">Order Summary</h3>
               
               {/* Order Details */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Type:</span>
                   <span className="font-medium text-white">{newOrder.order_type === 'table' ? 'Table Order' : 'Room Service'}</span>
