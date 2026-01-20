@@ -6598,7 +6598,7 @@ const Restaurant = () => {
           </div>
 
           {/* Right Panel - Order Summary */}
-          <div className="w-1/3 bg-gray-900 p-6 flex flex-col h-full max-h-[calc(100vh-200px)]">
+          <div className="w-1/3 bg-gray-900 p-6 overflow-y-auto max-h-[calc(100vh-120px)]">
             <div className="mb-4">
               <h3 className="text-xl font-bold text-white mb-4">Order Summary</h3>
               
