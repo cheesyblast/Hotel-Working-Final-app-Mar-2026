@@ -2223,6 +2223,191 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Extend Stay Modal */}
+      {showExtendStayModal && selectedCustomer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-purple-700">Extend Stay</h3>
+            <div className="mb-4 bg-gray-50 p-3 rounded-md">
+              <p className="text-sm text-gray-600"><strong>Guest:</strong> {selectedCustomer.name}</p>
+              <p className="text-sm text-gray-600"><strong>Room:</strong> {selectedCustomer.current_room}</p>
+              <p className="text-sm text-gray-600"><strong>Current Checkout:</strong> {selectedCustomer.check_out_date}</p>
+              <p className="text-sm text-gray-600"><strong>Current Charges:</strong> LKR {selectedCustomer.room_charges || 0}</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  New Checkout Date *
+                </label>
+                <input
+                  type="date"
+                  value={extendStayData.new_checkout_date}
+                  min={new Date(new Date(selectedCustomer.check_out_date).getTime() + 86400000).toISOString().split('T')[0]}
+                  onChange={(e) => setExtendStayData({...extendStayData, new_checkout_date: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Select a date after the current checkout date</p>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => { setShowExtendStayModal(false); setSelectedCustomer(null); }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmExtendStay}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                Extend Stay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Early Checkout Modal */}
+      {showEarlyCheckoutModal && selectedCustomer && earlyCheckoutPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4 text-yellow-700">Early Checkout</h3>
+            
+            {/* Guest Info */}
+            <div className="mb-4 bg-yellow-50 p-3 rounded-md border border-yellow-200">
+              <p className="text-sm"><strong>Guest:</strong> {earlyCheckoutPreview.customer_name}</p>
+              <p className="text-sm"><strong>Room:</strong> {earlyCheckoutPreview.room_number}</p>
+              <p className="text-sm"><strong>Check-in:</strong> {earlyCheckoutPreview.check_in_date}</p>
+              <p className="text-sm"><strong>Planned Checkout:</strong> {earlyCheckoutPreview.planned_checkout_date}</p>
+              <p className="text-sm"><strong>Actual Checkout:</strong> {earlyCheckoutPreview.actual_checkout_date} <span className="text-yellow-600 font-medium">({earlyCheckoutPreview.days_early} days early)</span></p>
+            </div>
+            
+            {/* Charges Comparison */}
+            <div className="mb-4 bg-gray-50 p-3 rounded-md">
+              <h4 className="font-medium mb-2">Charges Breakdown</h4>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Planned nights:</span>
+                  <span>{earlyCheckoutPreview.planned_nights} nights</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Actual nights stayed:</span>
+                  <span>{earlyCheckoutPreview.actual_nights} nights</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Rate per night:</span>
+                  <span>LKR {earlyCheckoutPreview.price_per_night}</span>
+                </div>
+                <hr className="my-2" />
+                <div className="flex justify-between">
+                  <span>Original room charges:</span>
+                  <span>LKR {earlyCheckoutPreview.original_room_charges}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Actual room charges:</span>
+                  <span>LKR {earlyCheckoutPreview.actual_room_charges}</span>
+                </div>
+                {earlyCheckoutPreview.potential_refund > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Potential refund:</span>
+                    <span>LKR {earlyCheckoutPreview.potential_refund}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Restaurant charges:</span>
+                  <span>LKR {earlyCheckoutPreview.restaurant_charges}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Advance paid:</span>
+                  <span>-LKR {earlyCheckoutPreview.advance_amount}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Refund Option */}
+            {earlyCheckoutPreview.potential_refund > 0 && (
+              <div className="mb-4 bg-green-50 p-3 rounded-md border border-green-200">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={earlyCheckoutData.refund_excess}
+                    onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, refund_excess: e.target.checked})}
+                    className="mr-2 h-4 w-4 text-green-600"
+                  />
+                  <span className="text-sm">
+                    Refund excess amount of <strong>LKR {earlyCheckoutPreview.potential_refund}</strong> to customer
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  {earlyCheckoutData.refund_excess 
+                    ? "Customer will be charged only for actual nights stayed" 
+                    : "Full original amount will be kept"}
+                </p>
+              </div>
+            )}
+            
+            {/* Additional Options */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Additional Charges</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={earlyCheckoutData.additional_amount}
+                    onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, additional_amount: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Discount</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={earlyCheckoutData.discount_amount}
+                    onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, discount_amount: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select
+                  value={earlyCheckoutData.payment_method}
+                  onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => { setShowEarlyCheckoutModal(false); setSelectedCustomer(null); setEarlyCheckoutPreview(null); }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmEarlyCheckout}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+              >
+                Confirm Early Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* New Booking Modal */}
       {showNewBookingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
