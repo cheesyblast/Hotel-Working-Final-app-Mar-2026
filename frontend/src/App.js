@@ -1897,6 +1897,30 @@ const Dashboard = () => {
                                     </svg>
                                     Get Advance
                                   </button>
+                                  <button
+                                    onClick={() => {
+                                      handleExtendStay(customer);
+                                      closeAllCustomerDropdowns();
+                                    }}
+                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
+                                  >
+                                    <svg className="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    Extend Stay
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      handleEarlyCheckout(customer);
+                                      closeAllCustomerDropdowns();
+                                    }}
+                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
+                                  >
+                                    <svg className="w-4 h-4 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Early Checkout
+                                  </button>
                                   {user?.role === 'Admin' && (
                                     <button
                                       onClick={() => {
