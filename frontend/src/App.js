@@ -6655,7 +6655,7 @@ const Restaurant = () => {
             </div>
 
             {/* Order Items */}
-            <div className="flex-1 overflow-y-auto min-h-[200px] mb-4">
+            <div className="mb-4">
               <h4 className="text-lg font-semibold mb-4 text-white">Items</h4>
               
               {orderItems.length === 0 ? (
@@ -6665,7 +6665,7 @@ const Restaurant = () => {
                   <p className="text-sm">Click on menu items to add them</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {orderItems.map((item, index) => (
                     <div key={index} className="bg-gray-800 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
