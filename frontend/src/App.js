@@ -665,6 +665,22 @@ const Dashboard = () => {
     notes: ''
   });
   
+  // Extend stay modal state
+  const [showExtendStayModal, setShowExtendStayModal] = useState(false);
+  const [extendStayData, setExtendStayData] = useState({
+    new_checkout_date: ''
+  });
+  
+  // Early checkout modal state  
+  const [showEarlyCheckoutModal, setShowEarlyCheckoutModal] = useState(false);
+  const [earlyCheckoutPreview, setEarlyCheckoutPreview] = useState(null);
+  const [earlyCheckoutData, setEarlyCheckoutData] = useState({
+    additional_amount: 0,
+    discount_amount: 0,
+    payment_method: 'Cash',
+    refund_excess: false
+  });
+  
   // Room availability checker state
   const [availabilityData, setAvailabilityData] = useState(null);
   const [availabilityDates, setAvailabilityDates] = useState({
