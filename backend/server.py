@@ -195,6 +195,17 @@ class AdvancePaymentRequest(BaseModel):
     payment_method: str = "Cash"  # Cash, Card, Bank Transfer
     notes: str = ""
 
+class ExtendStayRequest(BaseModel):
+    customer_id: str
+    new_checkout_date: date
+    
+class EarlyCheckoutRequest(BaseModel):
+    customer_id: str
+    additional_amount: float = 0.0
+    discount_amount: float = 0.0
+    payment_method: str = "Cash"
+    refund_excess: bool = False  # If True, refund excess amount to customer
+
 class DailySale(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     date: date
