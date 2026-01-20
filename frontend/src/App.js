@@ -6655,7 +6655,7 @@ const Restaurant = () => {
             </div>
 
             {/* Order Items */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-[200px] mb-4">
               <h4 className="text-lg font-semibold mb-4 text-white">Items</h4>
               
               {orderItems.length === 0 ? (
