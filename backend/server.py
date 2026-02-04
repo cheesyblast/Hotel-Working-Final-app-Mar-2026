@@ -2762,13 +2762,13 @@ async def early_checkout_customer(
     daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
     await db.daily_sales.insert_one(daily_sale_dict)
     
-    # Handle refund - deduct from cash or bank balance
+    # Handle refund - record as expense (single source of truth for refunds)
     if checkout_request.refund_amount > 0:
         refund_amount = checkout_request.refund_amount
         expense_id = str(uuid.uuid4())
         await db.expenses.insert_one({
             "id": expense_id,
-            "date": datetime.combine(datetime.now().date(), datetime.min.time()),
+            "expense_date": datetime.combine(datetime.now().date(), datetime.min.time()),
             "category": "Refund",
             "description": f"Early checkout refund for {customer.get('name')} - Room {customer.get('current_room')}",
             "amount": refund_amount,
@@ -2776,18 +2776,6 @@ async def early_checkout_customer(
             "created_by": current_user.username,
             "created_at": datetime.now()
         })
-        
-        # Update cash or bank balance
-        if checkout_request.payment_method == "Cash":
-            await db.settings.update_one(
-                {},
-                {"$inc": {"cash_balance": -refund_amount}}
-            )
-        elif checkout_request.payment_method in ["Bank Transfer", "Card"]:
-            await db.settings.update_one(
-                {},
-                {"$inc": {"bank_balance": -refund_amount}}
-            )
     
     # Handle collection - add to cash or bank balance
     if checkout_request.collection_amount > 0:
