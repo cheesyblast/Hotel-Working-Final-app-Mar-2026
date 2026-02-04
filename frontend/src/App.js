@@ -1723,25 +1723,25 @@ const Dashboard = () => {
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="mb-6 sm:mb-8">
-        <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Recent Upcoming Bookings</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
+      <div className="mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Recent Upcoming Bookings</h3>
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 max-h-[250px] overflow-y-auto">
           {upcomingBookings.length === 0 ? (
-            <div className="p-4 sm:p-6 text-center text-gray-400 text-sm">
+            <div className="p-4 text-center text-gray-400 text-sm">
               No upcoming bookings
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-700">
+                <thead className="bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Guest Name
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Guest
                     </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Room
                     </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                       Check-in
                     </th>
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
