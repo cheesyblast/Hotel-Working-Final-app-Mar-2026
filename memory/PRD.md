@@ -12,6 +12,8 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 - Financial reporting
 - Setup wizard with initial cash/bank balance
 - User authentication with JWT
+- Commission tracking for booking channels
+- Stay modification (extend stay, early checkout)
 
 ## User Personas
 1. **Hotel Administrator** - Manages overall hotel operations, settings, user accounts
@@ -27,6 +29,41 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 ---
 
 ## Changelog
+
+### 2026-02-04 - Stay Modification Bug Fixes
+**Issues Fixed**: 4 bugs related to Extend Stay and Early Checkout features
+
+**Changes Implemented**:
+1. **Booking Conflict Check for Extend Stay**:
+   - Added conflict detection when extending stay
+   - Uses `check_room_availability_for_booking()` with `skip_occupied_check=True` parameter
+   - Prevents extending into periods where another booking exists
+
+2. **Early Checkout Rate Fix**:
+   - Now uses customer's booked rate per night (calculated from booking)
+   - Previously was incorrectly using room's default rate
+   - Rate is calculated as: `original_room_charges / planned_nights`
+
+3. **UI Number Formatting**:
+   - Applied `Math.round()` and `toLocaleString()` to monetary values
+   - Numbers now display with thousand separators (e.g., "LKR 71,500")
+   - Applied to Early Checkout modal: rate per night, charges, refund amounts
+
+4. **Extend Stay Modal Enhancement**:
+   - Added check-in date to the display
+   - Current charges now formatted with thousand separators
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - `check_room_availability_for_booking()` - Added `skip_occupied_check` parameter
+  - `extend_customer_stay()` - Added conflict check before extending
+  - `early_checkout_customer()` - Now calculates rate from booking, not room
+- `/app/frontend/src/App.js`:
+  - Extend Stay modal - Added check-in date, formatted charges
+  - Early Checkout modal - Applied `Math.round().toLocaleString()` to all amounts
+
+**Tests**: All 9 tests pass (100% backend, 100% frontend)
+**Test File**: `/app/backend/tests/test_stay_modifications.py`
 
 ### 2026-01-05 - Past Date Booking Bug Fix
 **Issue Fixed**: Creating past-date bookings for already checked-in customers was failing with 401 Unauthorized error.
@@ -118,20 +155,26 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Prioritized Backlog
 
-### P0 - Verified/User Testing Pending
-- [x] Past-date booking bug fix (COMPLETED & TESTED)
-- [x] Restaurant charges appearing at checkout (COMPLETED & TESTED)
-- [ ] Short-time booking checkout fix (USER VERIFICATION PENDING)
-- [ ] Initial cash/bank balance in setup wizard (USER VERIFICATION PENDING)
+### P0 - Completed & Tested
+- [x] Past-date booking bug fix (COMPLETED)
+- [x] Restaurant charges appearing at checkout (COMPLETED)
+- [x] Commission tracking feature (COMPLETED)
+- [x] Extend Stay and Early Checkout features (COMPLETED)
+- [x] Extend Stay conflict check bug fix (COMPLETED)
+- [x] Early Checkout rate calculation fix (COMPLETED)
+- [x] UI number formatting improvements (COMPLETED)
 
 ### P1 - Upcoming Tasks
+- [ ] User verification of previously completed features
 - [ ] Make application mobile responsive (starting with Restaurant component)
+- [ ] Export commission reports to Excel/PDF
+- [ ] Email notifications for commission due dates
 
 ### P2 - Future Enhancements
-- [ ] Email notifications for bookings
 - [ ] Guest feedback/review system
 - [ ] Room maintenance tracking
 - [ ] Advanced reporting and analytics
+- [ ] Refactor App.js into smaller components
 
 ---
 
@@ -140,3 +183,5 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 2. JWT tokens expire after 30 minutes (configurable)
 3. Past-date bookings can be created with either "Upcoming" or "Checked In" status
 4. MongoDB ObjectIds are excluded from API responses to ensure JSON serialization
+5. Stay extension uses `skip_occupied_check=True` to allow current occupant's room to be "occupied"
+6. Early checkout rate is calculated from customer's booking, not room's default rate
