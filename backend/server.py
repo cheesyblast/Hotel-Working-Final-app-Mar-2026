@@ -2783,6 +2783,8 @@ async def preview_checkout(
         "restaurant_charges": customer.get('restaurant_charges', 0.0),
         "advance_amount": customer.get('advance_amount', 0.0)
     }
+
+@api_router.post("/advance-payment")
 async def collect_advance_payment(
     advance_request: AdvancePaymentRequest, 
     current_user: UserResponse = Depends(get_current_user)
