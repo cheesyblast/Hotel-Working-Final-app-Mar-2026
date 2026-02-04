@@ -4646,11 +4646,14 @@ const Guests = () => {
   };
 
   const openEditGuestModal = (guest) => {
+    // Remove "Not provided" placeholder values when editing
+    const cleanValue = (value) => (value === 'Not provided' ? '' : (value || ''));
+    
     setEditGuestData({
-      original_email: guest.email || '',
+      original_email: cleanValue(guest.email),
       name: guest.name || '',
-      email: guest.email || '',
-      phone: guest.phone || '',
+      email: cleanValue(guest.email),
+      phone: cleanValue(guest.phone),
       id_passport: guest.id_passport || '',
       country: guest.country || ''
     });
