@@ -2202,6 +2202,24 @@ async def update_booking(
         new_check_in = booking_update.check_in_date if booking_update.check_in_date is not None else current_check_in
         new_check_out = booking_update.check_out_date if booking_update.check_out_date is not None else current_check_out
         
+        # Get the room number (use new room if changed, otherwise current room)
+        room_number = update_data.get('room_number', current_booking.get('room_number'))
+        
+        # Check for booking conflicts with the new dates
+        is_available, conflict_error = await check_room_availability_for_booking(
+            room_number=room_number,
+            check_in_date=new_check_in,
+            check_out_date=new_check_out,
+            exclude_booking_id=booking_id,  # Exclude the current booking being edited
+            skip_occupied_check=(booking_status in ['Checked-in', 'Checked In'])  # Skip for checked-in guests
+        )
+        
+        if not is_available:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot update booking dates: {conflict_error}"
+            )
+        
         # Special validation for checked-in bookings
         if booking_status in ['Checked-in', 'Checked In']:
             # For checked-in bookings, only allow extending checkout date
