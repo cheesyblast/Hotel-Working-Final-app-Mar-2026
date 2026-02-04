@@ -2963,18 +2963,9 @@ async def collect_advance_payment(
     income_dict['income_date'] = datetime.combine(income_dict['income_date'], datetime.min.time())
     await db.incomes.insert_one(income_dict)
     
-    # Update cash or bank balance based on payment method
-    if advance_request.payment_method == "Cash":
-        await db.settings.update_one(
-            {},
-            {"$inc": {"cash_balance": advance_request.amount}}
-        )
-    elif advance_request.payment_method in ["Bank Transfer", "Card"]:
-        await db.settings.update_one(
-            {},
-            {"$inc": {"bank_balance": advance_request.amount}}
-        )
-    
+    # Note: We don't update settings.cash_balance/bank_balance directly because
+    # balances are computed dynamically from incomes, daily_sales, and expenses
+
     # Log activity
     await log_activity(
         action="advance_payment_collected",
