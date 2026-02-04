@@ -1071,8 +1071,7 @@ const Dashboard = () => {
       // Refresh data
       await Promise.all([
         fetchCheckedInCustomers(),
-        fetchRooms(),
-        fetchBookings()
+        fetchRooms()
       ]);
       
       triggerFinancialRefresh();
