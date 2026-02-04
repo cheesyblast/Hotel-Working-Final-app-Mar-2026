@@ -2169,6 +2169,7 @@ const Dashboard = () => {
               <div className="mb-4 bg-gray-50 p-3 rounded-md">
                 <p className="text-sm text-gray-600"><strong>Guest:</strong> {selectedCustomer.name}</p>
                 <p className="text-sm text-gray-600"><strong>Room:</strong> {selectedCustomer.current_room}</p>
+                <p className="text-sm text-gray-600"><strong>Rate per Night:</strong> LKR {Math.round(selectedCustomer.rate_per_night || 0).toLocaleString()}</p>
                 <hr className="my-2" />
                 <p className="text-sm text-gray-700"><strong>Room Charges:</strong> LKR {(selectedCustomer.room_charges || 0).toLocaleString()}</p>
                 <p className="text-sm text-gray-700"><strong>Restaurant Charges:</strong> LKR {(selectedCustomer.restaurant_charges || 0).toLocaleString()}</p>
