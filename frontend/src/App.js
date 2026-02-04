@@ -2354,69 +2354,88 @@ const Dashboard = () => {
               <p className="text-sm"><strong>Actual Checkout:</strong> {earlyCheckoutPreview.actual_checkout_date} <span className="text-yellow-600 font-medium">({earlyCheckoutPreview.days_early} days early)</span></p>
             </div>
             
-            {/* Charges Comparison */}
+            {/* Charges Breakdown */}
             <div className="mb-4 bg-gray-50 p-3 rounded-md">
               <h4 className="font-medium mb-2">Charges Breakdown</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span>Planned nights:</span>
-                  <span>{earlyCheckoutPreview.planned_nights} nights</span>
-                </div>
-                <div className="flex justify-between">
                   <span>Actual nights stayed:</span>
-                  <span>{earlyCheckoutPreview.actual_nights} nights</span>
+                  <span>{earlyCheckoutPreview.actual_nights} nights × LKR {Math.round(earlyCheckoutPreview.price_per_night).toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Rate per night:</span>
-                  <span>LKR {Math.round(earlyCheckoutPreview.price_per_night).toLocaleString()}</span>
-                </div>
-                <hr className="my-2" />
-                <div className="flex justify-between">
-                  <span>Original room charges:</span>
-                  <span>LKR {Math.round(earlyCheckoutPreview.original_room_charges).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Actual room charges:</span>
+                <div className="flex justify-between font-medium">
+                  <span>Room charges:</span>
                   <span>LKR {Math.round(earlyCheckoutPreview.actual_room_charges).toLocaleString()}</span>
                 </div>
-                {earlyCheckoutPreview.potential_refund > 0 && (
-                  <div className="flex justify-between text-green-600 font-medium">
-                    <span>Potential refund:</span>
-                    <span>LKR {Math.round(earlyCheckoutPreview.potential_refund).toLocaleString()}</span>
-                  </div>
-                )}
                 <div className="flex justify-between">
                   <span>Restaurant charges:</span>
-                  <span>LKR {Math.round(earlyCheckoutPreview.restaurant_charges).toLocaleString()}</span>
+                  <span>LKR {Math.round(earlyCheckoutPreview.restaurant_charges || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span>Additional charges:</span>
+                  <span>LKR {Math.round(parseFloat(earlyCheckoutData.additional_amount) || 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-red-600">
+                  <span>Discount:</span>
+                  <span>-LKR {Math.round(parseFloat(earlyCheckoutData.discount_amount) || 0).toLocaleString()}</span>
+                </div>
+                <hr className="my-2" />
+                <div className="flex justify-between font-medium">
+                  <span>Total Due:</span>
+                  <span>LKR {Math.round(
+                    earlyCheckoutPreview.actual_room_charges + 
+                    (earlyCheckoutPreview.restaurant_charges || 0) + 
+                    (parseFloat(earlyCheckoutData.additional_amount) || 0) - 
+                    (parseFloat(earlyCheckoutData.discount_amount) || 0)
+                  ).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-green-600">
                   <span>Advance paid:</span>
-                  <span>-LKR {Math.round(earlyCheckoutPreview.advance_amount).toLocaleString()}</span>
+                  <span>-LKR {Math.round(earlyCheckoutPreview.advance_amount || 0).toLocaleString()}</span>
                 </div>
               </div>
             </div>
             
-            {/* Refund Option */}
-            {earlyCheckoutPreview.potential_refund > 0 && (
-              <div className="mb-4 bg-green-50 p-3 rounded-md border border-green-200">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={earlyCheckoutData.refund_excess}
-                    onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, refund_excess: e.target.checked})}
-                    className="mr-2 h-4 w-4 text-green-600"
-                  />
-                  <span className="text-sm">
-                    Refund excess amount of <strong>LKR {Math.round(earlyCheckoutPreview.potential_refund).toLocaleString()}</strong> to customer
-                  </span>
-                </label>
-                <p className="text-xs text-gray-500 mt-1">
-                  {earlyCheckoutData.refund_excess 
-                    ? "Customer will be charged only for actual nights stayed" 
-                    : "Full original amount will be kept"}
-                </p>
-              </div>
-            )}
+            {/* Final Balance - Collection or Refund */}
+            {(() => {
+              const totalDue = earlyCheckoutPreview.actual_room_charges + 
+                (earlyCheckoutPreview.restaurant_charges || 0) + 
+                (parseFloat(earlyCheckoutData.additional_amount) || 0) - 
+                (parseFloat(earlyCheckoutData.discount_amount) || 0);
+              const advancePaid = earlyCheckoutPreview.advance_amount || 0;
+              const finalBalance = totalDue - advancePaid;
+              
+              if (finalBalance > 0) {
+                return (
+                  <div className="mb-4 bg-blue-50 p-4 rounded-md border border-blue-200">
+                    <div className="text-center">
+                      <p className="text-sm text-blue-600 mb-1">Amount to Collect</p>
+                      <p className="text-2xl font-bold text-blue-700">LKR {Math.round(finalBalance).toLocaleString()}</p>
+                      <p className="text-xs text-gray-500 mt-1">Customer owes this amount</p>
+                    </div>
+                  </div>
+                );
+              } else if (finalBalance < 0) {
+                return (
+                  <div className="mb-4 bg-green-50 p-4 rounded-md border border-green-200">
+                    <div className="text-center">
+                      <p className="text-sm text-green-600 mb-1">Refund Due</p>
+                      <p className="text-2xl font-bold text-green-700">LKR {Math.round(Math.abs(finalBalance)).toLocaleString()}</p>
+                      <p className="text-xs text-gray-500 mt-1">Customer has overpaid</p>
+                    </div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="mb-4 bg-gray-100 p-4 rounded-md border border-gray-200">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 mb-1">Balance</p>
+                      <p className="text-2xl font-bold text-gray-700">LKR 0</p>
+                      <p className="text-xs text-gray-500 mt-1">No collection or refund needed</p>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
             
             {/* Additional Options */}
             <div className="space-y-4">
@@ -2445,18 +2464,32 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-                <select
-                  value={earlyCheckoutData.payment_method}
-                  onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, payment_method: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="Cash">Cash</option>
-                  <option value="Card">Card</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                </select>
-              </div>
+              {/* Payment method - only show for refunds */}
+              {(() => {
+                const totalDue = earlyCheckoutPreview.actual_room_charges + 
+                  (earlyCheckoutPreview.restaurant_charges || 0) + 
+                  (parseFloat(earlyCheckoutData.additional_amount) || 0) - 
+                  (parseFloat(earlyCheckoutData.discount_amount) || 0);
+                const advancePaid = earlyCheckoutPreview.advance_amount || 0;
+                const finalBalance = totalDue - advancePaid;
+                
+                if (finalBalance < 0) {
+                  return (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Refund Method</label>
+                      <select
+                        value={earlyCheckoutData.payment_method}
+                        onChange={(e) => setEarlyCheckoutData({...earlyCheckoutData, payment_method: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="Cash">Cash</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                      </select>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
             
             <div className="flex justify-end space-x-3 mt-6">
@@ -2471,6 +2504,49 @@ const Dashboard = () => {
                 className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
               >
                 Confirm Early Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Payment Collection Modal (for early checkout when customer owes money) */}
+      {showPaymentCollectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm">
+            <h3 className="text-lg font-semibold mb-4 text-blue-700">Collect Payment</h3>
+            <div className="mb-4 bg-blue-50 p-4 rounded-md border border-blue-200">
+              <p className="text-center">
+                <span className="text-sm text-blue-600">Amount to Collect</span><br />
+                <span className="text-2xl font-bold text-blue-700">LKR {paymentCollectionData.amount.toLocaleString()}</span>
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select
+                  value={paymentCollectionData.payment_method}
+                  onChange={(e) => setPaymentCollectionData({...paymentCollectionData, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowPaymentCollectionModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => processEarlyCheckout(paymentCollectionData.payment_method, paymentCollectionData.amount)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Confirm Collection
               </button>
             </div>
           </div>
