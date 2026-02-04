@@ -728,7 +728,8 @@ async def check_room_availability_for_booking(room_number: str, check_in_date: d
             return False, error_msg
         
         # Check if room is currently occupied (status = "Occupied")
-        if room.get('status') == 'Occupied':
+        # Skip this check if we're extending stay for the current occupant
+        if not skip_occupied_check and room.get('status') == 'Occupied':
             current_guest = room.get('current_guest', 'Unknown Guest')
             room_checkout = room.get('check_out_date')
             if isinstance(room_checkout, datetime):
