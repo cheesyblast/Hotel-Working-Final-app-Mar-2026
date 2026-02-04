@@ -2750,18 +2750,22 @@ async def preview_checkout(
     
     actual_checkout = datetime.now().date()
     
-    # Get room for rate
-    room = await db.rooms.find_one({"room_number": customer.get('current_room')})
-    price_per_night = room.get('price_per_night', 0.0) if room else 0.0
-    
-    # Calculate stays
+    # Calculate planned stays first
     planned_nights = (planned_checkout - check_in_date).days
+    if planned_nights < 1:
+        planned_nights = 1
+    
+    # Calculate the customer's actual rate per night from their booking
+    original_room_charges = customer.get('room_charges', 0.0)
+    customer_rate_per_night = original_room_charges / planned_nights if planned_nights > 0 else 0
+    
+    # Calculate actual stays
     actual_nights = (actual_checkout - check_in_date).days
     if actual_nights < 1:
         actual_nights = 1
     
-    original_room_charges = customer.get('room_charges', 0.0)
-    actual_room_charges = price_per_night * actual_nights
+    # Calculate charges based on customer's rate, not room's default rate
+    actual_room_charges = customer_rate_per_night * actual_nights
     
     is_early_checkout = actual_checkout < planned_checkout
     charge_difference = original_room_charges - actual_room_charges if is_early_checkout else 0
@@ -2776,7 +2780,7 @@ async def preview_checkout(
         "planned_nights": planned_nights,
         "actual_nights": actual_nights,
         "days_early": (planned_checkout - actual_checkout).days if is_early_checkout else 0,
-        "price_per_night": price_per_night,
+        "price_per_night": customer_rate_per_night,
         "original_room_charges": original_room_charges,
         "actual_room_charges": actual_room_charges,
         "potential_refund": charge_difference if charge_difference > 0 else 0,
