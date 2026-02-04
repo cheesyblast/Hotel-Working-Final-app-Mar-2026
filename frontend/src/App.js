@@ -4588,7 +4588,7 @@ const Guests = () => {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showEditGuestModal, setShowEditGuestModal] = useState(false);
   const [editGuestData, setEditGuestData] = useState({
-    original_email: '',
+    guest_id: '',
     name: '',
     email: '',
     phone: '',
