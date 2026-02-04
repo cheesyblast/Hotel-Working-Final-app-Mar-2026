@@ -208,11 +208,12 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 - [x] Extend Stay conflict check bug fix (COMPLETED)
 - [x] Early Checkout rate calculation fix (COMPLETED)
 - [x] UI number formatting improvements (COMPLETED)
+- [x] Financial double-counting bug fix (COMPLETED - 2026-02-05)
 
 ### P1 - Upcoming Tasks
+- [ ] Export commission reports to Excel/PDF
 - [ ] User verification of previously completed features
 - [ ] Make application mobile responsive (starting with Restaurant component)
-- [ ] Export commission reports to Excel/PDF
 - [ ] Email notifications for commission due dates
 
 ### P2 - Future Enhancements
@@ -230,3 +231,8 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 4. MongoDB ObjectIds are excluded from API responses to ensure JSON serialization
 5. Stay extension uses `skip_occupied_check=True` to allow current occupant's room to be "occupied"
 6. Early checkout rate is calculated from customer's booking, not room's default rate
+7. **Financial Single Source of Truth**: Each financial transaction is recorded in only ONE collection:
+   - Advance payments → `incomes` collection
+   - Room checkout → `daily_sales` collection
+   - Refunds → `expenses` collection
+   - This prevents double-counting in financial summaries
