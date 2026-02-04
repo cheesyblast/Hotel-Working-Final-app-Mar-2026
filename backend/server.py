@@ -3362,6 +3362,65 @@ async def get_guest_details(guest_email: str):
     
     return guest_info
 
+class GuestUpdateRequest(BaseModel):
+    original_email: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    id_passport: Optional[str] = None
+    country: Optional[str] = None
+
+@api_router.put("/guests/update")
+async def update_guest_details(
+    guest_update: GuestUpdateRequest,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Update guest details across all their bookings and customer records"""
+    update_fields = {}
+    
+    if guest_update.name:
+        update_fields['guest_name'] = guest_update.name
+    if guest_update.email:
+        update_fields['guest_email'] = guest_update.email
+    if guest_update.phone:
+        update_fields['guest_phone'] = guest_update.phone
+    if guest_update.id_passport:
+        update_fields['guest_id_passport'] = guest_update.id_passport
+    if guest_update.country:
+        update_fields['guest_country'] = guest_update.country
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Update all bookings for this guest
+    booking_result = await db.bookings.update_many(
+        {"guest_email": guest_update.original_email},
+        {"$set": update_fields}
+    )
+    
+    # Update customer records if name changed
+    customer_update_fields = {}
+    if guest_update.name:
+        customer_update_fields['name'] = guest_update.name
+    if guest_update.email:
+        customer_update_fields['email'] = guest_update.email
+    if guest_update.phone:
+        customer_update_fields['phone'] = guest_update.phone
+    
+    if customer_update_fields:
+        # Find customers by old name from bookings
+        old_booking = await db.bookings.find_one({"guest_email": guest_update.email or guest_update.original_email})
+        if old_booking:
+            await db.customers.update_many(
+                {"email": guest_update.original_email},
+                {"$set": customer_update_fields}
+            )
+    
+    return {
+        "message": "Guest details updated successfully",
+        "bookings_updated": booking_result.modified_count
+    }
+
 # Reports and Analytics Routes
 @api_router.get("/reports/daily")
 async def get_daily_reports(start_date: Optional[str] = None, end_date: Optional[str] = None):
