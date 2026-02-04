@@ -4632,6 +4632,30 @@ const Guests = () => {
     }
   };
 
+  const openEditGuestModal = (guest) => {
+    setEditGuestData({
+      original_email: guest.email || '',
+      name: guest.name || '',
+      email: guest.email || '',
+      phone: guest.phone || '',
+      id_passport: guest.id_passport || '',
+      country: guest.country || ''
+    });
+    setShowEditGuestModal(true);
+  };
+
+  const handleUpdateGuest = async () => {
+    try {
+      await axios.put(`${API}/guests/update`, editGuestData);
+      setShowEditGuestModal(false);
+      fetchGuests(); // Refresh the list
+      alert('Guest details updated successfully!');
+    } catch (error) {
+      console.error('Error updating guest:', error);
+      alert('Error updating guest: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Upcoming':
