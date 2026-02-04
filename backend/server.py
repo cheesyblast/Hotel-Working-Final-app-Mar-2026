@@ -2777,34 +2777,10 @@ async def early_checkout_customer(
             "created_at": datetime.now()
         })
     
-    # Handle collection - add to cash or bank balance
-    if checkout_request.collection_amount > 0:
-        collection_amount = checkout_request.collection_amount
-        
-        # Record as income
-        income_id = str(uuid.uuid4())
-        await db.incomes.insert_one({
-            "id": income_id,
-            "date": datetime.combine(datetime.now().date(), datetime.min.time()),
-            "category": "Room Checkout",
-            "description": f"Early checkout payment from {customer.get('name')} - Room {customer.get('current_room')}",
-            "amount": collection_amount,
-            "payment_method": checkout_request.payment_method,
-            "created_by": current_user.username,
-            "created_at": datetime.now()
-        })
-        
-        # Update cash or bank balance
-        if checkout_request.payment_method == "Cash":
-            await db.settings.update_one(
-                {},
-                {"$inc": {"cash_balance": collection_amount}}
-            )
-        elif checkout_request.payment_method in ["Bank Transfer", "Card"]:
-            await db.settings.update_one(
-                {},
-                {"$inc": {"bank_balance": collection_amount}}
-            )
+    # Handle collection - this is already captured in the daily_sale record
+    # We don't create a separate income record to avoid double-counting
+    # The collection_amount is just informational for the API response
+    collection_recorded = checkout_request.collection_amount if checkout_request.collection_amount > 0 else 0
     
     # Update customer record
     await db.customers.update_one(
