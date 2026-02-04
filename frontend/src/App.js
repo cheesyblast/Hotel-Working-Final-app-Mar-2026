@@ -1059,18 +1059,57 @@ const Dashboard = () => {
   };
 
   const confirmEarlyCheckout = async () => {
+    // Calculate the final balance to determine if collection or refund
+    const actualRoomCharges = earlyCheckoutPreview.actual_room_charges;
+    const restaurantCharges = earlyCheckoutPreview.restaurant_charges || 0;
+    const advanceAmount = earlyCheckoutPreview.advance_amount || 0;
+    const additionalAmount = parseFloat(earlyCheckoutData.additional_amount) || 0;
+    const discountAmount = parseFloat(earlyCheckoutData.discount_amount) || 0;
+    
+    const totalDue = actualRoomCharges + restaurantCharges + additionalAmount - discountAmount;
+    const finalBalance = totalDue - advanceAmount;
+    
+    // If customer owes money (finalBalance > 0), show payment collection modal
+    if (finalBalance > 0) {
+      setPaymentCollectionData({
+        amount: Math.round(finalBalance),
+        payment_method: 'Cash'
+      });
+      setShowPaymentCollectionModal(true);
+      return;
+    }
+    
+    // If customer is owed a refund (finalBalance < 0), proceed with refund
+    await processEarlyCheckout(earlyCheckoutData.payment_method, Math.abs(finalBalance));
+  };
+  
+  const processEarlyCheckout = async (paymentMethod, collectionOrRefundAmount) => {
     try {
+      const actualRoomCharges = earlyCheckoutPreview.actual_room_charges;
+      const restaurantCharges = earlyCheckoutPreview.restaurant_charges || 0;
+      const advanceAmount = earlyCheckoutPreview.advance_amount || 0;
+      const additionalAmount = parseFloat(earlyCheckoutData.additional_amount) || 0;
+      const discountAmount = parseFloat(earlyCheckoutData.discount_amount) || 0;
+      
+      const totalDue = actualRoomCharges + restaurantCharges + additionalAmount - discountAmount;
+      const finalBalance = totalDue - advanceAmount;
+      
       const response = await axios.post(`${API}/early-checkout`, {
         customer_id: selectedCustomer.id,
-        additional_amount: parseFloat(earlyCheckoutData.additional_amount) || 0,
-        discount_amount: parseFloat(earlyCheckoutData.discount_amount) || 0,
-        payment_method: earlyCheckoutData.payment_method,
-        refund_excess: earlyCheckoutData.refund_excess
+        additional_amount: additionalAmount,
+        discount_amount: discountAmount,
+        payment_method: paymentMethod,
+        refund_excess: true,  // Always refund if applicable
+        final_balance: finalBalance,
+        collection_amount: finalBalance > 0 ? collectionOrRefundAmount : 0,
+        refund_amount: finalBalance < 0 ? Math.abs(finalBalance) : 0
       });
       
       setShowEarlyCheckoutModal(false);
+      setShowPaymentCollectionModal(false);
       setSelectedCustomer(null);
       setEarlyCheckoutPreview(null);
+      setEarlyCheckoutData({ additional_amount: 0, discount_amount: 0, payment_method: 'Cash' });
       
       // Refresh data
       await Promise.all([
@@ -1083,10 +1122,13 @@ const Dashboard = () => {
       const billing = response.data.billing_details;
       let message = `Early checkout completed!\n\n`;
       message += `Days early: ${billing.days_early}\n`;
-      message += `Final charges: LKR ${billing.final_room_charges}\n`;
-      message += `Total amount: LKR ${billing.total_amount}`;
-      if (billing.refund_given && billing.refund_amount > 0) {
-        message += `\n\nRefund given: LKR ${billing.refund_amount}`;
+      message += `Final charges: LKR ${Math.round(billing.final_room_charges).toLocaleString()}\n`;
+      message += `Total amount: LKR ${Math.round(billing.total_amount).toLocaleString()}`;
+      
+      if (finalBalance > 0) {
+        message += `\n\nCollected: LKR ${Math.round(collectionOrRefundAmount).toLocaleString()} (${paymentMethod})`;
+      } else if (finalBalance < 0) {
+        message += `\n\nRefund given: LKR ${Math.round(Math.abs(finalBalance)).toLocaleString()} (${paymentMethod})`;
       }
       alert(message);
     } catch (error) {
