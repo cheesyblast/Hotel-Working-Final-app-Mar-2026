@@ -1346,6 +1346,21 @@ const Dashboard = () => {
   const openNewBookingModal = () => {
     // Initialize with all non-occupied rooms
     setAvailableRoomsForBooking(getAvailableRooms());
+    
+    // Set default dates: today for check-in, tomorrow for check-out
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todayStr = today.toISOString().split('T')[0];
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    setNewBookingData(prev => ({
+      ...prev,
+      check_in_date: todayStr,
+      check_out_date: tomorrowStr
+    }));
+    
     setShowNewBookingModal(true);
   };
 
