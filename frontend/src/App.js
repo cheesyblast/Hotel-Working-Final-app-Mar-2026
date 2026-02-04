@@ -1784,7 +1784,7 @@ const Dashboard = () => {
                         </button>
                         
                         {openDropdowns[booking.id] && (
-                          <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                          <div className="absolute right-0 z-50 mt-2 w-48 origin-top-right bg-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
                             <div className="py-1">
                               <button
                                 onClick={() => {
