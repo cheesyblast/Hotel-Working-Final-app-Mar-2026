@@ -2540,11 +2540,19 @@ async def extend_customer_stay(
             detail=f"Cannot extend stay: {conflict_error}"
         )
     
-    price_per_night = room.get('price_per_night', 0.0)
+    # Calculate customer's booked rate per night from their original booking
+    # This ensures we use the rate they were charged, not the room's current default rate
+    original_room_charges = customer.get('room_charges', 0.0)
+    original_nights = (current_checkout - check_in_date).days
+    if original_nights < 1:
+        original_nights = 1
     
-    # Calculate additional nights and charges
+    # Use customer's booked rate, not room's default rate
+    customer_rate_per_night = original_room_charges / original_nights if original_nights > 0 else 0.0
+    
+    # Calculate additional nights and charges using customer's rate
     additional_nights = (new_checkout - current_checkout).days
-    additional_charges = price_per_night * additional_nights
+    additional_charges = customer_rate_per_night * additional_nights
     
     # Update customer record
     current_room_charges = customer.get('room_charges', 0.0)
