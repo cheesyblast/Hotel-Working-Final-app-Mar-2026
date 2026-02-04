@@ -2511,6 +2511,33 @@ async def checkout_customer(checkout: CheckoutRequest):
         }}
     )
     
+    # Record as income and update cash/bank balance
+    # Only record the amount actually collected at checkout (total_amount, which already deducts advance)
+    if total_amount > 0:
+        income_id = str(uuid.uuid4())
+        await db.incomes.insert_one({
+            "id": income_id,
+            "date": datetime.combine(datetime.now().date(), datetime.min.time()),
+            "category": "Room Checkout",
+            "description": f"Checkout payment from {customer.get('name')} - Room {customer.get('current_room')}",
+            "amount": total_amount,
+            "payment_method": checkout.payment_method,
+            "created_by": "system",
+            "created_at": datetime.now()
+        })
+        
+        # Update cash or bank balance based on payment method
+        if checkout.payment_method == "Cash":
+            await db.settings.update_one(
+                {},
+                {"$inc": {"cash_balance": total_amount}}
+            )
+        elif checkout.payment_method in ["Bank Transfer", "Card"]:
+            await db.settings.update_one(
+                {},
+                {"$inc": {"bank_balance": total_amount}}
+            )
+    
     return {
         "message": "Customer checked out successfully",
         "billing_details": {
