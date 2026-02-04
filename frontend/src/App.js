@@ -1723,121 +1723,97 @@ const Dashboard = () => {
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="mb-4 sm:mb-6">
-        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Recent Upcoming Bookings</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 min-h-[300px] max-h-[300px] overflow-visible">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Recent Upcoming Bookings</h3>
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700" style={{minHeight: '300px'}}>
           {upcomingBookings.length === 0 ? (
-            <div className="p-4 text-center text-gray-400 text-sm">
+            <div className="p-6 text-center text-gray-400">
               No upcoming bookings
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-visible max-h-[280px]">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-700 sticky top-0">
-                  <tr>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Guest
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Room
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
-                      Check-in
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
-                      Check-out
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden md:table-cell">
-                      Contact
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {upcomingBookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-gray-700">
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm font-medium text-white truncate max-w-[100px] sm:max-w-none">{booking.guest_name}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-white">{booking.room_number}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden sm:table-cell">
-                        <div className="text-xs sm:text-sm text-white">{booking.check_in_date}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden sm:table-cell">
-                        <div className="text-xs sm:text-sm text-white">{booking.check_out_date}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden md:table-cell">
-                        <div className="text-xs sm:text-sm text-white">{booking.guest_phone}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-right relative">
-                        <button
-                          onClick={() => toggleDropdown(booking.id)}
-                          className="inline-flex items-center p-1.5 sm:p-2 text-gray-400 bg-gray-700 rounded-full hover:text-gray-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
-                          </svg>
-                        </button>
-                        
-                        {openDropdowns[booking.id] && (
-                          <div className="absolute right-0 z-50 mt-2 w-48 origin-top-right bg-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-                            <div className="py-1">
-                              <button
-                                onClick={() => {
-                                  handleCheckin(booking);
-                                  closeAllDropdowns();
-                                }}
-                                className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                              >
-                                <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                Check In
-                              </button>
-                              <button
-                                onClick={() => {
-                                  openEditBookingModal(booking);
-                                  closeAllDropdowns();
-                                }}
-                                className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                              >
-                                <svg className="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleCancelBooking(booking.id);
-                                  closeAllDropdowns();
-                                }}
-                                className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                              >
-                                <svg className="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                                Cancel
-                              </button>
-                            </div>
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Guest Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Room</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Check-in</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Check-out</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-gray-800 divide-y divide-gray-700">
+                {upcomingBookings.map((booking) => (
+                  <tr key={booking.id} className="hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-white">{booking.guest_name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{booking.room_number}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{booking.check_in_date}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{booking.check_out_date}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{booking.guest_phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap relative">
+                      <button
+                        onClick={() => toggleDropdown(booking.id)}
+                        className="inline-flex items-center p-2 text-gray-400 bg-gray-700 rounded-full hover:text-gray-200 hover:bg-gray-600"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                        </svg>
+                      </button>
+                      {openDropdowns[booking.id] && (
+                        <div className="absolute right-0 z-50 mt-2 w-48 bg-gray-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                          <div className="py-1">
+                            <button
+                              onClick={() => { handleCheckin(booking); closeAllDropdowns(); }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                            >
+                              <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                              </svg>
+                              Check In
+                            </button>
+                            <button
+                              onClick={() => { openEditBookingModal(booking); closeAllDropdowns(); }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                            >
+                              <svg className="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => { handleCancelBooking(booking.id); closeAllDropdowns(); }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                            >
+                              <svg className="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                              </svg>
+                              Cancel
+                            </button>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
 
       {/* Checked-in Customers */}
-      <div className="mb-4 sm:mb-8">
-        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Checked-in Customers</h3>
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-white mb-4">Checked-in Customers</h3>
         <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
           {checkedInCustomers.length === 0 ? (
             <div className="p-4 sm:p-6 text-center text-gray-400 text-sm">
