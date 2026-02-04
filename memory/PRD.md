@@ -31,7 +31,7 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 ## Changelog
 
 ### 2026-02-04 - Stay Modification Bug Fixes
-**Issues Fixed**: 4 bugs related to Extend Stay and Early Checkout features
+**Issues Fixed**: 4 bugs related to Extend Stay and Early Checkout features, plus Edit Booking conflict check
 
 **Changes Implemented**:
 1. **Booking Conflict Check for Extend Stay**:
@@ -39,17 +39,22 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
    - Uses `check_room_availability_for_booking()` with `skip_occupied_check=True` parameter
    - Prevents extending into periods where another booking exists
 
-2. **Early Checkout Rate Fix**:
+2. **Booking Conflict Check for Edit Booking** (NEW):
+   - Added conflict detection when editing booking dates
+   - Prevents changing dates that would overlap with other bookings for same room
+   - Uses same `check_room_availability_for_booking()` function with `exclude_booking_id`
+
+3. **Early Checkout Rate Fix**:
    - Now uses customer's booked rate per night (calculated from booking)
    - Previously was incorrectly using room's default rate
    - Rate is calculated as: `original_room_charges / planned_nights`
 
-3. **UI Number Formatting**:
+4. **UI Number Formatting**:
    - Applied `Math.round()` and `toLocaleString()` to monetary values
    - Numbers now display with thousand separators (e.g., "LKR 71,500")
    - Applied to Early Checkout modal: rate per night, charges, refund amounts
 
-4. **Extend Stay Modal Enhancement**:
+5. **Extend Stay Modal Enhancement**:
    - Added check-in date to the display
    - Current charges now formatted with thousand separators
 
@@ -57,6 +62,7 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 - `/app/backend/server.py`:
   - `check_room_availability_for_booking()` - Added `skip_occupied_check` parameter
   - `extend_customer_stay()` - Added conflict check before extending
+  - `update_booking()` - Added conflict check when dates are changed
   - `early_checkout_customer()` - Now calculates rate from booking, not room
 - `/app/frontend/src/App.js`:
   - Extend Stay modal - Added check-in date, formatted charges
