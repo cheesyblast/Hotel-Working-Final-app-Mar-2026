@@ -1,0 +1,77 @@
+{
+  "summary": "Completed testing of Double-Counting Bug Fix. All 16 backend tests pass (7 new tests for double-counting fix + 9 existing stay modification tests). The fix ensures that financial transactions are recorded in only ONE collection (either daily_sales OR incomes, not both) to prevent double-counting in the Income & Expense page.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/incomes",
+        "issue": "Was returning 500 error due to missing _id exclusion in MongoDB query and some records missing income_date field",
+        "status": "FIXED",
+        "fix_applied": "Added {\"_id\": 0} projection to exclude MongoDB _id, and fixed data records with missing income_date"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_double_counting_fix.py",
+    "/app/backend/tests/test_stay_modifications.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Check-in endpoint correctly creates ONLY Income record for advance payments (not DailySale)",
+    "Advance-payment endpoint correctly creates ONLY Income record",
+    "Checkout endpoint correctly creates ONLY DailySale record (not Income)",
+    "Early-checkout endpoint correctly creates DailySale + Expense for refund (no Income for collection)",
+    "Daily-financial-summary endpoint correctly sums daily_sales + incomes - expenses without double-counting"
+  ],
+  "updated_files": [
+    "/app/backend/server.py (line 3837: added _id exclusion to incomes query)",
+    "/app/backend/tests/test_double_counting_fix.py (new test file)"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "N/A (backend only testing requested)"
+  },
+  "test_credentials": {
+    "admin_username": "admin",
+    "admin_password": "admin123"
+  },
+  "seed_data_creation": "Test bookings created with TEST_DOUBLE_ prefix for cleanup",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Double-counting bug fix verified. All 7 tests pass: 1) Check-in with advance creates only Income (not DailySale), 2) Advance payment for checked-in customer creates only Income, 3) Regular checkout creates only DailySale (not Income), 4) Early checkout with collection creates only DailySale, 5) Early checkout with refund creates DailySale + Expense, 6) Financial summary calculation is correct. Fixed /api/incomes endpoint that was returning 500 error.",
+  "bugs_verified_fixed": [
+    {
+      "bug": "Advance payment during check-in was double-counted (2000 advance caused 4000 balance increase)",
+      "status": "FIXED",
+      "verification": "Test confirms check-in with advance creates only Income record, balance increases by exact advance amount"
+    },
+    {
+      "bug": "Checkout was potentially creating both DailySale and Income records",
+      "status": "FIXED",
+      "verification": "Test confirms checkout creates only DailySale record, no Income record created"
+    },
+    {
+      "bug": "Early checkout collection was potentially double-counted",
+      "status": "FIXED",
+      "verification": "Test confirms early checkout creates only DailySale, collection is not recorded as separate Income"
+    },
+    {
+      "bug": "Early checkout refund handling",
+      "status": "FIXED",
+      "verification": "Test confirms early checkout with refund creates DailySale + Expense for refund"
+    }
+  ],
+  "additional_fixes_applied": [
+    {
+      "issue": "/api/incomes endpoint returning 500 Internal Server Error",
+      "cause": "MongoDB _id field not excluded from query, and some income records missing income_date field",
+      "fix": "Added {\"_id\": 0} projection to exclude MongoDB _id, and fixed data records with missing income_date"
+    }
+  ]
+}
