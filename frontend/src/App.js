@@ -1744,13 +1744,13 @@ const Dashboard = () => {
                     <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                       Check-in
                     </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                       Check-out
                     </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden md:table-cell">
                       Contact
                     </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -1758,27 +1758,27 @@ const Dashboard = () => {
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {upcomingBookings.map((booking) => (
                     <tr key={booking.id} className="hover:bg-gray-700">
-                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm font-medium text-white">{booking.guest_name}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-white truncate max-w-[100px] sm:max-w-none">{booking.guest_name}</div>
                       </td>
-                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
                         <div className="text-xs sm:text-sm text-white">{booking.room_number}</div>
                       </td>
-                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden sm:table-cell">
                         <div className="text-xs sm:text-sm text-white">{booking.check_in_date}</div>
                       </td>
-                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden sm:table-cell">
                         <div className="text-xs sm:text-sm text-white">{booking.check_out_date}</div>
                       </td>
-                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden md:table-cell">
                         <div className="text-xs sm:text-sm text-white">{booking.guest_phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-right relative">
                         <button
                           onClick={() => toggleDropdown(booking.id)}
-                          className="inline-flex items-center p-2 text-gray-400 bg-gray-700 rounded-full hover:text-gray-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="inline-flex items-center p-1.5 sm:p-2 text-gray-400 bg-gray-700 rounded-full hover:text-gray-200 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                           </svg>
                         </button>
