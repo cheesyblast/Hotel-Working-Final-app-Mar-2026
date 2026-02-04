@@ -2475,6 +2475,10 @@ async def extend_customer_stay(
     if isinstance(current_checkout, datetime):
         current_checkout = current_checkout.date()
     
+    check_in_date = customer.get('check_in_date')
+    if isinstance(check_in_date, datetime):
+        check_in_date = check_in_date.date()
+    
     new_checkout = extend_request.new_checkout_date
     
     # Validate new checkout date is after current checkout
@@ -2484,10 +2488,36 @@ async def extend_customer_stay(
             detail=f"New checkout date must be after current checkout date ({current_checkout})"
         )
     
+    room_number = customer.get('current_room')
+    
     # Get room to calculate additional charges
-    room = await db.rooms.find_one({"room_number": customer.get('current_room')})
+    room = await db.rooms.find_one({"room_number": room_number})
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Check for booking conflicts before extending stay
+    # Find the current booking for this customer to exclude it from conflict check
+    current_booking = await db.bookings.find_one({
+        "guest_name": customer.get('name'),
+        "room_number": room_number,
+        "status": {"$in": ["Checked-in", "Checked In"]}
+    })
+    
+    exclude_booking_id = current_booking.get('id') if current_booking else None
+    
+    # Check if extending conflicts with other bookings
+    is_available, conflict_error = await check_room_availability_for_booking(
+        room_number=room_number,
+        check_in_date=check_in_date,  # Use original check-in
+        check_out_date=new_checkout,   # Use new checkout
+        exclude_booking_id=exclude_booking_id
+    )
+    
+    if not is_available:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot extend stay: {conflict_error}"
+        )
     
     price_per_night = room.get('price_per_night', 0.0)
     
@@ -2578,18 +2608,24 @@ async def early_checkout_customer(
     
     actual_checkout = datetime.now().date()
     
-    # Get room for rate calculation
-    room = await db.rooms.find_one({"room_number": customer.get('current_room')})
-    price_per_night = room.get('price_per_night', 0.0) if room else 0.0
+    # Calculate planned nights to derive the customer's actual booked rate
+    planned_nights = (planned_checkout - check_in_date).days
+    if planned_nights < 1:
+        planned_nights = 1
+    
+    original_room_charges = customer.get('room_charges', 0.0)
+    
+    # Use customer's actual booked rate per night (not room's default rate)
+    # This ensures we use the rate the customer was charged, which may differ from room's current rate
+    customer_rate_per_night = original_room_charges / planned_nights if planned_nights > 0 else 0.0
     
     # Calculate actual stay duration
     actual_nights = (actual_checkout - check_in_date).days
     if actual_nights < 1:
         actual_nights = 1  # Minimum 1 night charge
     
-    # Calculate charges based on actual stay
-    actual_room_charges = price_per_night * actual_nights
-    original_room_charges = customer.get('room_charges', 0.0)
+    # Calculate charges based on customer's booked rate, not room's default rate
+    actual_room_charges = customer_rate_per_night * actual_nights
     
     # Calculate difference (positive = customer overpaid, negative = customer owes more)
     charge_difference = original_room_charges - actual_room_charges
