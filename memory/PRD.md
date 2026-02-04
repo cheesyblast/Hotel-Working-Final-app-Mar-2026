@@ -31,7 +31,7 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 ## Changelog
 
 ### 2026-02-04 - Stay Modification Bug Fixes
-**Issues Fixed**: 4 bugs related to Extend Stay and Early Checkout features, plus Edit Booking conflict check
+**Issues Fixed**: 5 bugs/enhancements related to booking rates and stay modifications
 
 **Changes Implemented**:
 1. **Booking Conflict Check for Extend Stay**:
@@ -39,36 +39,38 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
    - Uses `check_room_availability_for_booking()` with `skip_occupied_check=True` parameter
    - Prevents extending into periods where another booking exists
 
-2. **Booking Conflict Check for Edit Booking** (NEW):
+2. **Booking Conflict Check for Edit Booking**:
    - Added conflict detection when editing booking dates
    - Prevents changing dates that would overlap with other bookings for same room
    - Uses same `check_room_availability_for_booking()` function with `exclude_booking_id`
 
-3. **Early Checkout Rate Fix**:
-   - Now uses customer's booked rate per night (calculated from booking)
-   - Previously was incorrectly using room's default rate
-   - Rate is calculated as: `original_room_charges / planned_nights`
+3. **Customer's Booked Rate for Calculations** (NEW):
+   - **Extend Stay**: Now uses customer's booked rate per night (calculated from original booking)
+   - **Edit Booking**: When dates change, recalculates amount using booking's original rate per night
+   - **Early Checkout**: Already uses customer's booked rate (fixed earlier)
+   - This ensures customers are charged consistently at their negotiated rate, not room's default rate
 
-4. **UI Number Formatting**:
-   - Applied `Math.round()` and `toLocaleString()` to monetary values
-   - Numbers now display with thousand separators (e.g., "LKR 71,500")
-   - Applied to Early Checkout modal: rate per night, charges, refund amounts
+4. **Rate Display in Modals** (NEW):
+   - **Extend Stay Modal**: Shows "Rate per Night: LKR X" and helper text about charges
+   - **Get Advance Modal**: Shows "Rate per Night: LKR X" for clarity
+   - **Edit Booking Modal**: Shows "Rate per Night: LKR X" and "Current Amount"
+   - **Early Checkout Modal**: Already shows rate per night
 
-5. **Extend Stay Modal Enhancement**:
-   - Added check-in date to the display
-   - Current charges now formatted with thousand separators
+5. **API Enhancement**:
+   - `GET /api/customers/checked-in` now returns `rate_per_night` field
+   - Rate is calculated as: `room_charges / nights`
 
 **Files Modified**:
 - `/app/backend/server.py`:
-  - `check_room_availability_for_booking()` - Added `skip_occupied_check` parameter
-  - `extend_customer_stay()` - Added conflict check before extending
-  - `update_booking()` - Added conflict check when dates are changed
-  - `early_checkout_customer()` - Now calculates rate from booking, not room
+  - `get_checked_in_customers()` - Now returns `rate_per_night` for each customer
+  - `extend_customer_stay()` - Uses customer's booked rate instead of room's default
+  - `update_booking()` - Uses booking's rate per night when dates change
 - `/app/frontend/src/App.js`:
-  - Extend Stay modal - Added check-in date, formatted charges
-  - Early Checkout modal - Applied `Math.round().toLocaleString()` to all amounts
+  - Extend Stay modal - Added rate per night display and helper text
+  - Get Advance modal - Added rate per night display
+  - Edit Booking modal - Added rate per night and current amount display
 
-**Tests**: All 9 tests pass (100% backend, 100% frontend)
+**Tests**: All features verified working via API and UI screenshots
 **Test File**: `/app/backend/tests/test_stay_modifications.py`
 
 ### 2026-01-05 - Past Date Booking Bug Fix
