@@ -204,7 +204,10 @@ class EarlyCheckoutRequest(BaseModel):
     additional_amount: float = 0.0
     discount_amount: float = 0.0
     payment_method: str = "Cash"
-    refund_excess: bool = False  # If True, refund excess amount to customer
+    refund_excess: bool = True  # Always refund if applicable
+    final_balance: float = 0.0  # Positive = collection needed, Negative = refund needed
+    collection_amount: float = 0.0  # Amount collected from customer
+    refund_amount: float = 0.0  # Amount refunded to customer
 
 class DailySale(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
