@@ -2512,7 +2512,8 @@ async def extend_customer_stay(
         room_number=room_number,
         check_in_date=check_in_date,  # Use original check-in
         check_out_date=new_checkout,   # Use new checkout
-        exclude_booking_id=exclude_booking_id
+        exclude_booking_id=exclude_booking_id,
+        skip_occupied_check=True  # Skip occupied check since we're extending the current occupant's stay
     )
     
     if not is_available:
