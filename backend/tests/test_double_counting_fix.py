@@ -89,10 +89,8 @@ class TestDoubleCountingFix:
         Test: Check-in with advance payment should create ONLY Income record, not DailySale
         This is the core fix for the double-counting bug.
         """
-        # Get initial counts
-        initial_incomes = self.session.get(f"{BASE_URL}/api/incomes").json()
+        # Get initial counts BEFORE any operations
         initial_sales = self.session.get(f"{BASE_URL}/api/daily-sales").json()
-        initial_income_count = len(initial_incomes)
         initial_sales_count = len(initial_sales)
         
         # Get initial financial summary
@@ -140,6 +138,10 @@ class TestDoubleCountingFix:
         booking = booking_response.json()
         booking_id = booking.get('id')
         
+        # Get sales count right before check-in
+        pre_checkin_sales = self.session.get(f"{BASE_URL}/api/daily-sales").json()
+        pre_checkin_sales_count = len(pre_checkin_sales)
+        
         # Check-in with advance payment of 2000
         advance_amount = 2000
         checkin_response = self.session.post(f"{BASE_URL}/api/checkin", json={
@@ -154,7 +156,6 @@ class TestDoubleCountingFix:
         
         # Verify: Income record should be created
         final_incomes = self.session.get(f"{BASE_URL}/api/incomes").json()
-        final_income_count = len(final_incomes)
         
         # Find the new income record
         new_incomes = [i for i in final_incomes if 'TEST_DOUBLE_CheckinAdvance' in i.get('description', '') or 'TEST_DOUBLE_CheckinAdvance' in i.get('guest_name', '')]
@@ -162,14 +163,13 @@ class TestDoubleCountingFix:
         assert len(new_incomes) >= 1, "Income record should be created for advance payment"
         print(f"✓ Income record created for advance payment")
         
-        # Verify: DailySale should NOT be created for check-in
-        final_sales = self.session.get(f"{BASE_URL}/api/daily-sales").json()
-        final_sales_count = len(final_sales)
+        # Verify: DailySale count should NOT increase after check-in
+        post_checkin_sales = self.session.get(f"{BASE_URL}/api/daily-sales").json()
+        post_checkin_sales_count = len(post_checkin_sales)
         
-        # Check if any new daily sale was created for this guest
-        new_sales = [s for s in final_sales if 'TEST_DOUBLE_CheckinAdvance' in s.get('customer_name', '')]
-        
-        assert len(new_sales) == 0, f"DailySale should NOT be created during check-in (found {len(new_sales)})"
+        # The sales count should be the same before and after check-in
+        assert post_checkin_sales_count == pre_checkin_sales_count, \
+            f"DailySale should NOT be created during check-in (was {pre_checkin_sales_count}, now {post_checkin_sales_count})"
         print(f"✓ No DailySale record created during check-in (correct behavior)")
         
         # Verify: Cash balance should increase by exactly the advance amount
