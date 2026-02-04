@@ -4650,7 +4650,7 @@ const Guests = () => {
     const cleanValue = (value) => (value === 'Not provided' ? '' : (value || ''));
     
     setEditGuestData({
-      original_email: cleanValue(guest.email),
+      guest_id: guest.id,  // Use the unique guest identifier
       name: guest.name || '',
       email: cleanValue(guest.email),
       phone: cleanValue(guest.phone),
