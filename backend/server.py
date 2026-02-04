@@ -3478,7 +3478,8 @@ async def get_guest_details(guest_email: str):
     return guest_info
 
 class GuestUpdateRequest(BaseModel):
-    original_email: str
+    guest_id: str  # Unique guest identifier (email or name_phone_bookingId)
+    original_email: Optional[str] = None  # Kept for backward compatibility
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -3507,9 +3508,31 @@ async def update_guest_details(
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")
     
+    # Determine how to find the bookings to update
+    guest_id = guest_update.guest_id
+    
+    # Check if guest_id is an email (contains @) or a composite key (name_phone_bookingId)
+    if '@' in guest_id:
+        # Guest has email - find by email
+        query = {"guest_email": guest_id}
+    else:
+        # Guest doesn't have email - guest_id is composite key (name_phone_bookingId)
+        # Extract the booking_id from the composite key
+        parts = guest_id.rsplit('_', 1)  # Split from the right to get booking_id
+        if len(parts) == 2:
+            booking_id = parts[1]
+            # Find the specific booking and then update by guest_name
+            booking = await db.bookings.find_one({"id": booking_id})
+            if booking:
+                query = {"guest_name": booking.get('guest_name'), "guest_email": {"$in": ["", None]}}
+            else:
+                raise HTTPException(status_code=404, detail="Booking not found")
+        else:
+            raise HTTPException(status_code=400, detail="Invalid guest identifier")
+    
     # Update all bookings for this guest
     booking_result = await db.bookings.update_many(
-        {"guest_email": guest_update.original_email},
+        query,
         {"$set": update_fields}
     )
     
