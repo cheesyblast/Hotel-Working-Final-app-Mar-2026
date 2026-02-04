@@ -2515,20 +2515,9 @@ async def checkout_customer(checkout: CheckoutRequest):
         }}
     )
     
-    # Record as income (single source of truth for financial tracking)
-    # Only record the amount actually collected at checkout (total_amount, which already deducts advance)
-    if total_amount > 0:
-        income_id = str(uuid.uuid4())
-        await db.incomes.insert_one({
-            "id": income_id,
-            "income_date": datetime.combine(datetime.now().date(), datetime.min.time()),
-            "category": "Room Checkout",
-            "description": f"Checkout payment from {customer.get('name')} - Room {customer.get('current_room')}",
-            "amount": total_amount,
-            "payment_method": checkout.payment_method,
-            "created_by": "system",
-            "created_at": datetime.now()
-        })
+    # Note: We don't create a separate income record for checkout because
+    # the daily_sale record already captures this transaction.
+    # This avoids double-counting in financial summaries.
     
     return {
         "message": "Customer checked out successfully",
