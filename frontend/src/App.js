@@ -2357,7 +2357,7 @@ const Dashboard = () => {
                     className="mr-2 h-4 w-4 text-green-600"
                   />
                   <span className="text-sm">
-                    Refund excess amount of <strong>LKR {earlyCheckoutPreview.potential_refund}</strong> to customer
+                    Refund excess amount of <strong>LKR {Math.round(earlyCheckoutPreview.potential_refund).toLocaleString()}</strong> to customer
                   </span>
                 </label>
                 <p className="text-xs text-gray-500 mt-1">
