@@ -1725,7 +1725,7 @@ const Dashboard = () => {
       {/* Upcoming Bookings */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-white mb-4">Recent Upcoming Bookings</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700" style={{minHeight: '300px'}}>
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 overflow-x-auto" style={{minHeight: '300px'}}>
           {upcomingBookings.length === 0 ? (
             <div className="p-6 text-center text-gray-400">
               No upcoming bookings
@@ -1734,38 +1734,38 @@ const Dashboard = () => {
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Guest Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Room</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Check-in</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Check-out</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Guest</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Room</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">Check-in</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">Check-out</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden md:table-cell">Contact</th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-gray-800 divide-y divide-gray-700">
                 {upcomingBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{booking.guest_name}</div>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-white">{booking.guest_name}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-white">{booking.room_number}</div>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-white">{booking.room_number}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                       <div className="text-sm text-white">{booking.check_in_date}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                       <div className="text-sm text-white">{booking.check_out_date}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">
                       <div className="text-sm text-white">{booking.guest_phone}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap relative">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap relative">
                       <button
                         onClick={() => toggleDropdown(booking.id)}
-                        className="inline-flex items-center p-2 text-gray-400 bg-gray-700 rounded-full hover:text-gray-200 hover:bg-gray-600"
+                        className="inline-flex items-center p-1.5 sm:p-2 text-gray-400 bg-gray-700 rounded-full hover:text-gray-200 hover:bg-gray-600"
                       >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                         </svg>
                       </button>
