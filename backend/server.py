@@ -3834,7 +3834,7 @@ async def delete_expense(expense_id: str):
 # Income Management Routes
 @api_router.get("/incomes", response_model=List[Income])
 async def get_incomes():
-    incomes = await db.incomes.find().sort("income_date", -1).to_list(1000)
+    incomes = await db.incomes.find({}, {"_id": 0}).sort("income_date", -1).to_list(1000)
     
     # Convert datetime back to date for response
     for income in incomes:
