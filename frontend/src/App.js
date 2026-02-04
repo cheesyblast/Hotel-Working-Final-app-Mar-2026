@@ -677,8 +677,12 @@ const Dashboard = () => {
   const [earlyCheckoutData, setEarlyCheckoutData] = useState({
     additional_amount: 0,
     discount_amount: 0,
-    payment_method: 'Cash',
-    refund_excess: false
+    payment_method: 'Cash'
+  });
+  const [showPaymentCollectionModal, setShowPaymentCollectionModal] = useState(false);
+  const [paymentCollectionData, setPaymentCollectionData] = useState({
+    amount: 0,
+    payment_method: 'Cash'
   });
   
   // Room availability checker state
