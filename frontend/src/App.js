@@ -4573,6 +4573,15 @@ const Guests = () => {
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [showGuestDetails, setShowGuestDetails] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showEditGuestModal, setShowEditGuestModal] = useState(false);
+  const [editGuestData, setEditGuestData] = useState({
+    original_email: '',
+    name: '',
+    email: '',
+    phone: '',
+    id_passport: '',
+    country: ''
+  });
   const [downloadDateRange, setDownloadDateRange] = useState({
     startDate: '',
     endDate: ''
