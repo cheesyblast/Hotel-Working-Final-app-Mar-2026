@@ -4860,12 +4860,20 @@ const Guests = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => fetchGuestDetails(guest.email)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
-                      >
-                        View Details
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => fetchGuestDetails(guest.email)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          View Details
+                        </button>
+                        <button
+                          onClick={() => openEditGuestModal(guest)}
+                          className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -4874,6 +4882,76 @@ const Guests = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Guest Modal */}
+      {showEditGuestModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Edit Guest Details</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={editGuestData.name}
+                  onChange={(e) => setEditGuestData({...editGuestData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editGuestData.email}
+                  onChange={(e) => setEditGuestData({...editGuestData, email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={editGuestData.phone}
+                  onChange={(e) => setEditGuestData({...editGuestData, phone: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ID/Passport</label>
+                <input
+                  type="text"
+                  value={editGuestData.id_passport}
+                  onChange={(e) => setEditGuestData({...editGuestData, id_passport: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                <input
+                  type="text"
+                  value={editGuestData.country}
+                  onChange={(e) => setEditGuestData({...editGuestData, country: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowEditGuestModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateGuest}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+              >
+                Update Guest
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Guest Details Modal */}
       {showGuestDetails && selectedGuest && (
