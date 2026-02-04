@@ -2318,30 +2318,30 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Rate per night:</span>
-                  <span>LKR {earlyCheckoutPreview.price_per_night}</span>
+                  <span>LKR {Math.round(earlyCheckoutPreview.price_per_night).toLocaleString()}</span>
                 </div>
                 <hr className="my-2" />
                 <div className="flex justify-between">
                   <span>Original room charges:</span>
-                  <span>LKR {earlyCheckoutPreview.original_room_charges}</span>
+                  <span>LKR {Math.round(earlyCheckoutPreview.original_room_charges).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Actual room charges:</span>
-                  <span>LKR {earlyCheckoutPreview.actual_room_charges}</span>
+                  <span>LKR {Math.round(earlyCheckoutPreview.actual_room_charges).toLocaleString()}</span>
                 </div>
                 {earlyCheckoutPreview.potential_refund > 0 && (
                   <div className="flex justify-between text-green-600 font-medium">
                     <span>Potential refund:</span>
-                    <span>LKR {earlyCheckoutPreview.potential_refund}</span>
+                    <span>LKR {Math.round(earlyCheckoutPreview.potential_refund).toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>Restaurant charges:</span>
-                  <span>LKR {earlyCheckoutPreview.restaurant_charges}</span>
+                  <span>LKR {Math.round(earlyCheckoutPreview.restaurant_charges).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Advance paid:</span>
-                  <span>-LKR {earlyCheckoutPreview.advance_amount}</span>
+                  <span>-LKR {Math.round(earlyCheckoutPreview.advance_amount).toLocaleString()}</span>
                 </div>
               </div>
             </div>
