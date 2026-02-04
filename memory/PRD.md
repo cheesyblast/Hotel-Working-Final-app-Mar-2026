@@ -30,6 +30,43 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Changelog
 
+### 2026-02-04 - Early Checkout Enhancement
+**Feature**: Improved Early Checkout with proper collection/refund handling
+
+**Changes Implemented**:
+1. **Potential Collection vs Refund Logic**:
+   - Shows "Amount to Collect" (blue) if customer owes money
+   - Shows "Refund Due" (green) if customer has overpaid
+   - Shows "Balance: LKR 0" if exact balance
+
+2. **Real-time Calculation**:
+   - Additional charges and discounts update the final balance in real-time
+   - Final balance displayed prominently below all charges
+
+3. **Payment Collection Modal**:
+   - When customer owes money, clicking "Confirm Early Checkout" shows a collection popup
+   - User selects payment method (Cash/Card/Bank Transfer) for the collection
+   - Collected amount is added to Cash or Bank balance
+
+4. **Refund Handling**:
+   - Refunds always happen automatically (removed checkbox)
+   - Refund method dropdown shown when applicable
+   - Refund amount is deducted from Cash or Bank balance
+
+5. **Cash/Bank Balance Updates**:
+   - Collections: Added to `cash_balance` or `bank_balance` in settings
+   - Refunds: Deducted from `cash_balance` or `bank_balance` in settings
+   - Also recorded as Income (collection) or Expense (refund)
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - Updated `EarlyCheckoutRequest` model with collection/refund amounts
+  - Modified `/api/early-checkout` to handle cash/bank balance updates
+- `/app/frontend/src/App.js`:
+  - Redesigned Early Checkout modal with real-time balance calculation
+  - Added Payment Collection modal for when customer owes money
+  - Removed refund_excess checkbox (always refunds now)
+
 ### 2026-02-04 - Stay Modification Bug Fixes
 **Issues Fixed**: 5 bugs/enhancements related to booking rates and stay modifications
 
