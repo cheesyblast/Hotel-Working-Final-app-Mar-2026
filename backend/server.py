@@ -3094,30 +3094,15 @@ async def checkin_customer(checkin: CheckinRequest):
     # actual_checkout_date is None, so no conversion needed
     await db.customers.insert_one(customer_dict)
     
-    # Record advance amount as daily sale if amount > 0
+    # Record advance amount as income if amount > 0
+    # NOTE: We only create an Income record (not DailySale) to avoid double-counting
+    # in financial summaries. The Income record is the single source of truth for advance payments.
     if advance_amount > 0:
-        advance_sale = DailySale(
-            customer_name=booking["guest_name"],
-            room_number=booking["room_number"],
-            payment_method=checkin.payment_method,
-            room_charges=0.0,  # This is advance, not room charge
-            additional_charges=advance_amount,  # Record as additional charge
-            discount_amount=0.0,
-            advance_amount=0.0,  # Already being paid, so no advance for this sale
-            total_amount=advance_amount,
-            date=datetime.now().date()
-        )
-        
-        # Convert date to datetime for MongoDB storage
-        advance_sale_dict = advance_sale.dict()
-        advance_sale_dict['date'] = datetime.combine(advance_sale_dict['date'], datetime.min.time())
-        await db.daily_sales.insert_one(advance_sale_dict)
-        
-        # Record as income
+        # Record as income (single source of truth for advance payments)
         income_id = str(uuid.uuid4())
         await db.incomes.insert_one({
             "id": income_id,
-            "date": datetime.combine(datetime.now().date(), datetime.min.time()),
+            "income_date": datetime.combine(datetime.now().date(), datetime.min.time()),
             "category": "Advance Payment",
             "description": f"Advance payment from {booking['guest_name']} - Room {booking['room_number']}",
             "amount": advance_amount,
@@ -3125,18 +3110,6 @@ async def checkin_customer(checkin: CheckinRequest):
             "created_by": "system",
             "created_at": datetime.now()
         })
-        
-        # Update cash or bank balance based on payment method
-        if checkin.payment_method == "Cash":
-            await db.settings.update_one(
-                {},
-                {"$inc": {"cash_balance": advance_amount}}
-            )
-        elif checkin.payment_method in ["Bank Transfer", "Card"]:
-            await db.settings.update_one(
-                {},
-                {"$inc": {"bank_balance": advance_amount}}
-            )
     
     # Update room status to occupied
     await db.rooms.update_one(
