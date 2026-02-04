@@ -2748,9 +2748,13 @@ async def early_checkout_customer(
     return {
         "message": "Early checkout completed successfully",
         "billing_details": {
+            "check_in_date": str(check_in_date),
             "planned_checkout_date": str(planned_checkout),
             "actual_checkout_date": str(actual_checkout),
             "days_early": (planned_checkout - actual_checkout).days,
+            "planned_nights": planned_nights,
+            "actual_nights": actual_nights,
+            "rate_per_night": customer_rate_per_night,
             "original_room_charges": original_room_charges,
             "actual_room_charges": actual_room_charges,
             "charge_difference": charge_difference,
