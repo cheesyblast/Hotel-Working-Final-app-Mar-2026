@@ -30,6 +30,34 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Changelog
 
+### 2026-02-05 - Financial Double-Counting Bug Fix
+**Bug Fixed**: Advance payment during check-in was double-counted in Income & Expense page (2000 advance caused 4000 balance increase)
+
+**Root Cause**:
+- Check-in endpoint was creating BOTH `daily_sales` record AND `incomes` record for advance payments
+- Checkout endpoint was creating BOTH `daily_sales` record AND `incomes` record
+- Early checkout collection was creating additional `incomes` record when `daily_sales` already captured it
+- `/api/daily-financial-summary` endpoint sums both `daily_sales` and `incomes`, causing double-counting
+
+**Solution Implemented - Single Source of Truth**:
+1. **Check-in with advance**: Now creates ONLY `Income` record (not DailySale)
+2. **Get Advance (for checked-in customer)**: Creates ONLY `Income` record (unchanged)
+3. **Regular Checkout**: Creates ONLY `DailySale` record (removed Income record creation)
+4. **Early Checkout with collection**: Creates ONLY `DailySale` record (removed Income record for collection)
+5. **Early Checkout with refund**: Creates `DailySale` + `Expense` record (correct behavior)
+6. **Removed redundant** `settings.cash_balance/bank_balance` updates since balances are computed dynamically
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - `checkin_customer()` - Now only creates Income record for advance payments
+  - `checkout_customer()` - Now only creates DailySale record (no Income)
+  - `early_checkout()` - Fixed to not create Income for collection (already in DailySale)
+  - `collect_advance_payment()` - Removed redundant settings balance update
+  - `get_incomes()` - Fixed to exclude MongoDB `_id` field
+
+**Tests**: All 16 backend tests pass (7 new + 9 existing)
+- Test file: `/app/backend/tests/test_double_counting_fix.py`
+
 ### 2026-02-04 - Early Checkout Enhancement
 **Feature**: Improved Early Checkout with proper collection/refund handling
 
