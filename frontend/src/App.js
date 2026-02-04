@@ -1725,13 +1725,13 @@ const Dashboard = () => {
       {/* Upcoming Bookings */}
       <div className="mb-4 sm:mb-6">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Recent Upcoming Bookings</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 min-h-[300px] max-h-[300px] overflow-y-auto overflow-x-visible">
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 min-h-[300px] max-h-[300px] overflow-visible">
           {upcomingBookings.length === 0 ? (
             <div className="p-4 text-center text-gray-400 text-sm">
               No upcoming bookings
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-visible">
+            <div className="overflow-x-auto overflow-y-visible max-h-[280px]">
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-700 sticky top-0">
                   <tr>
