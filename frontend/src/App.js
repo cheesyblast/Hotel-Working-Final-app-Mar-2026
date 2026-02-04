@@ -2253,6 +2253,8 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600"><strong>Room:</strong> {selectedCustomer.current_room}</p>
               <p className="text-sm text-gray-600"><strong>Check-in:</strong> {selectedCustomer.check_in_date}</p>
               <p className="text-sm text-gray-600"><strong>Current Checkout:</strong> {selectedCustomer.check_out_date}</p>
+              <hr className="my-2" />
+              <p className="text-sm text-purple-700"><strong>Rate per Night:</strong> LKR {Math.round(selectedCustomer.rate_per_night || 0).toLocaleString()}</p>
               <p className="text-sm text-gray-600"><strong>Current Charges:</strong> LKR {(selectedCustomer.room_charges || 0).toLocaleString()}</p>
             </div>
             
@@ -2269,7 +2271,7 @@ const Dashboard = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Select a date after the current checkout date</p>
+                <p className="text-xs text-gray-500 mt-1">Additional charges will be calculated at LKR {Math.round(selectedCustomer.rate_per_night || 0).toLocaleString()} per night</p>
               </div>
             </div>
             
