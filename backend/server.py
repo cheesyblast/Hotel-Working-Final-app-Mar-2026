@@ -3546,11 +3546,25 @@ async def update_guest_details(
         customer_update_fields['phone'] = guest_update.phone
     
     if customer_update_fields:
-        # Find customers by old name from bookings
-        old_booking = await db.bookings.find_one({"guest_email": guest_update.email or guest_update.original_email})
-        if old_booking:
+        # Update customer records - find by the same query used for bookings
+        if '@' in guest_id:
+            customer_query = {"email": guest_id}
+        else:
+            # For guests without email, match by name
+            parts = guest_id.rsplit('_', 1)
+            if len(parts) == 2:
+                booking_id = parts[1]
+                booking = await db.bookings.find_one({"id": booking_id})
+                if booking:
+                    customer_query = {"name": booking.get('guest_name')}
+                else:
+                    customer_query = None
+            else:
+                customer_query = None
+        
+        if customer_query:
             await db.customers.update_many(
-                {"email": guest_update.original_email},
+                customer_query,
                 {"$set": customer_update_fields}
             )
     
