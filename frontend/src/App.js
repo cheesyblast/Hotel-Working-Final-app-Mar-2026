@@ -2733,6 +2733,17 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-600">Guest: <strong>{selectedBooking.guest_name}</strong></p>
                 <p className="text-sm text-gray-600">Current Room: <strong>{selectedBooking.room_number}</strong></p>
                 <p className="text-sm text-gray-500">Status: <strong>{selectedBooking.status}</strong></p>
+                <hr className="my-2" />
+                <p className="text-sm text-blue-700">
+                  <strong>Rate per Night:</strong> LKR {(() => {
+                    const checkin = new Date(selectedBooking.check_in_date);
+                    const checkout = new Date(selectedBooking.check_out_date);
+                    const nights = Math.max(1, Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24)));
+                    const rate = (selectedBooking.booking_amount || 0) / nights;
+                    return Math.round(rate).toLocaleString();
+                  })()}
+                </p>
+                <p className="text-sm text-gray-600"><strong>Current Amount:</strong> LKR {(selectedBooking.booking_amount || 0).toLocaleString()}</p>
               </div>
             )}
             
