@@ -2609,6 +2609,7 @@ async def extend_customer_stay(
             "room_number": customer.get('current_room'),
             "old_checkout_date": str(current_checkout),
             "new_checkout_date": str(new_checkout),
+            "rate_per_night": customer_rate_per_night,
             "additional_nights": additional_nights,
             "additional_charges": additional_charges,
             "previous_room_charges": current_room_charges,
