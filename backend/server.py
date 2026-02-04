@@ -600,6 +600,8 @@ class Settings(BaseModel):
     check_out_time: str = "12:00"
     default_room_rate: float = 5000.0
     tax_rate: float = 0.0
+    cash_balance: float = 0.0  # Current cash balance
+    bank_balance: float = 0.0  # Current bank balance
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     updated_by: str = "Admin"
 
@@ -616,6 +618,8 @@ class SettingsUpdate(BaseModel):
     check_out_time: Optional[str] = None
     default_room_rate: Optional[float] = None
     tax_rate: Optional[float] = None
+    cash_balance: Optional[float] = None
+    bank_balance: Optional[float] = None
 
 class ActivityLog(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
