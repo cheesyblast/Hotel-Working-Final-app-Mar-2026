@@ -655,10 +655,11 @@ async def log_activity(action: str, description: str, user_name: str = "Admin",
         print(f"Failed to log activity: {str(e)}")
 
 # Room availability validation helper function
-async def check_room_availability_for_booking(room_number: str, check_in_date: date, check_out_date: date, exclude_booking_id: str = None):
+async def check_room_availability_for_booking(room_number: str, check_in_date: date, check_out_date: date, exclude_booking_id: str = None, skip_occupied_check: bool = False):
     """
     Check if a specific room is available for booking during the given date range
     Returns: (is_available: bool, error_message: str)
+    skip_occupied_check: Set to True when extending stay for current occupant
     """
     try:
         # Convert dates to datetime for database queries
