@@ -2360,16 +2360,54 @@ async def get_checked_in_customers():
         "is_checked_out": False  # Only customers who haven't checked out
     }).to_list(1000)
     
-    # Convert datetime back to date for response
+    result = []
     for customer in customers:
-        if customer.get('check_in_date'):
-            customer['check_in_date'] = customer['check_in_date'].date() if isinstance(customer['check_in_date'], datetime) else customer['check_in_date']
-        if customer.get('check_out_date'):
-            customer['check_out_date'] = customer['check_out_date'].date() if isinstance(customer['check_out_date'], datetime) else customer['check_out_date']
+        # Convert datetime back to date for response
+        check_in_date = customer.get('check_in_date')
+        check_out_date = customer.get('check_out_date')
+        
+        if check_in_date:
+            check_in_date = check_in_date.date() if isinstance(check_in_date, datetime) else check_in_date
+            customer['check_in_date'] = check_in_date
+        if check_out_date:
+            check_out_date = check_out_date.date() if isinstance(check_out_date, datetime) else check_out_date
+            customer['check_out_date'] = check_out_date
         if customer.get('actual_checkout_date'):
             customer['actual_checkout_date'] = customer['actual_checkout_date'].date() if isinstance(customer['actual_checkout_date'], datetime) else customer['actual_checkout_date']
+        
+        # Calculate rate per night from the customer's booking
+        room_charges = customer.get('room_charges', 0.0)
+        if check_in_date and check_out_date:
+            nights = (check_out_date - check_in_date).days
+            if nights < 1:
+                nights = 1
+            rate_per_night = room_charges / nights if nights > 0 else 0.0
+        else:
+            rate_per_night = 0.0
+        
+        # Create response with rate_per_night added
+        customer_data = {
+            "id": customer.get('id'),
+            "name": customer.get('name'),
+            "email": customer.get('email', ''),
+            "phone": customer.get('phone', ''),
+            "current_room": customer.get('current_room'),
+            "check_in_date": str(check_in_date) if check_in_date else None,
+            "check_out_date": str(check_out_date) if check_out_date else None,
+            "advance_amount": customer.get('advance_amount', 0.0),
+            "notes": customer.get('notes', ''),
+            "room_charges": room_charges,
+            "restaurant_charges": customer.get('restaurant_charges', 0.0),
+            "additional_charges": customer.get('additional_charges', 0.0),
+            "total_amount": customer.get('total_amount', 0.0),
+            "is_checked_out": customer.get('is_checked_out', False),
+            "actual_checkout_date": str(customer.get('actual_checkout_date')) if customer.get('actual_checkout_date') else None,
+            "created_at": customer.get('created_at'),
+            "rate_per_night": rate_per_night  # Added: customer's booked rate per night
+        }
+        result.append(customer_data)
     
-    return [Customer(**customer) for customer in customers]
+    return result
 
 @api_router.post("/customers", response_model=Customer)
 async def create_customer(customer: Customer):
