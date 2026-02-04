@@ -2153,10 +2153,16 @@ const Dashboard = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Collect Advance Payment</h3>
             {selectedCustomer && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600">Guest: {selectedCustomer.name}</p>
-                <p className="text-sm text-gray-600">Room: {selectedCustomer.current_room}</p>
-                <p className="text-sm text-gray-600">Current Advance: LKR {selectedCustomer.advance_amount || 0}</p>
+              <div className="mb-4 bg-gray-50 p-3 rounded-md">
+                <p className="text-sm text-gray-600"><strong>Guest:</strong> {selectedCustomer.name}</p>
+                <p className="text-sm text-gray-600"><strong>Room:</strong> {selectedCustomer.current_room}</p>
+                <hr className="my-2" />
+                <p className="text-sm text-gray-700"><strong>Room Charges:</strong> LKR {(selectedCustomer.room_charges || 0).toLocaleString()}</p>
+                <p className="text-sm text-gray-700"><strong>Restaurant Charges:</strong> LKR {(selectedCustomer.restaurant_charges || 0).toLocaleString()}</p>
+                <p className="text-sm text-gray-700"><strong>Total Balance:</strong> LKR {((selectedCustomer.room_charges || 0) + (selectedCustomer.restaurant_charges || 0)).toLocaleString()}</p>
+                <hr className="my-2" />
+                <p className="text-sm text-green-600"><strong>Advance Paid:</strong> LKR {(selectedCustomer.advance_amount || 0).toLocaleString()}</p>
+                <p className="text-sm font-semibold text-blue-700"><strong>Balance Due:</strong> LKR {((selectedCustomer.room_charges || 0) + (selectedCustomer.restaurant_charges || 0) - (selectedCustomer.advance_amount || 0)).toLocaleString()}</p>
               </div>
             )}
             
