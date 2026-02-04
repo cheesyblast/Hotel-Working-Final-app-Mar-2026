@@ -2250,8 +2250,9 @@ const Dashboard = () => {
             <div className="mb-4 bg-gray-50 p-3 rounded-md">
               <p className="text-sm text-gray-600"><strong>Guest:</strong> {selectedCustomer.name}</p>
               <p className="text-sm text-gray-600"><strong>Room:</strong> {selectedCustomer.current_room}</p>
+              <p className="text-sm text-gray-600"><strong>Check-in:</strong> {selectedCustomer.check_in_date}</p>
               <p className="text-sm text-gray-600"><strong>Current Checkout:</strong> {selectedCustomer.check_out_date}</p>
-              <p className="text-sm text-gray-600"><strong>Current Charges:</strong> LKR {selectedCustomer.room_charges || 0}</p>
+              <p className="text-sm text-gray-600"><strong>Current Charges:</strong> LKR {(selectedCustomer.room_charges || 0).toLocaleString()}</p>
             </div>
             
             <div className="space-y-4">
