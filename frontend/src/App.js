@@ -1836,34 +1836,34 @@ const Dashboard = () => {
       </div>
 
       {/* Checked-in Customers */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">Checked-in Customers</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 min-h-[500px] overflow-visible">
+      <div className="mb-4 sm:mb-8">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Checked-in Customers</h3>
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
           {checkedInCustomers.length === 0 ? (
-            <div className="p-6 text-center text-gray-400">
+            <div className="p-4 sm:p-6 text-center text-gray-400 text-sm">
               No customers currently checked in
             </div>
           ) : (
-            <div className="overflow-visible">
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-700">
+                <thead className="bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Customer Name
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Room
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Check-in Date
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
+                      Check-in
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Check-out Date
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                      Check-out
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                       Contact
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -1871,27 +1871,27 @@ const Dashboard = () => {
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {checkedInCustomers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">{customer.name}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-white truncate max-w-[80px] sm:max-w-none">{customer.name}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{customer.current_room}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-white">{customer.current_room}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{customer.check_in_date}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden sm:table-cell">
+                        <div className="text-xs sm:text-sm text-white">{customer.check_in_date}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{customer.check_out_date}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden md:table-cell">
+                        <div className="text-xs sm:text-sm text-white">{customer.check_out_date}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{customer.phone}</div>
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden lg:table-cell">
+                        <div className="text-xs sm:text-sm text-white">{customer.phone}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap relative">
-                        <div className="flex items-center space-x-2">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap relative">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
                           {/* Checkout Button */}
                           <button
                             onClick={() => handleCheckout(customer)}
-                            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+                            className="bg-red-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm hover:bg-red-700 transition-colors"
                           >
                             Checkout
                           </button>
@@ -1900,16 +1900,16 @@ const Dashboard = () => {
                           <div className="relative">
                             <button
                               onClick={() => toggleCustomerDropdown(customer.id)}
-                              className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors flex items-center"
+                              className="bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm hover:bg-gray-700 transition-colors flex items-center"
                             >
-                              Actions
-                              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <span className="hidden sm:inline">Actions</span>
+                              <svg className="w-4 h-4 sm:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                               </svg>
                             </button>
                             
                             {openCustomerDropdowns[customer.id] && (
-                              <div className="absolute right-0 mt-2 w-52 bg-gray-700 rounded-md shadow-lg z-50 border border-gray-600">
+                              <div className="absolute right-0 mt-2 w-44 sm:w-52 bg-gray-700 rounded-md shadow-lg z-50 border border-gray-600">
                                 <div className="py-1">
                                   <button
                                     onClick={async () => {
