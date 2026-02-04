@@ -3069,6 +3069,31 @@ async def checkin_customer(checkin: CheckinRequest):
         advance_sale_dict = advance_sale.dict()
         advance_sale_dict['date'] = datetime.combine(advance_sale_dict['date'], datetime.min.time())
         await db.daily_sales.insert_one(advance_sale_dict)
+        
+        # Record as income
+        income_id = str(uuid.uuid4())
+        await db.incomes.insert_one({
+            "id": income_id,
+            "date": datetime.combine(datetime.now().date(), datetime.min.time()),
+            "category": "Advance Payment",
+            "description": f"Advance payment from {booking['guest_name']} - Room {booking['room_number']}",
+            "amount": advance_amount,
+            "payment_method": checkin.payment_method,
+            "created_by": "system",
+            "created_at": datetime.now()
+        })
+        
+        # Update cash or bank balance based on payment method
+        if checkin.payment_method == "Cash":
+            await db.settings.update_one(
+                {},
+                {"$inc": {"cash_balance": advance_amount}}
+            )
+        elif checkin.payment_method in ["Bank Transfer", "Card"]:
+            await db.settings.update_one(
+                {},
+                {"$inc": {"bank_balance": advance_amount}}
+            )
     
     # Update room status to occupied
     await db.rooms.update_one(
