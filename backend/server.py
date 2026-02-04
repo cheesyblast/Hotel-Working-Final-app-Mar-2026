@@ -2353,7 +2353,7 @@ async def migrate_customers():
     
     return {"message": "Customer migration completed"}
 
-@api_router.get("/customers/checked-in", response_model=List[Customer])
+@api_router.get("/customers/checked-in")
 async def get_checked_in_customers():
     # Get only customers who are currently checked in (is_checked_out = False)
     customers = await db.customers.find({
