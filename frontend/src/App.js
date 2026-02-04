@@ -1814,173 +1814,136 @@ const Dashboard = () => {
       {/* Checked-in Customers */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-white mb-4">Checked-in Customers</h3>
-        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
+        <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700">
           {checkedInCustomers.length === 0 ? (
-            <div className="p-4 sm:p-6 text-center text-gray-400 text-sm">
+            <div className="p-6 text-center text-gray-400">
               No customers currently checked in
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-700 sticky top-0">
-                  <tr>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Room
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden sm:table-cell">
-                      Check-in
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden md:table-cell">
-                      Check-out
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider hidden lg:table-cell">
-                      Contact
-                    </th>
-                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {checkedInCustomers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-700">
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm font-medium text-white truncate max-w-[80px] sm:max-w-none">{customer.name}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                        <div className="text-xs sm:text-sm text-white">{customer.current_room}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden sm:table-cell">
-                        <div className="text-xs sm:text-sm text-white">{customer.check_in_date}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden md:table-cell">
-                        <div className="text-xs sm:text-sm text-white">{customer.check_out_date}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap hidden lg:table-cell">
-                        <div className="text-xs sm:text-sm text-white">{customer.phone}</div>
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap relative">
-                        <div className="flex items-center space-x-1 sm:space-x-2">
-                          {/* Checkout Button */}
-                          <button
-                            onClick={() => handleCheckout(customer)}
-                            className="bg-red-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm hover:bg-red-700 transition-colors"
-                          >
-                            Checkout
-                          </button>
-                          
-                          {/* Actions Dropdown */}
-                          <div className="relative">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Customer Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Room</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Check-in Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Check-out Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-gray-800 divide-y divide-gray-700">
+                {checkedInCustomers.map((customer) => (
+                  <tr key={customer.id} className="hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-white">{customer.name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{customer.current_room}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{customer.check_in_date}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{customer.check_out_date}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-white">{customer.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap relative">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleCheckout(customer)}
+                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                        >
+                          Checkout
+                        </button>
+                        <button
+                          onClick={() => toggleCustomerDropdown(customer.id)}
+                          className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 flex items-center"
+                        >
+                          Actions
+                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </div>
+                      {openCustomerDropdowns[customer.id] && (
+                        <div className="absolute right-0 z-50 mt-2 w-52 bg-gray-700 rounded-md shadow-lg border border-gray-600">
+                          <div className="py-1">
                             <button
-                              onClick={() => toggleCustomerDropdown(customer.id)}
-                              className="bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm hover:bg-gray-700 transition-colors flex items-center"
+                              onClick={async () => {
+                                try {
+                                  const allBookingsResponse = await axios.get(`${API}/bookings`);
+                                  const allBookings = allBookingsResponse.data.bookings || [];
+                                  const booking = allBookings.find(b => 
+                                    b.guest_name === customer.name && 
+                                    b.room_number === customer.current_room &&
+                                    (b.status === 'Checked-in' || b.status === 'Checked In')
+                                  );
+                                  if (booking) {
+                                    openEditBookingModal(booking);
+                                  } else {
+                                    alert('Unable to find booking record.');
+                                  }
+                                  closeAllCustomerDropdowns();
+                                } catch (error) {
+                                  alert('Error finding booking record.');
+                                  closeAllCustomerDropdowns();
+                                }
+                              }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
                             >
-                              <span className="hidden sm:inline">Actions</span>
-                              <svg className="w-4 h-4 sm:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                              <svg className="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                               </svg>
+                              Edit Booking
                             </button>
-                            
-                            {openCustomerDropdowns[customer.id] && (
-                              <div className="absolute right-0 mt-2 w-44 sm:w-52 bg-gray-700 rounded-md shadow-lg z-50 border border-gray-600">
-                                <div className="py-1">
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        // Fetch all bookings to find the actual booking for this customer
-                                        const allBookingsResponse = await axios.get(`${API}/bookings`);
-                                        const allBookings = allBookingsResponse.data.bookings || [];
-                                        
-                                        // Find the booking for this customer by matching guest name and room
-                                        const booking = allBookings.find(b => 
-                                          b.guest_name === customer.name && 
-                                          b.room_number === customer.current_room &&
-                                          (b.status === 'Checked-in' || b.status === 'Checked In')
-                                        );
-                                        
-                                        if (booking) {
-                                          openEditBookingModal(booking);
-                                        } else {
-                                          alert('Unable to find the booking record for this customer. Please try refreshing the page.');
-                                        }
-                                        closeAllCustomerDropdowns();
-                                      } catch (error) {
-                                        console.error('Error finding booking for customer:', error);
-                                        alert('Error finding booking record. Please try again.');
-                                        closeAllCustomerDropdowns();
-                                      }
-                                    }}
-                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                                  >
-                                    <svg className="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                    Edit Booking
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      handleAdvancePayment(customer);
-                                      closeAllCustomerDropdowns();
-                                    }}
-                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                                  >
-                                    <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                                    </svg>
-                                    Get Advance
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      handleExtendStay(customer);
-                                      closeAllCustomerDropdowns();
-                                    }}
-                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                                  >
-                                    <svg className="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                    </svg>
-                                    Extend Stay
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      handleEarlyCheckout(customer);
-                                      closeAllCustomerDropdowns();
-                                    }}
-                                    className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                                  >
-                                    <svg className="w-4 h-4 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Early Checkout
-                                  </button>
-                                  {user?.role === 'Admin' && (
-                                    <button
-                                      onClick={() => {
-                                        handleCancelBookingForCustomer(customer);
-                                        closeAllCustomerDropdowns();
-                                      }}
-                                      className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600 hover:text-white"
-                                    >
-                                      <svg className="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                      </svg>
-                                      Cancel Booking
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
+                            <button
+                              onClick={() => { handleAdvancePayment(customer); closeAllCustomerDropdowns(); }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                            >
+                              <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                              </svg>
+                              Get Advance
+                            </button>
+                            <button
+                              onClick={() => { handleExtendStay(customer); closeAllCustomerDropdowns(); }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                            >
+                              <svg className="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                              </svg>
+                              Extend Stay
+                            </button>
+                            <button
+                              onClick={() => { handleEarlyCheckout(customer); closeAllCustomerDropdowns(); }}
+                              className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                            >
+                              <svg className="w-4 h-4 mr-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                              </svg>
+                              Early Checkout
+                            </button>
+                            {user?.role === 'Admin' && (
+                              <button
+                                onClick={() => { handleCancelBookingForCustomer(customer); closeAllCustomerDropdowns(); }}
+                                className="flex w-full px-4 py-2 text-sm text-gray-200 hover:bg-gray-600"
+                              >
+                                <svg className="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Cancel Booking
+                              </button>
                             )}
                           </div>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
