@@ -2236,35 +2236,38 @@ async def update_booking(
                     detail="Cannot shorten checkout date for checked-in bookings. Only extensions are allowed."
                 )
         
-        # Get room information to calculate new amount
-        room = await db.rooms.find_one({"room_number": current_booking.get('room_number')})
-        if room:
-            price_per_night = room.get('price_per_night', 0.0)
-            
-            # Recalculate stay_type based on new dates
-            if new_check_in == new_check_out:
-                # Same day = Short Time
-                stay_type = 'Short Time'
-                new_booking_amount = price_per_night * 0.5
-            else:
-                # Different days = Night Stay
-                stay_type = 'Night Stay'
-                nights = (new_check_out - new_check_in).days
-                if nights <= 0:
-                    nights = 1  # Minimum 1 night
-                new_booking_amount = price_per_night * nights
-            
-            # Update stay_type if it has changed
-            current_stay_type = current_booking.get('stay_type', 'Night Stay')
-            if stay_type != current_stay_type:
-                update_data['stay_type'] = stay_type
-                changes_made.append(f"Stay type updated from {current_stay_type} to {stay_type}")
-            
-            # Update booking amount if it has changed
-            current_amount = current_booking.get('booking_amount', 0.0)
-            if abs(new_booking_amount - current_amount) > 0.01:  # Use small epsilon for float comparison
-                update_data['booking_amount'] = new_booking_amount
-                changes_made.append(f"Booking amount updated from {current_amount} to {new_booking_amount}")
+        # Calculate the booking's original rate per night (not room's default rate)
+        current_amount = current_booking.get('booking_amount', 0.0)
+        original_nights = (current_check_out - current_check_in).days
+        if original_nights < 1:
+            original_nights = 1
+        
+        # Use the booking's original rate per night
+        booking_rate_per_night = current_amount / original_nights if original_nights > 0 else 0.0
+        
+        # Recalculate stay_type based on new dates
+        if new_check_in == new_check_out:
+            # Same day = Short Time
+            stay_type = 'Short Time'
+            new_booking_amount = booking_rate_per_night * 0.5
+        else:
+            # Different days = Night Stay
+            stay_type = 'Night Stay'
+            nights = (new_check_out - new_check_in).days
+            if nights <= 0:
+                nights = 1  # Minimum 1 night
+            new_booking_amount = booking_rate_per_night * nights
+        
+        # Update stay_type if it has changed
+        current_stay_type = current_booking.get('stay_type', 'Night Stay')
+        if stay_type != current_stay_type:
+            update_data['stay_type'] = stay_type
+            changes_made.append(f"Stay type updated from {current_stay_type} to {stay_type}")
+        
+        # Update booking amount if it has changed
+        if abs(new_booking_amount - current_amount) > 0.01:  # Use small epsilon for float comparison
+            update_data['booking_amount'] = new_booking_amount
+            changes_made.append(f"Booking amount updated from {current_amount} to {new_booking_amount} (rate: {booking_rate_per_night}/night)")
     
     if not update_data:
         raise HTTPException(status_code=400, detail="No valid fields provided for update")
