@@ -8020,6 +8020,938 @@ const RestaurantOld = () => {
   );
 };
 
+// Payroll Component
+const Payroll = () => {
+  const [employees, setEmployees] = useState([]);
+  const [salaryComponents, setSalaryComponents] = useState([]);
+  const [loans, setLoans] = useState([]);
+  const [payrollRuns, setPayrollRuns] = useState([]);
+  const [payslips, setPayslips] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('employees');
+  
+  // Modal states
+  const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
+  const [showAddComponentModal, setShowAddComponentModal] = useState(false);
+  const [showAddLoanModal, setShowAddLoanModal] = useState(false);
+  const [showProcessPayrollModal, setShowProcessPayrollModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  
+  // Form states
+  const [employeeForm, setEmployeeForm] = useState({
+    employee_id: '', first_name: '', last_name: '', email: '', phone: '', nic: '',
+    address: '', hire_date: '', department: '', designation: '', employment_type: 'Full-time',
+    basic_salary: 0, payment_frequency: 'Monthly', bank_name: '', bank_account: '', bank_branch: '',
+    epf_number: '', tax_number: ''
+  });
+  
+  const [componentForm, setComponentForm] = useState({
+    name: '', type: 'allowance', amount_type: 'fixed', amount: 0, percentage_of: '', is_taxable: true, applies_to_all: false
+  });
+  
+  const [loanForm, setLoanForm] = useState({
+    employee_id: '', loan_type: 'Salary Advance', amount: 0, interest_rate: 0,
+    disbursement_date: '', repayment_start_date: '', installment_amount: 0,
+    installment_frequency: 'Monthly', total_installments: 12, notes: ''
+  });
+  
+  const [payrollForm, setPayrollForm] = useState({
+    pay_period_start: '', pay_period_end: '', payment_date: ''
+  });
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      const [empRes, compRes, loanRes, runRes, summaryRes] = await Promise.all([
+        axios.get(`${API}/payroll/employees`),
+        axios.get(`${API}/payroll/salary-components`),
+        axios.get(`${API}/payroll/loans`),
+        axios.get(`${API}/payroll/runs`),
+        axios.get(`${API}/payroll/summary`)
+      ]);
+      setEmployees(empRes.data);
+      setSalaryComponents(compRes.data);
+      setLoans(loanRes.data);
+      setPayrollRuns(runRes.data);
+      setSummary(summaryRes.data);
+    } catch (error) {
+      console.error('Error fetching payroll data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddEmployee = async () => {
+    try {
+      await axios.post(`${API}/payroll/employees`, employeeForm);
+      setShowAddEmployeeModal(false);
+      setEmployeeForm({
+        employee_id: '', first_name: '', last_name: '', email: '', phone: '', nic: '',
+        address: '', hire_date: '', department: '', designation: '', employment_type: 'Full-time',
+        basic_salary: 0, payment_frequency: 'Monthly', bank_name: '', bank_account: '', bank_branch: '',
+        epf_number: '', tax_number: ''
+      });
+      fetchAllData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Error adding employee');
+    }
+  };
+
+  const handleAddComponent = async () => {
+    try {
+      await axios.post(`${API}/payroll/salary-components`, componentForm);
+      setShowAddComponentModal(false);
+      setComponentForm({ name: '', type: 'allowance', amount_type: 'fixed', amount: 0, percentage_of: '', is_taxable: true, applies_to_all: false });
+      fetchAllData();
+    } catch (error) {
+      alert('Error adding component');
+    }
+  };
+
+  const handleAddLoan = async () => {
+    try {
+      await axios.post(`${API}/payroll/loans`, loanForm);
+      setShowAddLoanModal(false);
+      setLoanForm({
+        employee_id: '', loan_type: 'Salary Advance', amount: 0, interest_rate: 0,
+        disbursement_date: '', repayment_start_date: '', installment_amount: 0,
+        installment_frequency: 'Monthly', total_installments: 12, notes: ''
+      });
+      fetchAllData();
+    } catch (error) {
+      alert('Error adding loan');
+    }
+  };
+
+  const handleProcessPayroll = async () => {
+    try {
+      const response = await axios.post(`${API}/payroll/process?pay_period_start=${payrollForm.pay_period_start}&pay_period_end=${payrollForm.pay_period_end}&payment_date=${payrollForm.payment_date}`);
+      alert(response.data.message);
+      setShowProcessPayrollModal(false);
+      setPayrollForm({ pay_period_start: '', pay_period_end: '', payment_date: '' });
+      fetchAllData();
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Error processing payroll');
+    }
+  };
+
+  const departments = ['Front Desk', 'Housekeeping', 'Restaurant', 'Maintenance', 'Management', 'Security', 'Other'];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Payroll Management</h2>
+          <p className="text-gray-400">Manage employees, salaries, loans and payroll</p>
+        </div>
+        <button
+          onClick={() => setShowProcessPayrollModal(true)}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          Process Payroll
+        </button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Total Employees</p>
+          <p className="text-2xl font-bold text-white">{summary.total_employees || 0}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Monthly Payroll</p>
+          <p className="text-2xl font-bold text-green-400">LKR {(summary.total_monthly_salary || 0).toLocaleString()}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Active Loans</p>
+          <p className="text-2xl font-bold text-yellow-400">{summary.active_loans || 0}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Loan Balance</p>
+          <p className="text-2xl font-bold text-red-400">LKR {(summary.total_loan_balance || 0).toLocaleString()}</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex space-x-4 mb-6 border-b border-gray-700">
+        {['employees', 'components', 'loans', 'payroll_history'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 font-medium ${activeTab === tab ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+          >
+            {tab.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </button>
+        ))}
+      </div>
+
+      {/* Employees Tab */}
+      {activeTab === 'employees' && (
+        <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white">Employees</h3>
+            <button onClick={() => setShowAddEmployeeModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Add Employee
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Department</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Designation</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Basic Salary</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {employees.map((emp) => (
+                  <tr key={emp.id} className="hover:bg-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-300">{emp.employee_id}</td>
+                    <td className="px-4 py-3 text-sm text-white">{emp.first_name} {emp.last_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{emp.department}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{emp.designation}</td>
+                    <td className="px-4 py-3 text-sm text-green-400">LKR {emp.basic_salary?.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${emp.status === 'Active' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                        {emp.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Salary Components Tab */}
+      {activeTab === 'components' && (
+        <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white">Salary Components (Allowances & Deductions)</h3>
+            <button onClick={() => setShowAddComponentModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Add Component
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            <div>
+              <h4 className="text-green-400 font-medium mb-3">Allowances</h4>
+              {salaryComponents.filter(c => c.type === 'allowance').map((comp) => (
+                <div key={comp.id} className="bg-gray-700 p-3 rounded-lg mb-2 flex justify-between">
+                  <div>
+                    <p className="text-white">{comp.name}</p>
+                    <p className="text-sm text-gray-400">{comp.amount_type === 'fixed' ? `LKR ${comp.amount}` : `${comp.amount}%`}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded ${comp.applies_to_all ? 'bg-blue-900 text-blue-300' : 'bg-gray-600 text-gray-300'}`}>
+                    {comp.applies_to_all ? 'All' : 'Custom'}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <h4 className="text-red-400 font-medium mb-3">Deductions</h4>
+              {salaryComponents.filter(c => c.type === 'deduction').map((comp) => (
+                <div key={comp.id} className="bg-gray-700 p-3 rounded-lg mb-2 flex justify-between">
+                  <div>
+                    <p className="text-white">{comp.name}</p>
+                    <p className="text-sm text-gray-400">{comp.amount_type === 'fixed' ? `LKR ${comp.amount}` : `${comp.amount}%`}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded ${comp.applies_to_all ? 'bg-blue-900 text-blue-300' : 'bg-gray-600 text-gray-300'}`}>
+                    {comp.applies_to_all ? 'All' : 'Custom'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loans Tab */}
+      {activeTab === 'loans' && (
+        <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white">Employee Loans</h3>
+            <button onClick={() => setShowAddLoanModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Add Loan
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Employee</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Installment</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Balance</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {loans.map((loan) => {
+                  const emp = employees.find(e => e.id === loan.employee_id);
+                  return (
+                    <tr key={loan.id} className="hover:bg-gray-700">
+                      <td className="px-4 py-3 text-sm text-white">{emp ? `${emp.first_name} ${emp.last_name}` : 'Unknown'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-300">{loan.loan_type}</td>
+                      <td className="px-4 py-3 text-sm text-gray-300">LKR {loan.amount?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm text-gray-300">LKR {loan.installment_amount?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm text-yellow-400">LKR {loan.remaining_balance?.toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-xs rounded-full ${loan.status === 'Active' ? 'bg-yellow-900 text-yellow-300' : 'bg-green-900 text-green-300'}`}>
+                          {loan.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Payroll History Tab */}
+      {activeTab === 'payroll_history' && (
+        <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="p-4 border-b border-gray-700">
+            <h3 className="text-lg font-semibold text-white">Payroll History</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Pay Period</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Payment Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Gross</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Deductions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Net</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">EPF (Emp+Empr)</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {payrollRuns.map((run) => (
+                  <tr key={run.id} className="hover:bg-gray-700">
+                    <td className="px-4 py-3 text-sm text-white">{run.pay_period_start} to {run.pay_period_end}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{run.payment_date}</td>
+                    <td className="px-4 py-3 text-sm text-green-400">LKR {run.total_gross?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-red-400">LKR {run.total_deductions?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-blue-400">LKR {run.total_net?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">LKR {((run.total_epf_employee || 0) + (run.total_epf_employer || 0)).toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 text-xs rounded-full bg-green-900 text-green-300">{run.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add Employee Modal */}
+      {showAddEmployeeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto my-8">
+            <h3 className="text-lg font-semibold mb-4">Add New Employee</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID *</label>
+                <input type="text" value={employeeForm.employee_id} onChange={(e) => setEmployeeForm({...employeeForm, employee_id: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="EMP001" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">NIC</label>
+                <input type="text" value={employeeForm.nic} onChange={(e) => setEmployeeForm({...employeeForm, nic: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="National ID" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                <input type="text" value={employeeForm.first_name} onChange={(e) => setEmployeeForm({...employeeForm, first_name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                <input type="text" value={employeeForm.last_name} onChange={(e) => setEmployeeForm({...employeeForm, last_name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" value={employeeForm.email} onChange={(e) => setEmployeeForm({...employeeForm, email: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input type="text" value={employeeForm.phone} onChange={(e) => setEmployeeForm({...employeeForm, phone: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+                <select value={employeeForm.department} onChange={(e) => setEmployeeForm({...employeeForm, department: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="">Select Department</option>
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Designation *</label>
+                <input type="text" value={employeeForm.designation} onChange={(e) => setEmployeeForm({...employeeForm, designation: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="e.g. Manager, Staff" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Hire Date *</label>
+                <input type="date" value={employeeForm.hire_date} onChange={(e) => setEmployeeForm({...employeeForm, hire_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Basic Salary (LKR) *</label>
+                <input type="number" value={employeeForm.basic_salary} onChange={(e) => setEmployeeForm({...employeeForm, basic_salary: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                <input type="text" value={employeeForm.bank_name} onChange={(e) => setEmployeeForm({...employeeForm, bank_name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bank Account</label>
+                <input type="text" value={employeeForm.bank_account} onChange={(e) => setEmployeeForm({...employeeForm, bank_account: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">EPF Number</label>
+                <input type="text" value={employeeForm.epf_number} onChange={(e) => setEmployeeForm({...employeeForm, epf_number: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
+                <select value={employeeForm.employment_type} onChange={(e) => setEmployeeForm({...employeeForm, employment_type: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddEmployeeModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddEmployee} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Employee</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Component Modal */}
+      {showAddComponentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Salary Component</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input type="text" value={componentForm.name} onChange={(e) => setComponentForm({...componentForm, name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="e.g. Transport Allowance" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                <select value={componentForm.type} onChange={(e) => setComponentForm({...componentForm, type: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="allowance">Allowance</option>
+                  <option value="deduction">Deduction</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount Type</label>
+                <select value={componentForm.amount_type} onChange={(e) => setComponentForm({...componentForm, amount_type: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="fixed">Fixed Amount</option>
+                  <option value="percentage">Percentage</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount {componentForm.amount_type === 'percentage' ? '(%)' : '(LKR)'}</label>
+                <input type="number" value={componentForm.amount} onChange={(e) => setComponentForm({...componentForm, amount: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div className="flex items-center">
+                <input type="checkbox" checked={componentForm.applies_to_all} onChange={(e) => setComponentForm({...componentForm, applies_to_all: e.target.checked})}
+                  className="mr-2" id="appliesAll" />
+                <label htmlFor="appliesAll" className="text-sm text-gray-700">Apply to all employees</label>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddComponentModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddComponent} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Component</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Loan Modal */}
+      {showAddLoanModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Add Employee Loan</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Employee *</label>
+                <select value={loanForm.employee_id} onChange={(e) => setLoanForm({...loanForm, employee_id: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="">Select Employee</option>
+                  {employees.filter(e => e.status === 'Active').map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.first_name} {emp.last_name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Loan Type</label>
+                <select value={loanForm.loan_type} onChange={(e) => setLoanForm({...loanForm, loan_type: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="Salary Advance">Salary Advance</option>
+                  <option value="Personal Loan">Personal Loan</option>
+                  <option value="Emergency Loan">Emergency Loan</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (LKR) *</label>
+                <input type="number" value={loanForm.amount} onChange={(e) => setLoanForm({...loanForm, amount: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Installment (LKR) *</label>
+                <input type="number" value={loanForm.installment_amount} onChange={(e) => setLoanForm({...loanForm, installment_amount: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Number of Installments</label>
+                <input type="number" value={loanForm.total_installments} onChange={(e) => setLoanForm({...loanForm, total_installments: parseInt(e.target.value) || 12})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Disbursement Date</label>
+                <input type="date" value={loanForm.disbursement_date} onChange={(e) => setLoanForm({...loanForm, disbursement_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Repayment Start Date</label>
+                <input type="date" value={loanForm.repayment_start_date} onChange={(e) => setLoanForm({...loanForm, repayment_start_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddLoanModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddLoan} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Loan</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Process Payroll Modal */}
+      {showProcessPayrollModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Process Payroll</h3>
+            <p className="text-sm text-gray-600 mb-4">This will calculate salaries for all active employees including EPF/ETF contributions.</p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pay Period Start *</label>
+                <input type="date" value={payrollForm.pay_period_start} onChange={(e) => setPayrollForm({...payrollForm, pay_period_start: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pay Period End *</label>
+                <input type="date" value={payrollForm.pay_period_end} onChange={(e) => setPayrollForm({...payrollForm, pay_period_end: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+                <input type="date" value={payrollForm.payment_date} onChange={(e) => setPayrollForm({...payrollForm, payment_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowProcessPayrollModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleProcessPayroll} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Process Payroll</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Maintenance Component
+const Maintenance = () => {
+  const [items, setItems] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('items');
+  
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  
+  const [itemForm, setItemForm] = useState({
+    item_name: '', description: '', quantity: 1, unit_price: 0, purchase_date: '',
+    room_number: '', category: 'General', vendor: '', invoice_number: '', notes: ''
+  });
+  
+  const [taskForm, setTaskForm] = useState({
+    room_number: '', task_type: 'Repair', description: '', priority: 'Medium',
+    assigned_to: '', estimated_cost: 0, scheduled_date: '', notes: ''
+  });
+
+  const categories = ['General', 'Plumbing', 'Electrical', 'Furniture', 'Appliance', 'Cleaning Supplies', 'Linen', 'Paint', 'Other'];
+  const taskTypes = ['Repair', 'Replacement', 'Inspection', 'Cleaning', 'Installation', 'Other'];
+  const priorities = ['Low', 'Medium', 'High', 'Urgent'];
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      const [itemsRes, tasksRes, summaryRes, roomsRes] = await Promise.all([
+        axios.get(`${API}/maintenance/items`),
+        axios.get(`${API}/maintenance/tasks`),
+        axios.get(`${API}/maintenance/summary`),
+        axios.get(`${API}/rooms`)
+      ]);
+      setItems(itemsRes.data);
+      setTasks(tasksRes.data);
+      setSummary(summaryRes.data);
+      setRooms(roomsRes.data);
+    } catch (error) {
+      console.error('Error fetching maintenance data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddItem = async () => {
+    try {
+      await axios.post(`${API}/maintenance/items`, itemForm);
+      setShowAddItemModal(false);
+      setItemForm({ item_name: '', description: '', quantity: 1, unit_price: 0, purchase_date: '', room_number: '', category: 'General', vendor: '', invoice_number: '', notes: '' });
+      fetchAllData();
+    } catch (error) {
+      alert('Error adding item');
+    }
+  };
+
+  const handleAddTask = async () => {
+    try {
+      await axios.post(`${API}/maintenance/tasks`, taskForm);
+      setShowAddTaskModal(false);
+      setTaskForm({ room_number: '', task_type: 'Repair', description: '', priority: 'Medium', assigned_to: '', estimated_cost: 0, scheduled_date: '', notes: '' });
+      fetchAllData();
+    } catch (error) {
+      alert('Error adding task');
+    }
+  };
+
+  const handleUpdateTaskStatus = async (taskId, newStatus) => {
+    try {
+      await axios.put(`${API}/maintenance/tasks/${taskId}`, { status: newStatus });
+      fetchAllData();
+    } catch (error) {
+      alert('Error updating task');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Maintenance Tracking</h2>
+          <p className="text-gray-400">Track room maintenance items and tasks</p>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Total Expense</p>
+          <p className="text-2xl font-bold text-red-400">LKR {(summary.total_expense || 0).toLocaleString()}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Pending Tasks</p>
+          <p className="text-2xl font-bold text-yellow-400">{summary.tasks?.pending || 0}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">In Progress</p>
+          <p className="text-2xl font-bold text-blue-400">{summary.tasks?.in_progress || 0}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Completed</p>
+          <p className="text-2xl font-bold text-green-400">{summary.tasks?.completed || 0}</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex space-x-4 mb-6 border-b border-gray-700">
+        {['items', 'tasks'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 font-medium ${activeTab === tab ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400 hover:text-white'}`}
+          >
+            {tab === 'items' ? 'Purchases & Items' : 'Maintenance Tasks'}
+          </button>
+        ))}
+      </div>
+
+      {/* Items Tab */}
+      {activeTab === 'items' && (
+        <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white">Maintenance Purchases</h3>
+            <button onClick={() => setShowAddItemModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Add Purchase
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Item</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Category</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Room</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Qty</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Total</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Vendor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {items.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-300">{item.purchase_date}</td>
+                    <td className="px-4 py-3 text-sm text-white">{item.item_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{item.category}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{item.room_number || 'General'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{item.quantity}</td>
+                    <td className="px-4 py-3 text-sm text-red-400">LKR {item.total_price?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{item.vendor || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Tasks Tab */}
+      {activeTab === 'tasks' && (
+        <div className="bg-gray-800 rounded-lg border border-gray-700">
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-white">Maintenance Tasks</h3>
+            <button onClick={() => setShowAddTaskModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              Add Task
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Room</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Description</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Priority</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {tasks.map((task) => (
+                  <tr key={task.id} className="hover:bg-gray-700">
+                    <td className="px-4 py-3 text-sm text-white">{task.room_number}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{task.task_type}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300 max-w-xs truncate">{task.description}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        task.priority === 'Urgent' ? 'bg-red-900 text-red-300' :
+                        task.priority === 'High' ? 'bg-orange-900 text-orange-300' :
+                        task.priority === 'Medium' ? 'bg-yellow-900 text-yellow-300' :
+                        'bg-gray-600 text-gray-300'
+                      }`}>{task.priority}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        task.status === 'Completed' ? 'bg-green-900 text-green-300' :
+                        task.status === 'In Progress' ? 'bg-blue-900 text-blue-300' :
+                        'bg-yellow-900 text-yellow-300'
+                      }`}>{task.status}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <select 
+                        value={task.status}
+                        onChange={(e) => handleUpdateTaskStatus(task.id, e.target.value)}
+                        className="bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add Item Modal */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Add Maintenance Purchase</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
+                <input type="text" value={itemForm.item_name} onChange={(e) => setItemForm({...itemForm, item_name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="e.g. Light Bulb, Faucet" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select value={itemForm.category} onChange={(e) => setItemForm({...itemForm, category: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md">
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room (Optional)</label>
+                  <select value={itemForm.room_number} onChange={(e) => setItemForm({...itemForm, room_number: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md">
+                    <option value="">General/Hotel-wide</option>
+                    {rooms.map(r => <option key={r.room_number} value={r.room_number}>{r.room_number}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <input type="number" value={itemForm.quantity} onChange={(e) => setItemForm({...itemForm, quantity: parseInt(e.target.value) || 1})}
+                    className="w-full px-3 py-2 border rounded-md" min="1" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price (LKR)</label>
+                  <input type="number" value={itemForm.unit_price} onChange={(e) => setItemForm({...itemForm, unit_price: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border rounded-md" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date *</label>
+                <input type="date" value={itemForm.purchase_date} onChange={(e) => setItemForm({...itemForm, purchase_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                <input type="text" value={itemForm.vendor} onChange={(e) => setItemForm({...itemForm, vendor: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="Supplier name" />
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600">Total: <strong className="text-lg">LKR {(itemForm.quantity * itemForm.unit_price).toLocaleString()}</strong></p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddItemModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddItem} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Purchase</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Task Modal */}
+      {showAddTaskModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4">Add Maintenance Task</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room *</label>
+                <select value={taskForm.room_number} onChange={(e) => setTaskForm({...taskForm, room_number: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="">Select Room</option>
+                  {rooms.map(r => <option key={r.room_number} value={r.room_number}>{r.room_number} - {r.room_type}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Task Type</label>
+                  <select value={taskForm.task_type} onChange={(e) => setTaskForm({...taskForm, task_type: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md">
+                    {taskTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                  <select value={taskForm.priority} onChange={(e) => setTaskForm({...taskForm, priority: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md">
+                    {priorities.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                <textarea value={taskForm.description} onChange={(e) => setTaskForm({...taskForm, description: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" rows="3" placeholder="Describe the maintenance issue"></textarea>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Cost</label>
+                  <input type="number" value={taskForm.estimated_cost} onChange={(e) => setTaskForm({...taskForm, estimated_cost: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border rounded-md" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled Date</label>
+                  <input type="date" value={taskForm.scheduled_date} onChange={(e) => setTaskForm({...taskForm, scheduled_date: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md" />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddTaskModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddTask} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Task</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Settings Component
 const Settings = () => {
   // State for different sections
