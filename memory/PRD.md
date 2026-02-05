@@ -33,6 +33,61 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Changelog
 
+### 2026-02-05 - Major Features Addition
+**Features Implemented**:
+
+1. **Commission Export (CSV)**
+   - Export button added to Commissions page header
+   - Exports all commission data with booking details
+   - Filters by year and month
+
+2. **SMS Settings & Gateway Integration**
+   - Support for Twilio (international)
+   - Support for Notify.lk (Sri Lanka)
+   - Support for Custom HTTP API
+   - Configurable in Settings → SMS Settings
+
+3. **Email & SMS Templates**
+   - Default templates for: Reservation, Check-in, Check-out
+   - SMS template for Cleaning Assignment
+   - Create custom templates with variables
+   - Settings → Templates tab
+
+4. **Room Maintenance Tracking**
+   - Track maintenance purchases/items
+   - Track maintenance tasks with priority
+   - Expense auto-recorded
+   - Summary with category breakdown
+   - New /maintenance route
+
+5. **Payroll System (Sri Lanka Specific)**
+   - Employee management
+   - Salary components (allowances/deductions)
+   - EPF/ETF calculations (8%/12%/3%)
+   - Loan management
+   - Payroll processing
+   - Payslip generation
+   - New /payroll route
+
+6. **Navigation Consolidation**
+   - Financial dropdown menu containing:
+     - Inc & Exp
+     - Commissions
+     - Reports
+
+**New Backend Endpoints**:
+- Email Templates: GET/POST/PUT/DELETE `/api/email-templates`
+- SMS Settings: GET/PUT `/api/sms-settings`
+- SMS Templates: GET/POST/PUT/DELETE `/api/sms-templates`
+- Maintenance Items: GET/POST/DELETE `/api/maintenance/items`
+- Maintenance Tasks: GET/POST/PUT/DELETE `/api/maintenance/tasks`
+- Payroll: `/api/payroll/employees`, `/api/payroll/salary-components`, `/api/payroll/loans`, `/api/payroll/process`, `/api/payroll/runs`, `/api/payroll/payslips`
+- Commission Export: GET `/api/commissions/export`
+
+**Files Modified**:
+- `/app/backend/server.py`: Added 30+ new endpoints and models
+- `/app/frontend/src/App.js`: Added Payroll & Maintenance components, updated Navigation, Settings tabs
+
 ### 2026-02-05 - Bulk Room Creation & Room Cleaning Workflow
 **Features Added**:
 1. **Bulk Room Creation**: Create multiple rooms at once from the Rooms page
