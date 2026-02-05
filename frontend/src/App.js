@@ -6506,9 +6506,14 @@ const Rooms = () => {
 const Navigation = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [financialDropdownOpen, setFinancialDropdownOpen] = useState(false);
   
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  const isFinancialActive = () => {
+    return ['/expenses', '/commissions', '/reports'].includes(location.pathname);
   };
 
   const navItems = [
@@ -6517,10 +6522,15 @@ const Navigation = () => {
     { path: '/rooms', label: 'Rooms' },
     { path: '/guests', label: 'Guests' },
     { path: '/bookings', label: 'Bookings' },
+    { path: '/payroll', label: 'Payroll' },
+    { path: '/maintenance', label: 'Maintenance' },
+    { path: '/settings', label: 'Settings' }
+  ];
+
+  const financialItems = [
     { path: '/expenses', label: 'Inc & Exp' },
     { path: '/commissions', label: 'Commissions' },
-    { path: '/reports', label: 'Reports' },
-    { path: '/settings', label: 'Settings' }
+    { path: '/reports', label: 'Reports' }
   ];
 
   return (
