@@ -1193,10 +1193,11 @@ const Dashboard = () => {
       setEarlyCheckoutPreview(null);
       setEarlyCheckoutData({ additional_amount: 0, discount_amount: 0, payment_method: 'Cash' });
       
-      // Refresh data
+      // Refresh data (including rooms pending cleaning)
       await Promise.all([
         fetchCheckedInCustomers(),
-        fetchRooms()
+        fetchRooms(),
+        fetchRoomsPendingCleaning()
       ]);
       
       triggerFinancialRefresh();
