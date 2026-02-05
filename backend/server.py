@@ -1715,6 +1715,38 @@ async def create_room(room: RoomCreate):
     await db.rooms.insert_one(room_obj.dict())
     return room_obj
 
+@api_router.post("/rooms/bulk")
+async def create_bulk_rooms(bulk_room: BulkRoomCreate):
+    """Create multiple rooms at once with a room number range"""
+    created_rooms = []
+    skipped_rooms = []
+    
+    for num in range(bulk_room.start_number, bulk_room.end_number + 1):
+        room_number = f"{bulk_room.room_prefix}{str(num).zfill(2)}"
+        
+        # Check if room already exists
+        existing = await db.rooms.find_one({"room_number": room_number})
+        if existing:
+            skipped_rooms.append(room_number)
+            continue
+        
+        room_obj = Room(
+            room_number=room_number,
+            room_type=bulk_room.room_type,
+            price_per_night=bulk_room.price_per_night,
+            max_occupancy=bulk_room.max_occupancy,
+            amenities=bulk_room.amenities,
+            status="Available"
+        )
+        await db.rooms.insert_one(room_obj.dict())
+        created_rooms.append(room_number)
+    
+    return {
+        "message": f"Created {len(created_rooms)} rooms",
+        "created_rooms": created_rooms,
+        "skipped_rooms": skipped_rooms
+    }
+
 @api_router.put("/rooms/{room_id}")
 async def update_room(room_id: str, room: RoomCreate):
     room_dict = room.dict()
