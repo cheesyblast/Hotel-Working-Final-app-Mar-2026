@@ -2032,6 +2032,227 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Rooms to be Cleaned - Collapsible Section */}
+      <div className="mb-8">
+        <button
+          onClick={() => setCleaningSectionExpanded(!cleaningSectionExpanded)}
+          className="w-full flex justify-between items-center text-lg font-semibold text-white mb-4 hover:text-gray-300 transition-colors"
+        >
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+            Rooms to be Cleaned
+            {roomsPendingCleaning.length > 0 && (
+              <span className="ml-2 bg-rose-500 text-white text-xs px-2 py-1 rounded-full">{roomsPendingCleaning.length}</span>
+            )}
+          </div>
+          <svg className={`w-5 h-5 transform transition-transform ${cleaningSectionExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {cleaningSectionExpanded && (
+          <div className="bg-rose-900/20 rounded-lg shadow-sm border border-rose-700/50 overflow-hidden" style={{minHeight: '400px'}}>
+            <div className="p-4 border-b border-rose-700/50 flex justify-between items-center">
+              <span className="text-gray-300 text-sm">
+                {roomsPendingCleaning.length === 0 ? 'All rooms are clean!' : `${roomsPendingCleaning.length} room(s) need cleaning`}
+              </span>
+              <button
+                onClick={() => setShowAddStaffModal(true)}
+                className="bg-rose-600 text-white px-3 py-1 rounded text-sm hover:bg-rose-700 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add Staff
+              </button>
+            </div>
+            
+            {roomsPendingCleaning.length === 0 ? (
+              <div className="p-6 text-center text-gray-400 flex flex-col items-center justify-center" style={{minHeight: '320px'}}>
+                <svg className="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M5 13l4 4L19 7" />
+                </svg>
+                <p>No rooms pending cleaning</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-rose-700/30">
+                {roomsPendingCleaning.map((room) => (
+                  <div key={room.room_number} className="p-4 flex items-center justify-between hover:bg-rose-800/20">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-rose-600/30 p-3 rounded-lg">
+                        <svg className="w-6 h-6 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">Room {room.room_number}</p>
+                        <p className="text-gray-400 text-sm">{room.room_type}</p>
+                        <p className="text-gray-500 text-xs">Last guest: {room.last_guest}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      {room.assignment ? (
+                        <div className="text-right mr-4">
+                          <p className="text-green-400 text-sm font-medium">{room.assignment.staff_name}</p>
+                          <p className="text-gray-500 text-xs">Assigned</p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setSelectedCleaningRoom(room); setShowAssignStaffModal(true); }}
+                          className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700"
+                        >
+                          Assign Staff
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleMarkRoomCleaned(room.room_number)}
+                        className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Room Cleaned
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Assign Staff Modal */}
+      {showAssignStaffModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Assign Cleaning Staff</h3>
+            {selectedCleaningRoom && (
+              <p className="text-sm text-gray-600 mb-4">Room: {selectedCleaningRoom.room_number}</p>
+            )}
+            
+            {cleaningStaff.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-gray-500 mb-4">No cleaning staff available</p>
+                <button
+                  onClick={() => { setShowAssignStaffModal(false); setShowAddStaffModal(true); }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Add Staff Member
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {cleaningStaff.map((staff) => (
+                  <button
+                    key={staff.id}
+                    onClick={() => handleAssignStaff(staff.id)}
+                    className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-2 rounded-full mr-3">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div className="text-left">
+                        <p className="font-medium text-gray-800">{staff.name}</p>
+                        {staff.phone && <p className="text-sm text-gray-500">{staff.phone}</p>}
+                      </div>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => { setShowAssignStaffModal(false); setSelectedCleaningRoom(null); }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Cleaning Staff Modal */}
+      {showAddStaffModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Cleaning Staff</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Staff Name *</label>
+                <input
+                  type="text"
+                  value={newStaffName}
+                  onChange={(e) => setNewStaffName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input
+                  type="text"
+                  value={newStaffPhone}
+                  onChange={(e) => setNewStaffPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter phone number"
+                />
+              </div>
+            </div>
+            
+            {/* Existing Staff List */}
+            {cleaningStaff.length > 0 && (
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <p className="text-sm font-medium text-gray-700 mb-2">Existing Staff</p>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {cleaningStaff.map((staff) => (
+                    <div key={staff.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <span className="text-sm">{staff.name}</span>
+                      <button
+                        onClick={() => handleDeleteCleaningStaff(staff.id)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => { setShowAddStaffModal(false); setNewStaffName(''); setNewStaffPhone(''); }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddCleaningStaff}
+                disabled={!newStaffName.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                Add Staff
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Check-in Modal */}
       {showCheckinModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
