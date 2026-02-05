@@ -3519,8 +3519,28 @@ const Commissions = () => {
     <div className="p-6 min-h-screen bg-gray-900">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-800 to-indigo-800 rounded-lg p-6 mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Commission Tracking</h2>
-        <p className="text-purple-200">Track and manage booking channel commissions</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Commission Tracking</h2>
+            <p className="text-purple-200">Track and manage booking channel commissions</p>
+          </div>
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="bg-white text-purple-800 px-4 py-2 rounded-lg hover:bg-purple-100 flex items-center font-medium disabled:opacity-50"
+          >
+            {exporting ? (
+              <span>Exporting...</span>
+            ) : (
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export CSV
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
