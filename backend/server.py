@@ -3137,16 +3137,16 @@ async def cancel_booking(
             {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
         )
     elif booking_status in ["Checked-in", "Checked In"]:
-        # If guest is currently checked in, remove from customers and free up room
+        # If guest is currently checked in, remove from customers and set room to Pending Cleaning
         await db.customers.delete_one({
             "name": guest_name,
             "current_room": room_number
         })
         
-        # Make room available
+        # Set room to Pending Cleaning (was occupied, needs cleaning)
         await db.rooms.update_one(
             {"room_number": room_number},
-            {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
+            {"$set": {"status": "Pending Cleaning", "current_guest": None, "check_in_date": None, "check_out_date": None, "last_guest": guest_name}}
         )
     
     # Log activity
