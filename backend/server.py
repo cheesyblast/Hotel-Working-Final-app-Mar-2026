@@ -1791,6 +1791,123 @@ async def get_room(room_id: str):
     
     return Room(**room)
 
+# ==================== CLEANING STAFF & ROOM CLEANING MANAGEMENT ====================
+
+@api_router.get("/cleaning/staff")
+async def get_cleaning_staff():
+    """Get all cleaning staff members"""
+    staff = await db.cleaning_staff.find({"is_active": True}, {"_id": 0}).to_list(100)
+    return staff
+
+@api_router.post("/cleaning/staff")
+async def create_cleaning_staff(name: str, phone: str = ""):
+    """Add a new cleaning staff member"""
+    staff = CleaningStaff(name=name, phone=phone)
+    await db.cleaning_staff.insert_one(staff.dict())
+    return {"message": "Staff member added", "staff": staff.dict()}
+
+@api_router.delete("/cleaning/staff/{staff_id}")
+async def delete_cleaning_staff(staff_id: str):
+    """Remove a cleaning staff member"""
+    result = await db.cleaning_staff.update_one(
+        {"id": staff_id},
+        {"$set": {"is_active": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    return {"message": "Staff member removed"}
+
+@api_router.get("/cleaning/pending")
+async def get_rooms_pending_cleaning():
+    """Get all rooms that need cleaning"""
+    rooms = await db.rooms.find({"status": "Pending Cleaning"}, {"_id": 0}).to_list(100)
+    
+    # Get active assignments for these rooms
+    room_numbers = [r["room_number"] for r in rooms]
+    assignments = await db.cleaning_assignments.find({
+        "room_number": {"$in": room_numbers},
+        "status": "Assigned"
+    }, {"_id": 0}).to_list(100)
+    
+    # Map assignments to rooms
+    assignment_map = {a["room_number"]: a for a in assignments}
+    
+    result = []
+    for room in rooms:
+        room_data = {
+            "room_number": room["room_number"],
+            "room_type": room.get("room_type", ""),
+            "last_guest": room.get("last_guest", "Unknown"),
+            "assignment": assignment_map.get(room["room_number"])
+        }
+        result.append(room_data)
+    
+    return result
+
+@api_router.post("/cleaning/assign")
+async def assign_cleaning_staff(room_number: str, staff_id: str):
+    """Assign a cleaning staff member to a room"""
+    # Verify room exists and needs cleaning
+    room = await db.rooms.find_one({"room_number": room_number})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.get("status") != "Pending Cleaning":
+        raise HTTPException(status_code=400, detail="Room does not need cleaning")
+    
+    # Verify staff exists
+    staff = await db.cleaning_staff.find_one({"id": staff_id, "is_active": True})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    
+    # Check if already assigned
+    existing = await db.cleaning_assignments.find_one({
+        "room_number": room_number,
+        "status": "Assigned"
+    })
+    if existing:
+        # Update existing assignment
+        await db.cleaning_assignments.update_one(
+            {"id": existing["id"]},
+            {"$set": {"staff_id": staff_id, "staff_name": staff["name"], "assigned_at": datetime.now()}}
+        )
+    else:
+        # Create new assignment
+        assignment = CleaningAssignment(
+            room_number=room_number,
+            staff_id=staff_id,
+            staff_name=staff["name"],
+            previous_guest=room.get("last_guest", "Unknown")
+        )
+        await db.cleaning_assignments.insert_one(assignment.dict())
+    
+    return {"message": f"Room {room_number} assigned to {staff['name']}"}
+
+@api_router.post("/cleaning/complete/{room_number}")
+async def mark_room_cleaned(room_number: str):
+    """Mark a room as cleaned and available"""
+    # Verify room exists and is pending cleaning
+    room = await db.rooms.find_one({"room_number": room_number})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.get("status") != "Pending Cleaning":
+        raise HTTPException(status_code=400, detail="Room is not pending cleaning")
+    
+    # Update room status to Available
+    await db.rooms.update_one(
+        {"room_number": room_number},
+        {"$set": {"status": "Available", "last_guest": None}}
+    )
+    
+    # Mark assignment as completed if exists
+    await db.cleaning_assignments.update_one(
+        {"room_number": room_number, "status": "Assigned"},
+        {"$set": {"status": "Completed", "completed_at": datetime.now()}}
+    )
+    
+    return {"message": f"Room {room_number} is now available"}
+
+# ==================== END CLEANING MANAGEMENT ====================
+
 @api_router.get("/rooms/availability/check")
 async def check_room_availability(
     check_in_date: str,
