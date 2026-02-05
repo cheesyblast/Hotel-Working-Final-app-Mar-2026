@@ -1240,11 +1240,12 @@ const Dashboard = () => {
       if (booking) {
         await axios.post(`${API}/cancel/${booking.id}`);
         
-        // Refresh data after cancellation
+        // Refresh data after cancellation (including rooms pending cleaning)
         await Promise.all([
           fetchRooms(),
           fetchCheckedInCustomers(),
-          fetchUpcomingBookings()
+          fetchUpcomingBookings(),
+          fetchRoomsPendingCleaning()
         ]);
         
         alert(`Booking for ${customer.name} has been cancelled successfully.`);
