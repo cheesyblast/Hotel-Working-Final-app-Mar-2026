@@ -97,6 +97,35 @@ class RoomCreate(BaseModel):
     max_occupancy: int = 2
     amenities: List[str] = []
 
+class BulkRoomCreate(BaseModel):
+    """Model for creating multiple rooms at once"""
+    room_prefix: str  # e.g., "1" for 101, 102, etc.
+    start_number: int  # e.g., 1 for x01
+    end_number: int    # e.g., 10 for x10
+    room_type: str
+    price_per_night: float
+    max_occupancy: int = 2
+    amenities: List[str] = []
+
+class CleaningStaff(BaseModel):
+    """Model for cleaning staff"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    phone: str = ""
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class CleaningAssignment(BaseModel):
+    """Model for room cleaning assignment"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    room_number: str
+    staff_id: str
+    staff_name: str
+    assigned_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: Optional[datetime] = None
+    status: str = "Assigned"  # Assigned, Completed
+    previous_guest: str = ""
+
 class Booking(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     guest_name: str
