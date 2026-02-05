@@ -9572,6 +9572,8 @@ function AppContent() {
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/commissions" element={<Commissions />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/payroll" element={<Payroll />} />
+            <Route path="/maintenance" element={<Maintenance />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
