@@ -5331,6 +5331,850 @@ async def pay_restaurant_order(
     
     return {"message": "Payment processed successfully"}
 
+# ==================== EMAIL & SMS TEMPLATES ====================
+
+@api_router.get("/email-templates")
+async def get_email_templates():
+    """Get all email templates"""
+    templates = await db.email_templates.find({}, {"_id": 0}).to_list(100)
+    return templates
+
+@api_router.post("/email-templates")
+async def create_email_template(template: EmailTemplateCreate):
+    """Create a new email template"""
+    template_dict = template.dict()
+    template_obj = EmailTemplate(**template_dict)
+    await db.email_templates.insert_one(template_obj.dict())
+    return {"message": "Email template created", "template": template_obj.dict()}
+
+@api_router.put("/email-templates/{template_id}")
+async def update_email_template(template_id: str, template: EmailTemplateCreate):
+    """Update an email template"""
+    result = await db.email_templates.update_one(
+        {"id": template_id},
+        {"$set": {**template.dict(), "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"message": "Email template updated"}
+
+@api_router.delete("/email-templates/{template_id}")
+async def delete_email_template(template_id: str):
+    """Delete an email template"""
+    result = await db.email_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"message": "Email template deleted"}
+
+@api_router.post("/email-templates/init-defaults")
+async def init_default_email_templates():
+    """Initialize default email templates"""
+    default_templates = [
+        {
+            "name": "Reservation Confirmation",
+            "occasion": "reservation",
+            "subject": "Booking Confirmation - {hotel_name}",
+            "body_html": """
+<html>
+<body style="font-family: Arial, sans-serif; color: #333;">
+<h2>Booking Confirmation</h2>
+<p>Dear {guest_name},</p>
+<p>Thank you for choosing {hotel_name}. Your reservation has been confirmed.</p>
+<div style="background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <p><strong>Booking Details:</strong></p>
+    <p>Room Number: {room_number}</p>
+    <p>Check-in: {check_in_date}</p>
+    <p>Check-out: {check_out_date}</p>
+    <p>Total Amount: LKR {booking_amount}</p>
+</div>
+<p>If you have any questions, please contact us at {hotel_phone}.</p>
+<p>Best regards,<br>{hotel_name}</p>
+</body>
+</html>
+            """,
+            "body_text": "Dear {guest_name}, Your booking at {hotel_name} is confirmed. Room: {room_number}, Check-in: {check_in_date}, Check-out: {check_out_date}",
+            "variables": ["guest_name", "hotel_name", "room_number", "check_in_date", "check_out_date", "booking_amount", "hotel_phone"]
+        },
+        {
+            "name": "Check-in Welcome",
+            "occasion": "checkin",
+            "subject": "Welcome to {hotel_name}!",
+            "body_html": """
+<html>
+<body style="font-family: Arial, sans-serif; color: #333;">
+<h2>Welcome!</h2>
+<p>Dear {guest_name},</p>
+<p>Welcome to {hotel_name}! We're delighted to have you as our guest.</p>
+<div style="background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <p><strong>Your Stay Details:</strong></p>
+    <p>Room Number: {room_number}</p>
+    <p>Check-out Date: {check_out_date}</p>
+</div>
+<p>WiFi Password: {wifi_password}</p>
+<p>For any assistance, please dial 0 from your room phone.</p>
+<p>Enjoy your stay!</p>
+<p>Best regards,<br>{hotel_name}</p>
+</body>
+</html>
+            """,
+            "body_text": "Welcome to {hotel_name}, {guest_name}! Your room is {room_number}. Check-out: {check_out_date}. WiFi: {wifi_password}",
+            "variables": ["guest_name", "hotel_name", "room_number", "check_out_date", "wifi_password"]
+        },
+        {
+            "name": "Checkout Thank You",
+            "occasion": "checkout",
+            "subject": "Thank You for Staying at {hotel_name}",
+            "body_html": """
+<html>
+<body style="font-family: Arial, sans-serif; color: #333;">
+<h2>Thank You!</h2>
+<p>Dear {guest_name},</p>
+<p>Thank you for staying with us at {hotel_name}. We hope you had a pleasant experience.</p>
+<div style="background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <p><strong>Bill Summary:</strong></p>
+    <p>Room Charges: LKR {room_charges}</p>
+    <p>Additional Charges: LKR {additional_charges}</p>
+    <p>Total Paid: LKR {total_amount}</p>
+</div>
+<p>We look forward to welcoming you again soon!</p>
+<p>Best regards,<br>{hotel_name}</p>
+</body>
+</html>
+            """,
+            "body_text": "Thank you for staying at {hotel_name}, {guest_name}! Total: LKR {total_amount}. We hope to see you again!",
+            "variables": ["guest_name", "hotel_name", "room_charges", "additional_charges", "total_amount"]
+        }
+    ]
+    
+    created = 0
+    for template_data in default_templates:
+        existing = await db.email_templates.find_one({"occasion": template_data["occasion"], "name": template_data["name"]})
+        if not existing:
+            template = EmailTemplate(**template_data)
+            await db.email_templates.insert_one(template.dict())
+            created += 1
+    
+    return {"message": f"Created {created} default email templates"}
+
+# SMS Settings Endpoints
+@api_router.get("/sms-settings")
+async def get_sms_settings():
+    """Get SMS settings"""
+    settings = await db.sms_settings.find_one({}, {"_id": 0})
+    if not settings:
+        return SMSSettings().dict()
+    return settings
+
+@api_router.put("/sms-settings")
+async def update_sms_settings(settings: SMSSettingsUpdate):
+    """Update SMS settings"""
+    update_data = {k: v for k, v in settings.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.utcnow()
+    update_data["is_configured"] = True
+    
+    existing = await db.sms_settings.find_one()
+    if existing:
+        await db.sms_settings.update_one({}, {"$set": update_data})
+    else:
+        new_settings = SMSSettings(**update_data)
+        await db.sms_settings.insert_one(new_settings.dict())
+    
+    return {"message": "SMS settings updated"}
+
+@api_router.post("/sms-settings/test")
+async def test_sms(phone_number: str, message: str = "Test message from Hotel Management System"):
+    """Send a test SMS"""
+    settings = await db.sms_settings.find_one()
+    if not settings or not settings.get("is_configured"):
+        raise HTTPException(status_code=400, detail="SMS settings not configured")
+    
+    # TODO: Implement actual SMS sending based on provider
+    # For now, return success to indicate the endpoint works
+    return {"message": f"Test SMS would be sent to {phone_number}", "provider": settings.get("provider")}
+
+# SMS Templates Endpoints
+@api_router.get("/sms-templates")
+async def get_sms_templates():
+    """Get all SMS templates"""
+    templates = await db.sms_templates.find({}, {"_id": 0}).to_list(100)
+    return templates
+
+@api_router.post("/sms-templates")
+async def create_sms_template(template: SMSTemplateCreate):
+    """Create a new SMS template"""
+    template_obj = SMSTemplate(**template.dict())
+    await db.sms_templates.insert_one(template_obj.dict())
+    return {"message": "SMS template created", "template": template_obj.dict()}
+
+@api_router.put("/sms-templates/{template_id}")
+async def update_sms_template(template_id: str, template: SMSTemplateCreate):
+    """Update an SMS template"""
+    result = await db.sms_templates.update_one(
+        {"id": template_id},
+        {"$set": {**template.dict(), "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"message": "SMS template updated"}
+
+@api_router.delete("/sms-templates/{template_id}")
+async def delete_sms_template(template_id: str):
+    """Delete an SMS template"""
+    result = await db.sms_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"message": "SMS template deleted"}
+
+@api_router.post("/sms-templates/init-defaults")
+async def init_default_sms_templates():
+    """Initialize default SMS templates"""
+    default_templates = [
+        {
+            "name": "Reservation Confirmation",
+            "occasion": "reservation",
+            "body": "Hi {guest_name}, Your booking at {hotel_name} is confirmed. Room: {room_number}, Check-in: {check_in_date}. Contact: {hotel_phone}",
+            "variables": ["guest_name", "hotel_name", "room_number", "check_in_date", "hotel_phone"]
+        },
+        {
+            "name": "Check-in Welcome",
+            "occasion": "checkin",
+            "body": "Welcome to {hotel_name}, {guest_name}! Room: {room_number}. WiFi: {wifi_password}. For help, dial 0.",
+            "variables": ["guest_name", "hotel_name", "room_number", "wifi_password"]
+        },
+        {
+            "name": "Checkout Thank You",
+            "occasion": "checkout",
+            "body": "Thank you for staying at {hotel_name}, {guest_name}! Total: LKR {total_amount}. Visit us again!",
+            "variables": ["guest_name", "hotel_name", "total_amount"]
+        },
+        {
+            "name": "Cleaning Assignment",
+            "occasion": "cleaning_assigned",
+            "body": "Hi {staff_name}, Room {room_number} needs cleaning. Previous guest: {guest_name}. Please clean ASAP.",
+            "variables": ["staff_name", "room_number", "guest_name"]
+        }
+    ]
+    
+    created = 0
+    for template_data in default_templates:
+        existing = await db.sms_templates.find_one({"occasion": template_data["occasion"], "name": template_data["name"]})
+        if not existing:
+            template = SMSTemplate(**template_data)
+            await db.sms_templates.insert_one(template.dict())
+            created += 1
+    
+    return {"message": f"Created {created} default SMS templates"}
+
+# ==================== MAINTENANCE TRACKING ====================
+
+@api_router.get("/maintenance/items")
+async def get_maintenance_items(
+    room_number: Optional[str] = None,
+    category: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """Get maintenance items with optional filters"""
+    query = {}
+    if room_number:
+        query["room_number"] = room_number
+    if category:
+        query["category"] = category
+    if start_date and end_date:
+        query["purchase_date"] = {
+            "$gte": datetime.strptime(start_date, "%Y-%m-%d"),
+            "$lte": datetime.strptime(end_date, "%Y-%m-%d")
+        }
+    
+    items = await db.maintenance_items.find(query, {"_id": 0}).sort("purchase_date", -1).to_list(500)
+    
+    # Convert dates for response
+    for item in items:
+        if isinstance(item.get("purchase_date"), datetime):
+            item["purchase_date"] = item["purchase_date"].strftime("%Y-%m-%d")
+    
+    return items
+
+@api_router.post("/maintenance/items")
+async def create_maintenance_item(item: MaintenanceItemCreate, current_user: UserResponse = Depends(get_current_user)):
+    """Create a maintenance item/expense"""
+    item_dict = item.dict()
+    item_dict["total_price"] = item_dict["quantity"] * item_dict["unit_price"]
+    item_dict["created_by"] = current_user.username
+    
+    # Convert date to datetime for MongoDB
+    if isinstance(item_dict.get("purchase_date"), date):
+        item_dict["purchase_date"] = datetime.combine(item_dict["purchase_date"], datetime.min.time())
+    
+    item_obj = MaintenanceItem(**item_dict)
+    await db.maintenance_items.insert_one(item_obj.dict())
+    
+    # Also record as expense
+    expense_data = {
+        "id": str(uuid.uuid4()),
+        "expense_date": item_dict["purchase_date"],
+        "category": f"Maintenance - {item.category}",
+        "description": f"{item.item_name} x{item.quantity} - {item.description}" if item.description else f"{item.item_name} x{item.quantity}",
+        "amount": item_dict["total_price"],
+        "payment_method": "Cash",
+        "vendor": item.vendor,
+        "created_by": current_user.username,
+        "created_at": datetime.utcnow()
+    }
+    await db.expenses.insert_one(expense_data)
+    
+    return {"message": "Maintenance item added", "item": item_obj.dict()}
+
+@api_router.delete("/maintenance/items/{item_id}")
+async def delete_maintenance_item(item_id: str):
+    """Delete a maintenance item"""
+    result = await db.maintenance_items.delete_one({"id": item_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"message": "Maintenance item deleted"}
+
+@api_router.get("/maintenance/tasks")
+async def get_maintenance_tasks(
+    room_number: Optional[str] = None,
+    status: Optional[str] = None,
+    priority: Optional[str] = None
+):
+    """Get maintenance tasks with optional filters"""
+    query = {}
+    if room_number:
+        query["room_number"] = room_number
+    if status:
+        query["status"] = status
+    if priority:
+        query["priority"] = priority
+    
+    tasks = await db.maintenance_tasks.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Convert dates
+    for task in tasks:
+        for field in ["scheduled_date", "completed_date"]:
+            if isinstance(task.get(field), datetime):
+                task[field] = task[field].strftime("%Y-%m-%d")
+    
+    return tasks
+
+@api_router.post("/maintenance/tasks")
+async def create_maintenance_task(task: MaintenanceTaskCreate, current_user: UserResponse = Depends(get_current_user)):
+    """Create a maintenance task"""
+    task_dict = task.dict()
+    task_dict["created_by"] = current_user.username
+    
+    # Convert date to datetime for MongoDB
+    if isinstance(task_dict.get("scheduled_date"), date):
+        task_dict["scheduled_date"] = datetime.combine(task_dict["scheduled_date"], datetime.min.time())
+    
+    task_obj = MaintenanceTask(**task_dict)
+    await db.maintenance_tasks.insert_one(task_obj.dict())
+    
+    return {"message": "Maintenance task created", "task": task_obj.dict()}
+
+@api_router.put("/maintenance/tasks/{task_id}")
+async def update_maintenance_task(task_id: str, updates: dict):
+    """Update a maintenance task"""
+    updates["updated_at"] = datetime.utcnow()
+    
+    # Handle date conversions
+    if "scheduled_date" in updates and updates["scheduled_date"]:
+        updates["scheduled_date"] = datetime.strptime(updates["scheduled_date"], "%Y-%m-%d")
+    if "completed_date" in updates and updates["completed_date"]:
+        updates["completed_date"] = datetime.strptime(updates["completed_date"], "%Y-%m-%d")
+    
+    result = await db.maintenance_tasks.update_one(
+        {"id": task_id},
+        {"$set": updates}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Maintenance task updated"}
+
+@api_router.delete("/maintenance/tasks/{task_id}")
+async def delete_maintenance_task(task_id: str):
+    """Delete a maintenance task"""
+    result = await db.maintenance_tasks.delete_one({"id": task_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Maintenance task deleted"}
+
+@api_router.get("/maintenance/summary")
+async def get_maintenance_summary():
+    """Get maintenance summary stats"""
+    # Get total expenses by category
+    items = await db.maintenance_items.find({}, {"_id": 0}).to_list(1000)
+    
+    total_expense = sum(item.get("total_price", 0) for item in items)
+    
+    # Group by category
+    by_category = {}
+    for item in items:
+        cat = item.get("category", "General")
+        by_category[cat] = by_category.get(cat, 0) + item.get("total_price", 0)
+    
+    # Get task stats
+    tasks = await db.maintenance_tasks.find({}, {"_id": 0}).to_list(500)
+    pending_tasks = len([t for t in tasks if t.get("status") == "Pending"])
+    in_progress = len([t for t in tasks if t.get("status") == "In Progress"])
+    completed_tasks = len([t for t in tasks if t.get("status") == "Completed"])
+    
+    return {
+        "total_expense": total_expense,
+        "by_category": by_category,
+        "tasks": {
+            "pending": pending_tasks,
+            "in_progress": in_progress,
+            "completed": completed_tasks,
+            "total": len(tasks)
+        }
+    }
+
+# ==================== PAYROLL SYSTEM ====================
+
+@api_router.get("/payroll/employees")
+async def get_employees(status: Optional[str] = None, department: Optional[str] = None):
+    """Get all employees"""
+    query = {}
+    if status:
+        query["status"] = status
+    if department:
+        query["department"] = department
+    
+    employees = await db.employees.find(query, {"_id": 0}).to_list(500)
+    
+    # Convert dates
+    for emp in employees:
+        for field in ["date_of_birth", "hire_date"]:
+            if isinstance(emp.get(field), datetime):
+                emp[field] = emp[field].strftime("%Y-%m-%d")
+    
+    return employees
+
+@api_router.post("/payroll/employees")
+async def create_employee(employee: EmployeeCreate):
+    """Create a new employee"""
+    # Check if employee ID already exists
+    existing = await db.employees.find_one({"employee_id": employee.employee_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Employee ID already exists")
+    
+    emp_dict = employee.dict()
+    
+    # Convert dates to datetime for MongoDB
+    for field in ["date_of_birth", "hire_date"]:
+        if isinstance(emp_dict.get(field), date):
+            emp_dict[field] = datetime.combine(emp_dict[field], datetime.min.time())
+    
+    emp_obj = Employee(**emp_dict)
+    await db.employees.insert_one(emp_obj.dict())
+    
+    return {"message": "Employee created", "employee": emp_obj.dict()}
+
+@api_router.put("/payroll/employees/{employee_id}")
+async def update_employee(employee_id: str, updates: dict):
+    """Update an employee"""
+    updates["updated_at"] = datetime.utcnow()
+    
+    # Handle date conversions
+    for field in ["date_of_birth", "hire_date"]:
+        if field in updates and updates[field]:
+            if isinstance(updates[field], str):
+                updates[field] = datetime.strptime(updates[field], "%Y-%m-%d")
+    
+    result = await db.employees.update_one(
+        {"id": employee_id},
+        {"$set": updates}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return {"message": "Employee updated"}
+
+@api_router.delete("/payroll/employees/{employee_id}")
+async def delete_employee(employee_id: str):
+    """Delete an employee (or mark as inactive)"""
+    result = await db.employees.update_one(
+        {"id": employee_id},
+        {"$set": {"status": "Terminated", "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return {"message": "Employee terminated"}
+
+# Salary Components
+@api_router.get("/payroll/salary-components")
+async def get_salary_components():
+    """Get all salary components (allowances/deductions)"""
+    components = await db.salary_components.find({"is_active": True}, {"_id": 0}).to_list(100)
+    return components
+
+@api_router.post("/payroll/salary-components")
+async def create_salary_component(component: SalaryComponentCreate):
+    """Create a new salary component"""
+    comp_obj = SalaryComponent(**component.dict())
+    await db.salary_components.insert_one(comp_obj.dict())
+    return {"message": "Salary component created", "component": comp_obj.dict()}
+
+@api_router.delete("/payroll/salary-components/{component_id}")
+async def delete_salary_component(component_id: str):
+    """Delete a salary component"""
+    result = await db.salary_components.update_one(
+        {"id": component_id},
+        {"$set": {"is_active": False}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Component not found")
+    return {"message": "Salary component deleted"}
+
+# Loans
+@api_router.get("/payroll/loans")
+async def get_loans(employee_id: Optional[str] = None, status: Optional[str] = None):
+    """Get loans"""
+    query = {}
+    if employee_id:
+        query["employee_id"] = employee_id
+    if status:
+        query["status"] = status
+    
+    loans = await db.loans.find(query, {"_id": 0}).to_list(500)
+    
+    # Convert dates
+    for loan in loans:
+        for field in ["disbursement_date", "repayment_start_date"]:
+            if isinstance(loan.get(field), datetime):
+                loan[field] = loan[field].strftime("%Y-%m-%d")
+    
+    return loans
+
+@api_router.post("/payroll/loans")
+async def create_loan(loan: LoanCreate, current_user: UserResponse = Depends(get_current_user)):
+    """Create a new loan"""
+    loan_dict = loan.dict()
+    loan_dict["remaining_balance"] = loan.amount
+    loan_dict["approved_by"] = current_user.username
+    
+    # Convert dates to datetime for MongoDB
+    for field in ["disbursement_date", "repayment_start_date"]:
+        if isinstance(loan_dict.get(field), date):
+            loan_dict[field] = datetime.combine(loan_dict[field], datetime.min.time())
+    
+    loan_obj = Loan(**loan_dict)
+    await db.loans.insert_one(loan_obj.dict())
+    
+    return {"message": "Loan created", "loan": loan_obj.dict()}
+
+@api_router.put("/payroll/loans/{loan_id}/payment")
+async def record_loan_payment(loan_id: str, amount: float):
+    """Record a loan payment"""
+    loan = await db.loans.find_one({"id": loan_id})
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    
+    new_balance = loan["remaining_balance"] - amount
+    new_paid = loan["paid_installments"] + 1
+    
+    update_data = {
+        "remaining_balance": max(0, new_balance),
+        "paid_installments": new_paid,
+        "updated_at": datetime.utcnow()
+    }
+    
+    if new_balance <= 0:
+        update_data["status"] = "Completed"
+    
+    await db.loans.update_one({"id": loan_id}, {"$set": update_data})
+    
+    return {"message": "Loan payment recorded", "remaining_balance": max(0, new_balance)}
+
+# Payroll Processing
+@api_router.post("/payroll/process")
+async def process_payroll(
+    pay_period_start: str,
+    pay_period_end: str,
+    payment_date: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Process payroll for a period"""
+    # Get all active employees
+    employees = await db.employees.find({"status": "Active"}, {"_id": 0}).to_list(500)
+    
+    if not employees:
+        raise HTTPException(status_code=400, detail="No active employees found")
+    
+    # Get salary components
+    components = await db.salary_components.find({"is_active": True}, {"_id": 0}).to_list(100)
+    allowances = [c for c in components if c.get("type") == "allowance"]
+    deductions = [c for c in components if c.get("type") == "deduction"]
+    
+    # Get active loans
+    loans = await db.loans.find({"status": "Active"}, {"_id": 0}).to_list(500)
+    loan_by_employee = {}
+    for loan in loans:
+        emp_id = loan["employee_id"]
+        if emp_id not in loan_by_employee:
+            loan_by_employee[emp_id] = []
+        loan_by_employee[emp_id].append(loan)
+    
+    # Create payroll run
+    payroll_run = PayrollRun(
+        pay_period_start=datetime.strptime(pay_period_start, "%Y-%m-%d").date(),
+        pay_period_end=datetime.strptime(pay_period_end, "%Y-%m-%d").date(),
+        payment_date=datetime.strptime(payment_date, "%Y-%m-%d").date(),
+        status="Processing",
+        processed_by=current_user.username
+    )
+    
+    total_gross = 0
+    total_deductions = 0
+    total_net = 0
+    total_epf_employee = 0
+    total_epf_employer = 0
+    total_etf = 0
+    
+    payslips = []
+    
+    for emp in employees:
+        basic_salary = emp.get("basic_salary", 0)
+        
+        # Calculate allowances
+        emp_allowances = []
+        total_allowances = 0
+        for allowance in allowances:
+            if allowance.get("applies_to_all"):
+                if allowance.get("amount_type") == "percentage":
+                    amt = basic_salary * (allowance.get("amount", 0) / 100)
+                else:
+                    amt = allowance.get("amount", 0)
+                emp_allowances.append({"name": allowance["name"], "amount": amt})
+                total_allowances += amt
+        
+        gross_salary = basic_salary + total_allowances
+        
+        # Calculate deductions
+        emp_deductions = []
+        total_emp_deductions = 0
+        for deduction in deductions:
+            if deduction.get("applies_to_all"):
+                if deduction.get("amount_type") == "percentage":
+                    base = gross_salary if deduction.get("percentage_of") == "gross_salary" else basic_salary
+                    amt = base * (deduction.get("amount", 0) / 100)
+                else:
+                    amt = deduction.get("amount", 0)
+                emp_deductions.append({"name": deduction["name"], "amount": amt})
+                total_emp_deductions += amt
+        
+        # EPF/ETF calculations (Sri Lanka specific)
+        epf_employee_rate = emp.get("epf_contribution_employee", 8) / 100
+        epf_employer_rate = emp.get("epf_contribution_employer", 12) / 100
+        etf_rate = emp.get("etf_contribution", 3) / 100
+        
+        epf_employee = gross_salary * epf_employee_rate
+        epf_employer = gross_salary * epf_employer_rate
+        etf_employer = gross_salary * etf_rate
+        
+        # Loan deductions
+        loan_deduction = 0
+        emp_loans = loan_by_employee.get(emp["id"], [])
+        for loan in emp_loans:
+            loan_deduction += loan.get("installment_amount", 0)
+        
+        # Total deductions
+        all_deductions = total_emp_deductions + epf_employee + loan_deduction
+        
+        # Net salary
+        net_salary = gross_salary - all_deductions
+        
+        # Create payslip
+        payslip = PaySlip(
+            payroll_run_id=payroll_run.id,
+            employee_id=emp["id"],
+            employee_name=f"{emp.get('first_name', '')} {emp.get('last_name', '')}",
+            pay_period_start=payroll_run.pay_period_start,
+            pay_period_end=payroll_run.pay_period_end,
+            payment_date=payroll_run.payment_date,
+            basic_salary=basic_salary,
+            allowances=emp_allowances,
+            gross_salary=gross_salary,
+            deductions=emp_deductions,
+            loan_deduction=loan_deduction,
+            epf_employee=epf_employee,
+            total_deductions=all_deductions,
+            net_salary=net_salary,
+            epf_employer=epf_employer,
+            etf_employer=etf_employer,
+            bank_details=f"{emp.get('bank_name', '')} - {emp.get('bank_account', '')}"
+        )
+        
+        # Convert dates to datetime for MongoDB
+        payslip_dict = payslip.dict()
+        for field in ["pay_period_start", "pay_period_end", "payment_date"]:
+            if isinstance(payslip_dict.get(field), date):
+                payslip_dict[field] = datetime.combine(payslip_dict[field], datetime.min.time())
+        
+        await db.payslips.insert_one(payslip_dict)
+        payslips.append(payslip_dict)
+        
+        # Update totals
+        total_gross += gross_salary
+        total_deductions += all_deductions
+        total_net += net_salary
+        total_epf_employee += epf_employee
+        total_epf_employer += epf_employer
+        total_etf += etf_employer
+    
+    # Update payroll run with totals
+    payroll_run_dict = payroll_run.dict()
+    payroll_run_dict.update({
+        "total_gross": total_gross,
+        "total_deductions": total_deductions,
+        "total_net": total_net,
+        "total_epf_employee": total_epf_employee,
+        "total_epf_employer": total_epf_employer,
+        "total_etf": total_etf,
+        "status": "Completed"
+    })
+    
+    # Convert dates to datetime for MongoDB
+    for field in ["pay_period_start", "pay_period_end", "payment_date"]:
+        if isinstance(payroll_run_dict.get(field), date):
+            payroll_run_dict[field] = datetime.combine(payroll_run_dict[field], datetime.min.time())
+    
+    await db.payroll_runs.insert_one(payroll_run_dict)
+    
+    return {
+        "message": f"Payroll processed for {len(employees)} employees",
+        "payroll_run_id": payroll_run.id,
+        "totals": {
+            "gross": total_gross,
+            "deductions": total_deductions,
+            "net": total_net,
+            "epf_employee": total_epf_employee,
+            "epf_employer": total_epf_employer,
+            "etf": total_etf
+        }
+    }
+
+@api_router.get("/payroll/runs")
+async def get_payroll_runs():
+    """Get all payroll runs"""
+    runs = await db.payroll_runs.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Convert dates
+    for run in runs:
+        for field in ["pay_period_start", "pay_period_end", "payment_date"]:
+            if isinstance(run.get(field), datetime):
+                run[field] = run[field].strftime("%Y-%m-%d")
+    
+    return runs
+
+@api_router.get("/payroll/payslips")
+async def get_payslips(payroll_run_id: Optional[str] = None, employee_id: Optional[str] = None):
+    """Get payslips"""
+    query = {}
+    if payroll_run_id:
+        query["payroll_run_id"] = payroll_run_id
+    if employee_id:
+        query["employee_id"] = employee_id
+    
+    payslips = await db.payslips.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Convert dates
+    for slip in payslips:
+        for field in ["pay_period_start", "pay_period_end", "payment_date"]:
+            if isinstance(slip.get(field), datetime):
+                slip[field] = slip[field].strftime("%Y-%m-%d")
+    
+    return payslips
+
+@api_router.get("/payroll/summary")
+async def get_payroll_summary():
+    """Get payroll summary statistics"""
+    employees = await db.employees.find({"status": "Active"}, {"_id": 0}).to_list(500)
+    
+    total_monthly_salary = sum(emp.get("basic_salary", 0) for emp in employees)
+    
+    # Get department breakdown
+    by_department = {}
+    for emp in employees:
+        dept = emp.get("department", "Other")
+        if dept not in by_department:
+            by_department[dept] = {"count": 0, "total_salary": 0}
+        by_department[dept]["count"] += 1
+        by_department[dept]["total_salary"] += emp.get("basic_salary", 0)
+    
+    # Get active loans
+    loans = await db.loans.find({"status": "Active"}, {"_id": 0}).to_list(500)
+    total_loan_balance = sum(loan.get("remaining_balance", 0) for loan in loans)
+    
+    return {
+        "total_employees": len(employees),
+        "total_monthly_salary": total_monthly_salary,
+        "by_department": by_department,
+        "active_loans": len(loans),
+        "total_loan_balance": total_loan_balance
+    }
+
+# ==================== COMMISSION EXPORT ====================
+
+@api_router.get("/commissions/export")
+async def export_commissions(format: str = "csv", start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """Export commission data"""
+    import csv
+    import io
+    
+    query = {}
+    if start_date and end_date:
+        query["booking_date"] = {
+            "$gte": datetime.strptime(start_date, "%Y-%m-%d"),
+            "$lte": datetime.strptime(end_date, "%Y-%m-%d")
+        }
+    
+    # Get bookings with commission data
+    bookings = await db.bookings.find(query, {"_id": 0}).sort("booking_date", -1).to_list(1000)
+    
+    # Get channels
+    channels = await db.booking_channels.find({}, {"_id": 0}).to_list(100)
+    channel_map = {ch["name"]: ch for ch in channels}
+    
+    # Calculate commissions
+    commission_data = []
+    for booking in bookings:
+        channel_name = booking.get("booking_channel", "Direct")
+        channel = channel_map.get(channel_name, {})
+        commission_rate = channel.get("commission_percentage", 0)
+        booking_amount = booking.get("booking_amount", 0)
+        commission_amount = booking_amount * (commission_rate / 100)
+        
+        commission_data.append({
+            "booking_id": booking.get("id", ""),
+            "guest_name": booking.get("guest_name", ""),
+            "room_number": booking.get("room_number", ""),
+            "booking_date": booking.get("booking_date").strftime("%Y-%m-%d") if isinstance(booking.get("booking_date"), datetime) else str(booking.get("booking_date", "")),
+            "check_in_date": str(booking.get("check_in_date", "")),
+            "check_out_date": str(booking.get("check_out_date", "")),
+            "channel": channel_name,
+            "booking_amount": booking_amount,
+            "commission_rate": commission_rate,
+            "commission_amount": commission_amount,
+            "status": booking.get("status", "")
+        })
+    
+    if format == "csv":
+        output = io.StringIO()
+        if commission_data:
+            writer = csv.DictWriter(output, fieldnames=commission_data[0].keys())
+            writer.writeheader()
+            writer.writerows(commission_data)
+        
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=commissions_{datetime.now().strftime('%Y%m%d')}.csv"}
+        )
+    
+    return commission_data
+
 # Test route
 @api_router.get("/")
 async def root():
