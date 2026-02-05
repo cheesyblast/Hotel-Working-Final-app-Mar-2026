@@ -9075,6 +9075,8 @@ const Settings = () => {
         fetchUsers(),
         fetchSettings(),
         fetchEmailSettings(),
+        fetchSmsSettings(),
+        fetchTemplates(),
         fetchBookingChannels(),
         fetchActivityLogs()
       ]);
@@ -9082,6 +9084,85 @@ const Settings = () => {
       console.error('Error fetching settings data:', error);
     }
     setLoading(false);
+  };
+
+  const fetchSmsSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/sms-settings`);
+      setSmsSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching SMS settings:', error);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const [emailRes, smsRes] = await Promise.all([
+        axios.get(`${API}/email-templates`),
+        axios.get(`${API}/sms-templates`)
+      ]);
+      setEmailTemplates(emailRes.data);
+      setSmsTemplates(smsRes.data);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+
+  const handleSaveSmsSettings = async () => {
+    try {
+      await axios.put(`${API}/sms-settings`, smsSettings);
+      alert('SMS settings saved successfully!');
+      await fetchSmsSettings();
+    } catch (error) {
+      alert('Error saving SMS settings');
+    }
+  };
+
+  const handleAddTemplate = async () => {
+    try {
+      if (templateType === 'email') {
+        await axios.post(`${API}/email-templates`, newTemplate);
+      } else {
+        await axios.post(`${API}/sms-templates`, {
+          name: newTemplate.name,
+          occasion: newTemplate.occasion,
+          body: newTemplate.body,
+          variables: newTemplate.variables
+        });
+      }
+      setShowAddTemplateModal(false);
+      setNewTemplate({ name: '', occasion: 'custom', subject: '', body_html: '', body_text: '', body: '', variables: [] });
+      await fetchTemplates();
+    } catch (error) {
+      alert('Error adding template');
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId, type) => {
+    if (!window.confirm('Are you sure you want to delete this template?')) return;
+    try {
+      if (type === 'email') {
+        await axios.delete(`${API}/email-templates/${templateId}`);
+      } else {
+        await axios.delete(`${API}/sms-templates/${templateId}`);
+      }
+      await fetchTemplates();
+    } catch (error) {
+      alert('Error deleting template');
+    }
+  };
+
+  const handleInitDefaultTemplates = async () => {
+    try {
+      await Promise.all([
+        axios.post(`${API}/email-templates/init-defaults`),
+        axios.post(`${API}/sms-templates/init-defaults`)
+      ]);
+      await fetchTemplates();
+      alert('Default templates initialized!');
+    } catch (error) {
+      alert('Error initializing templates');
+    }
   };
 
   const fetchBookingChannels = async () => {
