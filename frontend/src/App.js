@@ -635,7 +635,17 @@ const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [checkedInCustomers, setCheckedInCustomers] = useState([]);
+  const [roomsPendingCleaning, setRoomsPendingCleaning] = useState([]);
+  const [cleaningStaff, setCleaningStaff] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Cleaning section state
+  const [cleaningSectionExpanded, setCleaningSectionExpanded] = useState(true);
+  const [showAssignStaffModal, setShowAssignStaffModal] = useState(false);
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [selectedCleaningRoom, setSelectedCleaningRoom] = useState(null);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [newStaffPhone, setNewStaffPhone] = useState('');
   
   // Get current user context
   const { user } = useAuth();
