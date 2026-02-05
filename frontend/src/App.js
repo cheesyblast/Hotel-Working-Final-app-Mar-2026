@@ -5647,10 +5647,20 @@ const Rooms = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddRoomModal, setShowAddRoomModal] = useState(false);
+  const [showBulkAddModal, setShowBulkAddModal] = useState(false);
   const [showEditRoomModal, setShowEditRoomModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [roomData, setRoomData] = useState({
     room_number: '',
+    room_type: '',
+    price_per_night: 0,
+    max_occupancy: 2,
+    amenities: []
+  });
+  const [bulkRoomData, setBulkRoomData] = useState({
+    room_prefix: '',
+    start_number: 1,
+    end_number: 10,
     room_type: '',
     price_per_night: 0,
     max_occupancy: 2,
@@ -5687,6 +5697,47 @@ const Rooms = () => {
     } catch (error) {
       console.error('Error adding room:', error);
       alert('Error adding room. Please try again.');
+    }
+  };
+
+  const handleBulkAddRooms = async () => {
+    try {
+      const response = await axios.post(`${API}/rooms/bulk`, bulkRoomData);
+      setShowBulkAddModal(false);
+      setBulkRoomData({
+        room_prefix: '',
+        start_number: 1,
+        end_number: 10,
+        room_type: '',
+        price_per_night: 0,
+        max_occupancy: 2,
+        amenities: []
+      });
+      await fetchRooms();
+      const msg = `Created ${response.data.created_rooms.length} rooms: ${response.data.created_rooms.join(', ')}`;
+      if (response.data.skipped_rooms.length > 0) {
+        alert(`${msg}\n\nSkipped (already exist): ${response.data.skipped_rooms.join(', ')}`);
+      } else {
+        alert(msg);
+      }
+    } catch (error) {
+      console.error('Error adding rooms:', error);
+      alert('Error adding rooms. Please try again.');
+    }
+  };
+
+  const handleBulkAmenityChange = (amenity) => {
+    const currentAmenities = bulkRoomData.amenities || [];
+    if (currentAmenities.includes(amenity)) {
+      setBulkRoomData({
+        ...bulkRoomData,
+        amenities: currentAmenities.filter(a => a !== amenity)
+      });
+    } else {
+      setBulkRoomData({
+        ...bulkRoomData,
+        amenities: [...currentAmenities, amenity]
+      });
     }
   };
 
