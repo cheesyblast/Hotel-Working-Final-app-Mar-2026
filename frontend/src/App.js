@@ -3411,6 +3411,7 @@ const Commissions = () => {
   const [loading, setLoading] = useState(true);
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [channelDetails, setChannelDetails] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   const months = [
     { value: null, label: 'All Months' },
@@ -3466,6 +3467,37 @@ const Commissions = () => {
       setSelectedChannel(channelName);
     } catch (error) {
       console.error('Error fetching channel details:', error);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const startDate = selectedMonth 
+        ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`
+        : `${selectedYear}-01-01`;
+      const endDate = selectedMonth
+        ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate()}`
+        : `${selectedYear}-12-31`;
+      
+      const response = await axios.get(`${API}/commissions/export?format=csv&start_date=${startDate}&end_date=${endDate}`, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `commissions_${selectedYear}${selectedMonth ? '_' + String(selectedMonth).padStart(2, '0') : ''}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting commissions:', error);
+      alert('Error exporting commissions');
+    } finally {
+      setExporting(false);
     }
   };
 
