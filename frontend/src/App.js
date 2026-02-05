@@ -5983,6 +5983,128 @@ const Rooms = () => {
         </div>
       )}
 
+      {/* Bulk Add Rooms Modal */}
+      {showBulkAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Bulk Add Rooms</h3>
+            <p className="text-sm text-gray-500 mb-4">Create multiple rooms at once. Room numbers will be generated as: [Prefix][Number] (e.g., 101, 102...)</p>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Floor/Prefix *</label>
+                  <input
+                    type="text"
+                    value={bulkRoomData.room_prefix}
+                    onChange={(e) => setBulkRoomData({...bulkRoomData, room_prefix: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Start # *</label>
+                  <input
+                    type="number"
+                    value={bulkRoomData.start_number}
+                    onChange={(e) => setBulkRoomData({...bulkRoomData, start_number: parseInt(e.target.value) || 1})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="1"
+                    placeholder="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">End # *</label>
+                  <input
+                    type="number"
+                    value={bulkRoomData.end_number}
+                    onChange={(e) => setBulkRoomData({...bulkRoomData, end_number: parseInt(e.target.value) || 10})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="1"
+                    placeholder="10"
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-2 rounded text-sm text-gray-600">
+                Preview: {bulkRoomData.room_prefix}{String(bulkRoomData.start_number).padStart(2, '0')} to {bulkRoomData.room_prefix}{String(bulkRoomData.end_number).padStart(2, '0')} ({bulkRoomData.end_number - bulkRoomData.start_number + 1} rooms)
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room Type *</label>
+                <select
+                  value={bulkRoomData.room_type}
+                  onChange={(e) => setBulkRoomData({...bulkRoomData, room_type: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select room type</option>
+                  <option value="Single">Single</option>
+                  <option value="Double">Double</option>
+                  <option value="Triple">Triple</option>
+                  <option value="Suite">Suite</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price per Night (LKR) *</label>
+                <input
+                  type="number"
+                  value={bulkRoomData.price_per_night}
+                  onChange={(e) => setBulkRoomData({...bulkRoomData, price_per_night: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter price"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max Occupancy *</label>
+                <input
+                  type="number"
+                  value={bulkRoomData.max_occupancy}
+                  onChange={(e) => setBulkRoomData({...bulkRoomData, max_occupancy: parseInt(e.target.value) || 2})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="1"
+                  max="10"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {commonAmenities.map((amenity) => (
+                    <label key={amenity} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={bulkRoomData.amenities?.includes(amenity)}
+                        onChange={() => handleBulkAmenityChange(amenity)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{amenity}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowBulkAddModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkAddRooms}
+                disabled={!bulkRoomData.room_prefix || !bulkRoomData.room_type || !bulkRoomData.price_per_night}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400"
+              >
+                Create {bulkRoomData.end_number - bulkRoomData.start_number + 1} Rooms
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Edit Room Modal */}
       {showEditRoomModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
