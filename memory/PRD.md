@@ -5,8 +5,10 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Core Features Implemented
 - Room management (availability, status, pricing)
+- Bulk room creation (create multiple rooms at once)
 - Booking management (upcoming, checked-in, completed)
 - Customer check-in/check-out workflow
+- Room cleaning workflow (Pending Cleaning status, staff assignment)
 - Restaurant POS with service charge adjustment
 - Income and expense tracking
 - Financial reporting
@@ -19,6 +21,7 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 1. **Hotel Administrator** - Manages overall hotel operations, settings, user accounts
 2. **Front Desk Staff** - Handles bookings, check-ins, check-outs
 3. **Restaurant Manager** - Manages restaurant orders and menu
+4. **Housekeeping Staff** - Cleans rooms after guest checkout
 
 ## Tech Stack
 - **Frontend**: React.js with Tailwind CSS
@@ -29,6 +32,40 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 ---
 
 ## Changelog
+
+### 2026-02-05 - Bulk Room Creation & Room Cleaning Workflow
+**Features Added**:
+1. **Bulk Room Creation**: Create multiple rooms at once from the Rooms page
+   - Set floor/prefix, start number, end number
+   - Configure room type, price, max occupancy, amenities
+   - Preview shows room numbers to be created
+   - Skips rooms that already exist
+
+2. **Room Cleaning Workflow**: 
+   - After checkout, rooms go to "Pending Cleaning" status (light maroon color)
+   - New "Rooms to be Cleaned" collapsible section on Dashboard (min-height 400px)
+   - Add/manage cleaning staff
+   - Assign staff to rooms for cleaning
+   - Mark rooms as cleaned to make them available
+
+**API Endpoints Added**:
+- `POST /api/rooms/bulk` - Create multiple rooms
+- `GET /api/cleaning/staff` - Get all cleaning staff
+- `POST /api/cleaning/staff` - Add cleaning staff
+- `DELETE /api/cleaning/staff/{staff_id}` - Remove staff
+- `GET /api/cleaning/pending` - Get rooms needing cleaning
+- `POST /api/cleaning/assign` - Assign staff to room
+- `POST /api/cleaning/complete/{room_number}` - Mark room as cleaned
+
+**Files Modified**:
+- `/app/backend/server.py`:
+  - Added `BulkRoomCreate`, `CleaningStaff`, `CleaningAssignment` models
+  - Updated checkout/early checkout to set "Pending Cleaning" status
+  - Added cleaning management endpoints
+- `/app/frontend/src/App.js`:
+  - Added Bulk Add modal to Rooms component
+  - Added "Rooms to be Cleaned" section to Dashboard
+  - Added staff assignment and room cleaning modals
 
 ### 2026-02-05 - Financial Double-Counting Bug Fix
 **Bug Fixed**: Advance payment during check-in was double-counted in Income & Expense page (2000 advance caused 4000 balance increase)
