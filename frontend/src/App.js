@@ -1038,10 +1038,11 @@ const Dashboard = () => {
       setShowCheckoutModal(false);
       setShowPrintInvoiceDialog(true);
       
-      // Refresh data after checkout
+      // Refresh data after checkout (including rooms pending cleaning)
       await Promise.all([
         fetchRooms(),
-        fetchCheckedInCustomers()
+        fetchCheckedInCustomers(),
+        fetchRoomsPendingCleaning()
       ]);
     } catch (error) {
       console.error('Error during checkout:', error);
