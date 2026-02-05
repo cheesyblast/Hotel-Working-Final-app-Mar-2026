@@ -6537,8 +6537,61 @@ const Navigation = () => {
     <nav className="bg-gray-800 shadow-sm border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8">
-          {navItems.map((item) => (
+        <div className="hidden md:flex space-x-4 items-center">
+          {navItems.slice(0, 5).map((item) => (
+            <Link 
+              key={item.path}
+              to={item.path} 
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive(item.path) 
+                  ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+          
+          {/* Financial Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setFinancialDropdownOpen(!financialDropdownOpen)}
+              onBlur={() => setTimeout(() => setFinancialDropdownOpen(false), 150)}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
+                isFinancialActive() 
+                  ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Financial
+              <svg className={`w-4 h-4 ml-1 transform transition-transform ${financialDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {financialDropdownOpen && (
+              <div className="absolute left-0 mt-1 w-44 bg-gray-700 rounded-md shadow-lg border border-gray-600 z-50">
+                {financialItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setFinancialDropdownOpen(false)}
+                    className={`block px-4 py-2 text-sm ${
+                      isActive(item.path)
+                        ? 'bg-blue-800 text-blue-300'
+                        : 'text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {navItems.slice(5).map((item) => (
             <Link 
               key={item.path}
               to={item.path} 
@@ -6574,7 +6627,41 @@ const Navigation = () => {
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
             <div className="pb-3 space-y-1">
-              {navItems.map((item) => (
+              {navItems.slice(0, 5).map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(item.path)
+                      ? 'bg-blue-900 text-blue-300'
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              
+              {/* Financial Section in Mobile */}
+              <div className="border-t border-gray-700 pt-2 mt-2">
+                <p className="px-3 py-1 text-xs text-gray-500 uppercase">Financial</p>
+                {financialItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ml-2 ${
+                      isActive(item.path)
+                        ? 'bg-blue-900 text-blue-300'
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+              
+              {navItems.slice(5).map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
