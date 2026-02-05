@@ -10036,6 +10036,375 @@ const Settings = () => {
         </div>
       )}
 
+      {/* SMS Settings Tab */}
+      {activeTab === 'sms' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">SMS Settings</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Configure SMS gateway for notifications to guests and staff
+                </p>
+              </div>
+              <button
+                onClick={handleSaveSmsSettings}
+                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+              >
+                Save SMS Settings
+              </button>
+            </div>
+
+            {/* Provider Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SMS Provider</label>
+              <select
+                value={smsSettings.provider}
+                onChange={(e) => setSmsSettings({...smsSettings, provider: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="twilio">Twilio (International)</option>
+                <option value="notify_lk">Notify.lk (Sri Lanka)</option>
+                <option value="custom">Custom HTTP API</option>
+              </select>
+            </div>
+
+            {/* Twilio Settings */}
+            {smsSettings.provider === 'twilio' && (
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="font-medium text-gray-900 dark:text-white">Twilio Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account SID</label>
+                    <input
+                      type="text"
+                      value={smsSettings.twilio_account_sid}
+                      onChange={(e) => setSmsSettings({...smsSettings, twilio_account_sid: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="ACxxxxxxxxxx"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Auth Token</label>
+                    <input
+                      type="password"
+                      value={smsSettings.twilio_auth_token}
+                      onChange={(e) => setSmsSettings({...smsSettings, twilio_auth_token: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Your auth token"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+                    <input
+                      type="text"
+                      value={smsSettings.twilio_phone_number}
+                      onChange={(e) => setSmsSettings({...smsSettings, twilio_phone_number: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="+1234567890"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Notify.lk Settings */}
+            {smsSettings.provider === 'notify_lk' && (
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="font-medium text-gray-900 dark:text-white">Notify.lk Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User ID</label>
+                    <input
+                      type="text"
+                      value={smsSettings.notify_lk_user_id}
+                      onChange={(e) => setSmsSettings({...smsSettings, notify_lk_user_id: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Your Notify.lk user ID"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API Key</label>
+                    <input
+                      type="password"
+                      value={smsSettings.notify_lk_api_key}
+                      onChange={(e) => setSmsSettings({...smsSettings, notify_lk_api_key: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Your API key"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sender ID</label>
+                    <input
+                      type="text"
+                      value={smsSettings.notify_lk_sender_id}
+                      onChange={(e) => setSmsSettings({...smsSettings, notify_lk_sender_id: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Your Sender ID"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Custom API Settings */}
+            {smsSettings.provider === 'custom' && (
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="font-medium text-gray-900 dark:text-white">Custom HTTP API Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API URL</label>
+                    <input
+                      type="text"
+                      value={smsSettings.custom_api_url}
+                      onChange={(e) => setSmsSettings({...smsSettings, custom_api_url: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="https://api.provider.com/send"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API Key</label>
+                    <input
+                      type="password"
+                      value={smsSettings.custom_api_key}
+                      onChange={(e) => setSmsSettings({...smsSettings, custom_api_key: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Your API key"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Request Body Template (JSON)</label>
+                    <textarea
+                      value={smsSettings.custom_api_body_template}
+                      onChange={(e) => setSmsSettings({...smsSettings, custom_api_body_template: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono text-sm"
+                      rows="4"
+                      placeholder='{"to": "{phone}", "message": "{message}", "api_key": "{api_key}"}'
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Use placeholders: {'{phone}'}, {'{message}'}, {'{api_key}'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Status */}
+            <div className="mt-6 p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
+              <div className="flex items-center">
+                <span className={`w-3 h-3 rounded-full mr-2 ${smsSettings.is_configured ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {smsSettings.is_configured ? 'SMS gateway configured' : 'SMS gateway not configured'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Templates Tab */}
+      {activeTab === 'templates' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Email & SMS Templates</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Manage notification templates for different occasions
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleInitDefaultTemplates}
+                  className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                >
+                  Initialize Defaults
+                </button>
+                <button
+                  onClick={() => { setTemplateType('email'); setShowAddTemplateModal(true); }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  + Email Template
+                </button>
+                <button
+                  onClick={() => { setTemplateType('sms'); setShowAddTemplateModal(true); }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+                >
+                  + SMS Template
+                </button>
+              </div>
+            </div>
+
+            {/* Email Templates */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Email Templates ({emailTemplates.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {emailTemplates.map((template) => (
+                  <div key={template.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{template.name}</h4>
+                        <span className={`inline-block mt-1 px-2 py-1 text-xs rounded ${
+                          template.occasion === 'reservation' ? 'bg-blue-100 text-blue-800' :
+                          template.occasion === 'checkin' ? 'bg-green-100 text-green-800' :
+                          template.occasion === 'checkout' ? 'bg-orange-100 text-orange-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {template.occasion}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteTemplate(template.id, 'email')}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 truncate">{template.subject}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SMS Templates */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                SMS Templates ({smsTemplates.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {smsTemplates.map((template) => (
+                  <div key={template.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{template.name}</h4>
+                        <span className={`inline-block mt-1 px-2 py-1 text-xs rounded ${
+                          template.occasion === 'reservation' ? 'bg-blue-100 text-blue-800' :
+                          template.occasion === 'checkin' ? 'bg-green-100 text-green-800' :
+                          template.occasion === 'checkout' ? 'bg-orange-100 text-orange-800' :
+                          template.occasion === 'cleaning_assigned' ? 'bg-rose-100 text-rose-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {template.occasion}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteTemplate(template.id, 'sms')}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{template.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Template Modal */}
+      {showAddTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Add {templateType === 'email' ? 'Email' : 'SMS'} Template</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Template Name *</label>
+                <input
+                  type="text"
+                  value={newTemplate.name}
+                  onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md"
+                  placeholder="e.g., Room Upgrade Offer"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Occasion</label>
+                <select
+                  value={newTemplate.occasion}
+                  onChange={(e) => setNewTemplate({...newTemplate, occasion: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md"
+                >
+                  <option value="reservation">Reservation</option>
+                  <option value="checkin">Check-in</option>
+                  <option value="checkout">Check-out</option>
+                  {templateType === 'sms' && <option value="cleaning_assigned">Cleaning Assigned</option>}
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+              {templateType === 'email' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+                    <input
+                      type="text"
+                      value={newTemplate.subject}
+                      onChange={(e) => setNewTemplate({...newTemplate, subject: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="Email subject with {variables}"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">HTML Body *</label>
+                    <textarea
+                      value={newTemplate.body_html}
+                      onChange={(e) => setNewTemplate({...newTemplate, body_html: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-md font-mono text-sm"
+                      rows="6"
+                      placeholder="<html><body>Hello {guest_name}...</body></html>"
+                    />
+                  </div>
+                </>
+              )}
+              {templateType === 'sms' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message Body *</label>
+                  <textarea
+                    value={newTemplate.body}
+                    onChange={(e) => setNewTemplate({...newTemplate, body: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md"
+                    rows="4"
+                    placeholder="Hi {guest_name}, your booking is confirmed..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Max 160 characters recommended for single SMS</p>
+                </div>
+              )}
+              <div className="bg-gray-50 p-3 rounded">
+                <p className="text-sm font-medium text-gray-700 mb-1">Available Variables:</p>
+                <p className="text-xs text-gray-600">
+                  {'{guest_name}'}, {'{hotel_name}'}, {'{room_number}'}, {'{check_in_date}'}, {'{check_out_date}'}, {'{booking_amount}'}, {'{total_amount}'}, {'{hotel_phone}'}, {'{wifi_password}'}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => { setShowAddTemplateModal(false); setNewTemplate({ name: '', occasion: 'custom', subject: '', body_html: '', body_text: '', body: '', variables: [] }); }}
+                className="px-4 py-2 border rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTemplate}
+                className={`px-4 py-2 text-white rounded-md ${templateType === 'email' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+              >
+                Add Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Booking Channels Tab */}
       {activeTab === 'channels' && (
         <div className="space-y-6">
