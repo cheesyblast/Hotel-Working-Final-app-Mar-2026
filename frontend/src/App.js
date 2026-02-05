@@ -780,6 +780,8 @@ const Dashboard = () => {
         fetchRooms(),
         fetchUpcomingBookings(),
         fetchCheckedInCustomers(),
+        fetchRoomsPendingCleaning(),
+        fetchCleaningStaff(),
         fetchHotelSettings(),
         fetchAvailableChannels()
       ]);
@@ -787,6 +789,75 @@ const Dashboard = () => {
       console.error('Error initializing data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoomsPendingCleaning = async () => {
+    try {
+      const response = await axios.get(`${API}/cleaning/pending`);
+      setRoomsPendingCleaning(response.data);
+    } catch (error) {
+      console.error('Error fetching rooms pending cleaning:', error);
+    }
+  };
+
+  const fetchCleaningStaff = async () => {
+    try {
+      const response = await axios.get(`${API}/cleaning/staff`);
+      setCleaningStaff(response.data);
+    } catch (error) {
+      console.error('Error fetching cleaning staff:', error);
+    }
+  };
+
+  const handleAssignStaff = async (staffId) => {
+    if (!selectedCleaningRoom) return;
+    try {
+      await axios.post(`${API}/cleaning/assign?room_number=${selectedCleaningRoom.room_number}&staff_id=${staffId}`);
+      setShowAssignStaffModal(false);
+      setSelectedCleaningRoom(null);
+      await fetchRoomsPendingCleaning();
+    } catch (error) {
+      console.error('Error assigning staff:', error);
+      alert('Error assigning staff. Please try again.');
+    }
+  };
+
+  const handleMarkRoomCleaned = async (roomNumber) => {
+    try {
+      await axios.post(`${API}/cleaning/complete/${roomNumber}`);
+      await Promise.all([fetchRoomsPendingCleaning(), fetchRooms()]);
+    } catch (error) {
+      console.error('Error marking room cleaned:', error);
+      alert('Error marking room as cleaned. Please try again.');
+    }
+  };
+
+  const handleAddCleaningStaff = async () => {
+    if (!newStaffName.trim()) {
+      alert('Please enter staff name');
+      return;
+    }
+    try {
+      await axios.post(`${API}/cleaning/staff?name=${encodeURIComponent(newStaffName)}&phone=${encodeURIComponent(newStaffPhone)}`);
+      setShowAddStaffModal(false);
+      setNewStaffName('');
+      setNewStaffPhone('');
+      await fetchCleaningStaff();
+    } catch (error) {
+      console.error('Error adding staff:', error);
+      alert('Error adding staff. Please try again.');
+    }
+  };
+
+  const handleDeleteCleaningStaff = async (staffId) => {
+    if (!window.confirm('Are you sure you want to remove this staff member?')) return;
+    try {
+      await axios.delete(`${API}/cleaning/staff/${staffId}`);
+      await fetchCleaningStaff();
+    } catch (error) {
+      console.error('Error removing staff:', error);
+      alert('Error removing staff. Please try again.');
     }
   };
 
