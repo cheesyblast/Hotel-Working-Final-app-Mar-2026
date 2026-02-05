@@ -2511,10 +2511,10 @@ async def checkout_customer(checkout: CheckoutRequest):
         {"$set": {"status": "Completed"}}
     )
     
-    # Update room status to available
+    # Update room status to Pending Cleaning (not Available - needs to be cleaned first)
     await db.rooms.update_one(
         {"room_number": customer["current_room"]},
-        {"$set": {"status": "Available", "current_guest": None, "check_in_date": None, "check_out_date": None}}
+        {"$set": {"status": "Pending Cleaning", "current_guest": None, "check_in_date": None, "check_out_date": None, "last_guest": customer.get("name", "Unknown")}}
     )
     
     # Log activity
