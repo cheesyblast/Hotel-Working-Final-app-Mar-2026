@@ -539,6 +539,316 @@ async def get_current_active_admin(current_user: UserResponse = Depends(get_curr
         )
     return current_user
 
+# ==================== EMAIL & SMS TEMPLATES ====================
+
+class EmailTemplate(BaseModel):
+    """Email template for various occasions"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # e.g., "Reservation Confirmation", "Check-in Welcome"
+    occasion: str  # reservation, checkin, checkout, custom
+    subject: str
+    body_html: str
+    body_text: str = ""
+    variables: List[str] = []  # Available placeholders like {guest_name}, {room_number}
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class EmailTemplateCreate(BaseModel):
+    name: str
+    occasion: str
+    subject: str
+    body_html: str
+    body_text: str = ""
+    variables: List[str] = []
+
+class SMSSettings(BaseModel):
+    """SMS gateway settings"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    provider: str = "twilio"  # twilio, notify_lk, custom
+    # Twilio settings
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
+    # Notify.lk settings
+    notify_lk_user_id: str = ""
+    notify_lk_api_key: str = ""
+    notify_lk_sender_id: str = ""
+    # Custom HTTP API settings
+    custom_api_url: str = ""
+    custom_api_key: str = ""
+    custom_api_method: str = "POST"
+    custom_api_headers: dict = {}
+    custom_api_body_template: str = ""  # JSON template with placeholders
+    # General
+    is_configured: bool = False
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SMSSettingsUpdate(BaseModel):
+    provider: Optional[str] = None
+    twilio_account_sid: Optional[str] = None
+    twilio_auth_token: Optional[str] = None
+    twilio_phone_number: Optional[str] = None
+    notify_lk_user_id: Optional[str] = None
+    notify_lk_api_key: Optional[str] = None
+    notify_lk_sender_id: Optional[str] = None
+    custom_api_url: Optional[str] = None
+    custom_api_key: Optional[str] = None
+    custom_api_method: Optional[str] = None
+    custom_api_headers: Optional[dict] = None
+    custom_api_body_template: Optional[str] = None
+
+class SMSTemplate(BaseModel):
+    """SMS template for various occasions"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    occasion: str  # reservation, checkin, checkout, cleaning_assigned, custom
+    body: str  # SMS text with placeholders
+    variables: List[str] = []
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SMSTemplateCreate(BaseModel):
+    name: str
+    occasion: str
+    body: str
+    variables: List[str] = []
+
+# ==================== MAINTENANCE TRACKING ====================
+
+class MaintenanceItem(BaseModel):
+    """Items purchased for room/hotel maintenance"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    item_name: str
+    description: str = ""
+    quantity: int = 1
+    unit_price: float
+    total_price: float = 0
+    purchase_date: date
+    room_number: Optional[str] = None  # If room-specific
+    category: str = "General"  # General, Plumbing, Electrical, Furniture, Appliance, Cleaning Supplies
+    vendor: str = ""
+    invoice_number: str = ""
+    notes: str = ""
+    created_by: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MaintenanceItemCreate(BaseModel):
+    item_name: str
+    description: str = ""
+    quantity: int = 1
+    unit_price: float
+    purchase_date: date
+    room_number: Optional[str] = None
+    category: str = "General"
+    vendor: str = ""
+    invoice_number: str = ""
+    notes: str = ""
+
+class MaintenanceTask(BaseModel):
+    """Room maintenance tasks"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    room_number: str
+    task_type: str  # Repair, Replacement, Inspection, Cleaning
+    description: str
+    priority: str = "Medium"  # Low, Medium, High, Urgent
+    status: str = "Pending"  # Pending, In Progress, Completed, Cancelled
+    assigned_to: Optional[str] = None
+    estimated_cost: float = 0
+    actual_cost: float = 0
+    scheduled_date: Optional[date] = None
+    completed_date: Optional[date] = None
+    notes: str = ""
+    created_by: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MaintenanceTaskCreate(BaseModel):
+    room_number: str
+    task_type: str
+    description: str
+    priority: str = "Medium"
+    assigned_to: Optional[str] = None
+    estimated_cost: float = 0
+    scheduled_date: Optional[date] = None
+    notes: str = ""
+
+# ==================== PAYROLL SYSTEM (Sri Lanka Specific) ====================
+
+class Employee(BaseModel):
+    """Employee/Staff account"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    employee_id: str  # Custom employee ID like EMP001
+    first_name: str
+    last_name: str
+    email: str = ""
+    phone: str = ""
+    nic: str = ""  # National Identity Card
+    address: str = ""
+    date_of_birth: Optional[date] = None
+    hire_date: date
+    department: str  # Front Desk, Housekeeping, Restaurant, Maintenance, Management
+    designation: str  # Manager, Supervisor, Staff, etc.
+    employment_type: str = "Full-time"  # Full-time, Part-time, Contract
+    status: str = "Active"  # Active, Inactive, Terminated
+    # Salary details
+    basic_salary: float = 0
+    payment_frequency: str = "Monthly"  # Monthly, Weekly, Daily
+    bank_name: str = ""
+    bank_account: str = ""
+    bank_branch: str = ""
+    # EPF/ETF (Sri Lanka specific)
+    epf_number: str = ""
+    epf_contribution_employee: float = 8  # Employee contribution %
+    epf_contribution_employer: float = 12  # Employer contribution %
+    etf_contribution: float = 3  # ETF contribution %
+    # Tax
+    tax_number: str = ""
+    # Notes
+    notes: str = ""
+    profile_image: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class EmployeeCreate(BaseModel):
+    employee_id: str
+    first_name: str
+    last_name: str
+    email: str = ""
+    phone: str = ""
+    nic: str = ""
+    address: str = ""
+    date_of_birth: Optional[date] = None
+    hire_date: date
+    department: str
+    designation: str
+    employment_type: str = "Full-time"
+    basic_salary: float = 0
+    payment_frequency: str = "Monthly"
+    bank_name: str = ""
+    bank_account: str = ""
+    bank_branch: str = ""
+    epf_number: str = ""
+    tax_number: str = ""
+    notes: str = ""
+
+class SalaryComponent(BaseModel):
+    """Allowances and deductions"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # e.g., "Transport Allowance", "Meal Allowance", "Insurance"
+    type: str  # allowance, deduction
+    amount_type: str = "fixed"  # fixed, percentage
+    amount: float = 0
+    percentage_of: str = ""  # basic_salary, gross_salary
+    is_taxable: bool = True
+    applies_to_all: bool = False
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SalaryComponentCreate(BaseModel):
+    name: str
+    type: str
+    amount_type: str = "fixed"
+    amount: float = 0
+    percentage_of: str = ""
+    is_taxable: bool = True
+    applies_to_all: bool = False
+
+class EmployeeSalaryComponent(BaseModel):
+    """Link salary components to specific employees"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    employee_id: str
+    component_id: str
+    custom_amount: Optional[float] = None  # Override default amount
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Loan(BaseModel):
+    """Employee loans"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    employee_id: str
+    loan_type: str  # Salary Advance, Personal Loan, Emergency Loan
+    amount: float
+    interest_rate: float = 0  # Annual interest rate %
+    disbursement_date: date
+    repayment_start_date: date
+    installment_amount: float
+    installment_frequency: str = "Monthly"  # Monthly, Weekly
+    total_installments: int
+    paid_installments: int = 0
+    remaining_balance: float = 0
+    status: str = "Active"  # Active, Completed, Cancelled
+    notes: str = ""
+    approved_by: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class LoanCreate(BaseModel):
+    employee_id: str
+    loan_type: str
+    amount: float
+    interest_rate: float = 0
+    disbursement_date: date
+    repayment_start_date: date
+    installment_amount: float
+    installment_frequency: str = "Monthly"
+    total_installments: int
+    notes: str = ""
+
+class PayrollRun(BaseModel):
+    """Monthly/Weekly payroll run"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    pay_period_start: date
+    pay_period_end: date
+    payment_date: date
+    status: str = "Draft"  # Draft, Processing, Completed, Cancelled
+    total_gross: float = 0
+    total_deductions: float = 0
+    total_net: float = 0
+    total_epf_employee: float = 0
+    total_epf_employer: float = 0
+    total_etf: float = 0
+    processed_by: str = ""
+    notes: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class PaySlip(BaseModel):
+    """Individual pay slip"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    payroll_run_id: str
+    employee_id: str
+    employee_name: str
+    pay_period_start: date
+    pay_period_end: date
+    payment_date: date
+    # Earnings
+    basic_salary: float = 0
+    allowances: List[dict] = []  # [{name, amount}]
+    overtime_hours: float = 0
+    overtime_rate: float = 0
+    overtime_amount: float = 0
+    gross_salary: float = 0
+    # Deductions
+    deductions: List[dict] = []  # [{name, amount}]
+    loan_deduction: float = 0
+    epf_employee: float = 0
+    tax_deduction: float = 0
+    total_deductions: float = 0
+    # Net
+    net_salary: float = 0
+    # Employer contributions (for records)
+    epf_employer: float = 0
+    etf_employer: float = 0
+    # Payment
+    payment_method: str = "Bank Transfer"
+    bank_details: str = ""
+    status: str = "Pending"  # Pending, Paid
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+# ==================== END NEW MODELS ====================
+
 # Email service functions
 async def get_email_settings():
     """Get email settings from database"""
