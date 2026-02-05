@@ -8961,7 +8961,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   
   // UI state
-  const [activeTab, setActiveTab] = useState('users'); // users, settings, email, channels, system, logs
+  const [activeTab, setActiveTab] = useState('users'); // users, settings, email, sms, templates, channels, system, logs
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showActivityLogs, setShowActivityLogs] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -8984,6 +8984,32 @@ const Settings = () => {
   });
   const [testingEmail, setTestingEmail] = useState(false);
   const [resetting, setResetting] = useState(false);
+  
+  // SMS Settings state
+  const [smsSettings, setSmsSettings] = useState({
+    provider: 'twilio',
+    twilio_account_sid: '',
+    twilio_auth_token: '',
+    twilio_phone_number: '',
+    notify_lk_user_id: '',
+    notify_lk_api_key: '',
+    notify_lk_sender_id: '',
+    custom_api_url: '',
+    custom_api_key: '',
+    custom_api_method: 'POST',
+    custom_api_headers: {},
+    custom_api_body_template: '',
+    is_configured: false
+  });
+  
+  // Email & SMS Templates state
+  const [emailTemplates, setEmailTemplates] = useState([]);
+  const [smsTemplates, setSmsTemplates] = useState([]);
+  const [showAddTemplateModal, setShowAddTemplateModal] = useState(false);
+  const [templateType, setTemplateType] = useState('email'); // email or sms
+  const [newTemplate, setNewTemplate] = useState({
+    name: '', occasion: 'custom', subject: '', body_html: '', body_text: '', body: '', variables: []
+  });
   
   // Booking channels state
   const [bookingChannels, setBookingChannels] = useState([]);
