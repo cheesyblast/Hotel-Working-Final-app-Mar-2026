@@ -5820,20 +5820,23 @@ const Bookings = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">All Bookings</h2>
-          <p className="text-gray-300">Manage all hotel bookings and reservations</p>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-teal-800 to-cyan-600 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">All Bookings</h2>
+            <p className="text-teal-200">Manage all hotel bookings and reservations</p>
+          </div>
+          <button
+            onClick={() => setShowDownloadModal(true)}
+            className="bg-white text-teal-800 px-4 py-2 rounded-lg hover:bg-teal-100 flex items-center font-medium"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download CSV
+          </button>
         </div>
-        <button
-          onClick={() => setShowDownloadModal(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center space-x-2"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <span>Download CSV</span>
-        </button>
       </div>
 
       {/* Search and Filter Controls */}
