@@ -3454,6 +3454,21 @@ async def checkout_customer(checkout: CheckoutRequest):
     # the daily_sale record already captures this transaction.
     # This avoids double-counting in financial summaries.
     
+    # Send checkout notifications (SMS + Email)
+    try:
+        notification_data = {
+            "guest_name": customer.get("name"),
+            "guest_email": customer.get("email"),
+            "guest_phone": customer.get("phone"),
+            "room_number": customer.get("current_room"),
+            "total_amount": total_amount,
+            "check_in_date": customer.get("check_in_date"),
+            "check_out_date": customer.get("check_out_date")
+        }
+        await send_notifications(notification_data, "checkout")
+    except Exception as e:
+        print(f"Checkout notification error (non-critical): {str(e)}")
+    
     return {
         "message": "Customer checked out successfully",
         "billing_details": {
