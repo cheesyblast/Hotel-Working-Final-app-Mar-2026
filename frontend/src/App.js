@@ -9138,6 +9138,18 @@ const Settings = () => {
     tax_rate: 0
   });
 
+  // Payroll settings state
+  const [showPayrollSettingsModal, setShowPayrollSettingsModal] = useState(false);
+  const [payrollSettings, setPayrollSettings] = useState({
+    enable_epf: true,
+    epf_employee_rate: 8.0,
+    epf_employer_rate: 12.0,
+    enable_etf: true,
+    etf_rate: 3.0,
+    tax_enabled: false,
+    tax_rate: 0.0
+  });
+
   useEffect(() => {
     fetchAllData();
   }, []);
