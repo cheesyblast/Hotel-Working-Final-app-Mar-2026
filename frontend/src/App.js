@@ -11116,6 +11116,222 @@ const Settings = () => {
         </div>
       )}
 
+      {/* Taxes & Levies Tab */}
+      {activeTab === 'taxes' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Taxes & Levies Configuration</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Configure taxes and levies to be applied to bookings and/or restaurant bills
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddTaxModal(true)}
+                className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
+              >
+                + Add Tax/Levy
+              </button>
+            </div>
+
+            {/* Tax List */}
+            {taxConfigs.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p className="mb-2">No taxes or levies configured yet.</p>
+                <p className="text-sm">Click "Add Tax/Levy" to create your first tax configuration.</p>
+                <p className="text-sm mt-2 text-gray-400">Note: If your hotel doesn't collect taxes separately, you can leave this empty.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Rate</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Type</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Apply to Bookings</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Apply to Restaurant</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Active</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                    {taxConfigs.map((tax) => (
+                      <tr key={tax.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-4 py-3">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{tax.name}</div>
+                          {tax.description && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{tax.description}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          {tax.type === 'percentage' ? `${tax.rate}%` : `LKR ${tax.rate}`}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 capitalize">
+                          {tax.type}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => handleUpdateTax(tax.id, { apply_to_bookings: !tax.apply_to_bookings })}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              tax.apply_to_bookings
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                : 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                            }`}
+                          >
+                            {tax.apply_to_bookings ? 'Yes' : 'No'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => handleUpdateTax(tax.id, { apply_to_restaurant: !tax.apply_to_restaurant })}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              tax.apply_to_restaurant
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                                : 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                            }`}
+                          >
+                            {tax.apply_to_restaurant ? 'Yes' : 'No'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => handleUpdateTax(tax.id, { is_active: !tax.is_active })}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              tax.is_active
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                            }`}
+                          >
+                            {tax.is_active ? 'Active' : 'Inactive'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => handleDeleteTax(tax.id)}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Info Box */}
+            <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+              <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-2">How Taxes Work</h4>
+              <ul className="text-xs text-yellow-700 dark:text-yellow-400 space-y-1">
+                <li>• <strong>Apply to Bookings:</strong> Tax will be added to room charges during checkout</li>
+                <li>• <strong>Apply to Restaurant:</strong> Tax will be added to restaurant order totals</li>
+                <li>• <strong>None (Both off):</strong> Tax is stored but not applied anywhere - useful for hotels that don't collect taxes separately</li>
+                <li>• Taxes are calculated on the subtotal before discounts</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Tax Modal */}
+      {showAddTaxModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Add New Tax/Levy</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
+                <input
+                  type="text"
+                  value={newTax.name}
+                  onChange={(e) => setNewTax({...newTax, name: e.target.value})}
+                  placeholder="e.g., Service Tax, VAT, Tourism Levy"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newTax.rate}
+                    onChange={(e) => setNewTax({...newTax, rate: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                  <select
+                    value={newTax.type}
+                    onChange={(e) => setNewTax({...newTax, type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (LKR)</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Apply To</label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newTax.apply_to_bookings}
+                      onChange={(e) => setNewTax({...newTax, apply_to_bookings: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Room Bookings (Checkout)</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newTax.apply_to_restaurant}
+                      onChange={(e) => setNewTax({...newTax, apply_to_restaurant: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Restaurant Bills</span>
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave both unchecked if you don't want to apply this tax automatically</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (Optional)</label>
+                <input
+                  type="text"
+                  value={newTax.description}
+                  onChange={(e) => setNewTax({...newTax, description: e.target.value})}
+                  placeholder="Brief description of this tax"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowAddTaxModal(false);
+                  setNewTax({ name: '', rate: 0, type: 'percentage', apply_to_bookings: true, apply_to_restaurant: false, description: '' });
+                }}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTax}
+                disabled={!newTax.name || newTax.rate <= 0}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Tax
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Booking Channels Tab */}
       {activeTab === 'channels' && (
         <div className="space-y-6">
