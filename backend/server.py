@@ -5380,6 +5380,65 @@ async def pay_restaurant_order(
     
     return {"message": "Payment processed successfully"}
 
+# ==================== RESTAURANT EXPENSES ====================
+
+@api_router.get("/restaurant/expenses")
+async def get_restaurant_expenses():
+    """Get all restaurant expenses"""
+    expenses = await db.restaurant_expenses.find({}, {"_id": 0}).sort("expense_date", -1).to_list(500)
+    # Convert dates
+    for exp in expenses:
+        if isinstance(exp.get("expense_date"), datetime):
+            exp["expense_date"] = exp["expense_date"].strftime("%Y-%m-%d")
+    return expenses
+
+@api_router.post("/restaurant/expenses")
+async def create_restaurant_expense(
+    item_name: str,
+    category: str,
+    quantity: int = 1,
+    unit_price: float = 0,
+    total_price: float = 0,
+    vendor: str = "",
+    expense_date: str = None,
+    description: str = "",
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """Add a restaurant expense"""
+    expense_id = str(uuid.uuid4())
+    exp_date = datetime.strptime(expense_date, "%Y-%m-%d") if expense_date else datetime.utcnow()
+    
+    expense = {
+        "id": expense_id,
+        "item_name": item_name,
+        "category": category,
+        "description": description,
+        "quantity": quantity,
+        "unit_price": unit_price,
+        "total_price": total_price if total_price else quantity * unit_price,
+        "vendor": vendor,
+        "expense_date": exp_date,
+        "created_by": current_user.username,
+        "created_at": datetime.utcnow()
+    }
+    
+    await db.restaurant_expenses.insert_one(expense)
+    
+    # Also add to general expenses
+    await db.expenses.insert_one({
+        "id": str(uuid.uuid4()),
+        "expense_date": exp_date,
+        "category": "Restaurant",
+        "description": f"{item_name} x{quantity} - {category}",
+        "amount": expense["total_price"],
+        "payment_method": "Cash",
+        "vendor": vendor,
+        "created_by": current_user.username,
+        "created_at": datetime.utcnow()
+    })
+    
+    return {"message": "Restaurant expense added", "expense": expense}
+
 # ==================== EMAIL & SMS TEMPLATES ====================
 
 @api_router.get("/email-templates")
