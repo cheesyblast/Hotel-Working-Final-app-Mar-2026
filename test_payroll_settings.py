@@ -24,6 +24,9 @@ def test_payroll_settings():
             print(f"Response: {login_response.text}")
             return False
             
+        # Set authorization header
+        token_data = login_response.json()
+        session.headers.update({"Authorization": f"Bearer {token_data['access_token']}"})
         print("✅ Admin login successful")
         
         # 2. Get current payroll settings
