@@ -5083,6 +5083,21 @@ const Guests = () => {
   const [showGuestDetails, setShowGuestDetails] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showEditGuestModal, setShowEditGuestModal] = useState(false);
+  const [showSMSModal, setShowSMSModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [smsData, setSmsData] = useState({
+    phone_number: '',
+    message: '',
+    guest_id: ''
+  });
+  const [emailData, setEmailData] = useState({
+    email: '',
+    subject: '',
+    body: '',
+    guest_id: ''
+  });
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [editGuestData, setEditGuestData] = useState({
     guest_id: '',
     name: '',
