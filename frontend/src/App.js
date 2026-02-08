@@ -10063,9 +10063,14 @@ const Settings = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Settings</h1>
-        <p className="text-gray-300">Manage users, configure hotel settings, and view activity logs</p>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-gray-800 to-zinc-700 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2">Settings</h1>
+            <p className="text-gray-300">Manage users, configure hotel settings, and view activity logs</p>
+          </div>
+        </div>
       </div>
 
       {/* Tab Navigation */}
