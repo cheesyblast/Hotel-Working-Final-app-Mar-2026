@@ -987,6 +987,121 @@ async def send_email(to_email: str, subject: str, body: str):
     else:
         return False
 
+# SMS Service Functions
+async def get_sms_settings_helper():
+    """Get SMS settings from database"""
+    settings = await db.sms_settings.find_one({}, {"_id": 0})
+    if not settings:
+        return None
+    return settings
+
+async def send_sms_notify_lk(settings: dict, phone_number: str, message: str):
+    """Send SMS via Notify.lk API (Sri Lanka)"""
+    import httpx
+    
+    try:
+        url = "https://app.notify.lk/api/v1/send"
+        payload = {
+            "user_id": settings.get("notify_lk_user_id"),
+            "api_key": settings.get("notify_lk_api_key"),
+            "sender_id": settings.get("notify_lk_sender_id"),
+            "to": phone_number,
+            "message": message
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, data=payload, timeout=30.0)
+            result = response.json()
+            if result.get("status") == "success":
+                return True
+            else:
+                print(f"Notify.lk Error: {result}")
+                return False
+    except Exception as e:
+        print(f"Notify.lk Error: {str(e)}")
+        return False
+
+async def send_sms_twilio(settings: dict, phone_number: str, message: str):
+    """Send SMS via Twilio API"""
+    import httpx
+    import base64
+    
+    try:
+        account_sid = settings.get("twilio_account_sid")
+        auth_token = settings.get("twilio_auth_token")
+        from_number = settings.get("twilio_phone_number")
+        
+        url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
+        auth = base64.b64encode(f"{account_sid}:{auth_token}".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {auth}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        payload = {
+            "From": from_number,
+            "To": phone_number,
+            "Body": message
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, data=payload, headers=headers, timeout=30.0)
+            if response.status_code in [200, 201]:
+                return True
+            else:
+                print(f"Twilio Error: {response.status_code} - {response.text}")
+                return False
+    except Exception as e:
+        print(f"Twilio Error: {str(e)}")
+        return False
+
+async def send_sms_custom(settings: dict, phone_number: str, message: str):
+    """Send SMS via Custom HTTP API"""
+    import httpx
+    
+    try:
+        url = settings.get("custom_api_url")
+        method = settings.get("custom_api_method", "POST")
+        headers = settings.get("custom_api_headers", {})
+        body_template = settings.get("custom_api_body_template", "")
+        
+        # Replace placeholders in body template
+        body = body_template.replace("{phone}", phone_number).replace("{message}", message)
+        
+        if settings.get("custom_api_key"):
+            headers["Authorization"] = f"Bearer {settings.get('custom_api_key')}"
+        
+        async with httpx.AsyncClient() as client:
+            if method.upper() == "POST":
+                response = await client.post(url, content=body, headers=headers, timeout=30.0)
+            else:
+                response = await client.get(url, headers=headers, timeout=30.0)
+            
+            if response.status_code in [200, 201]:
+                return True
+            else:
+                print(f"Custom SMS API Error: {response.status_code}")
+                return False
+    except Exception as e:
+        print(f"Custom SMS API Error: {str(e)}")
+        return False
+
+async def send_sms(phone_number: str, message: str):
+    """Send SMS using configured provider"""
+    settings = await get_sms_settings_helper()
+    if not settings or not settings.get("is_configured"):
+        return False
+    
+    provider = settings.get("provider", "twilio")
+    
+    if provider == "twilio":
+        return await send_sms_twilio(settings, phone_number, message)
+    elif provider == "notify_lk":
+        return await send_sms_notify_lk(settings, phone_number, message)
+    elif provider == "custom":
+        return await send_sms_custom(settings, phone_number, message)
+    else:
+        return False
+
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     hotel_name: str = "Hotel Management System"
