@@ -1102,6 +1102,53 @@ async def send_sms(phone_number: str, message: str):
     else:
         return False
 
+# Tax Calculation Helper Functions
+async def get_active_taxes(apply_to: str = "room"):
+    """Get active tax configurations for a specific category"""
+    query = {
+        "is_active": True,
+        "$or": [
+            {"apply_to": apply_to},
+            {"apply_to": "all"}
+        ]
+    }
+    taxes = await db.tax_configs.find(query, {"_id": 0}).to_list(100)
+    return taxes
+
+async def calculate_taxes(subtotal: float, apply_to: str = "room"):
+    """Calculate taxes for a given subtotal amount
+    
+    Returns:
+        dict: {
+            'tax_breakdown': [{name, rate, amount}],
+            'total_tax': float,
+            'grand_total': float
+        }
+    """
+    taxes = await get_active_taxes(apply_to)
+    tax_breakdown = []
+    total_tax = 0.0
+    
+    for tax in taxes:
+        if tax.get("type") == "percentage":
+            tax_amount = subtotal * (tax.get("rate", 0) / 100)
+        else:  # fixed amount
+            tax_amount = tax.get("rate", 0)
+        
+        tax_breakdown.append({
+            "name": tax.get("name"),
+            "rate": tax.get("rate"),
+            "type": tax.get("type", "percentage"),
+            "amount": round(tax_amount, 2)
+        })
+        total_tax += tax_amount
+    
+    return {
+        "tax_breakdown": tax_breakdown,
+        "total_tax": round(total_tax, 2),
+        "grand_total": round(subtotal + total_tax, 2)
+    }
+
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     hotel_name: str = "Hotel Management System"
