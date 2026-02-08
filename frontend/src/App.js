@@ -2362,7 +2362,7 @@ const Dashboard = () => {
       {/* Checkout Modal */}
       {showCheckoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Checkout Customer</h3>
             {selectedCustomer && (
               <div className="mb-4">
@@ -2378,28 +2378,51 @@ const Dashboard = () => {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>Room Charges:</span>
-                    <span>LKR {selectedCustomer?.room_charges || 500}</span>
+                    <span>LKR {(selectedCustomer?.room_charges || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Restaurant Charges:</span>
-                    <span>LKR {selectedCustomer?.restaurant_charges || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Advance Paid:</span>
-                    <span>-LKR {selectedCustomer?.advance_amount || 0}</span>
+                    <span>LKR {(selectedCustomer?.restaurant_charges || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Additional Charges:</span>
-                    <span>LKR {parseFloat(checkoutData.additional_amount) || 0}</span>
+                    <span>LKR {(parseFloat(checkoutData.additional_amount) || 0).toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-red-600">
                     <span>Discount:</span>
-                    <span>-LKR {parseFloat(checkoutData.discount_amount) || 0}</span>
+                    <span>-LKR {(parseFloat(checkoutData.discount_amount) || 0).toLocaleString()}</span>
                   </div>
                   <hr className="my-2" />
-                  <div className="flex justify-between font-semibold">
+                  <div className="flex justify-between font-medium">
                     <span>Subtotal:</span>
-                    <span>LKR {calculateTotal()}</span>
+                    <span>LKR {(
+                      (selectedCustomer?.room_charges || 0) +
+                      (selectedCustomer?.restaurant_charges || 0) +
+                      (parseFloat(checkoutData.additional_amount) || 0) -
+                      (parseFloat(checkoutData.discount_amount) || 0)
+                    ).toLocaleString()}</span>
+                  </div>
+                  
+                  {/* Tax Breakdown */}
+                  {checkoutTaxPreview && checkoutTaxPreview.breakdown && checkoutTaxPreview.breakdown.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 mb-1">Applicable Taxes:</p>
+                      {checkoutTaxPreview.breakdown.map((tax, idx) => (
+                        <div key={idx} className="flex justify-between text-orange-700">
+                          <span>{tax.name} ({tax.rate}%):</span>
+                          <span>LKR {tax.amount.toLocaleString()}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between font-medium text-orange-800 mt-1">
+                        <span>Total Taxes:</span>
+                        <span>LKR {checkoutTaxPreview.total_tax.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between text-green-600">
+                    <span>Advance Paid:</span>
+                    <span>-LKR {(selectedCustomer?.advance_amount || 0).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -2411,7 +2434,14 @@ const Dashboard = () => {
                 <input
                   type="number"
                   value={checkoutData.additional_amount}
-                  onChange={(e) => setCheckoutData({...checkoutData, additional_amount: e.target.value})}
+                  onChange={(e) => {
+                    setCheckoutData({...checkoutData, additional_amount: e.target.value});
+                    // Recalculate taxes with debounce
+                    const roomCharges = selectedCustomer?.room_charges || 0;
+                    const additionalAmount = parseFloat(e.target.value) || 0;
+                    const discountAmount = parseFloat(checkoutData.discount_amount) || 0;
+                    recalculateCheckoutTaxes(roomCharges, additionalAmount, discountAmount);
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0.00"
                 />
@@ -2424,7 +2454,14 @@ const Dashboard = () => {
                 <input
                   type="number"
                   value={checkoutData.discount_amount}
-                  onChange={(e) => setCheckoutData({...checkoutData, discount_amount: e.target.value})}
+                  onChange={(e) => {
+                    setCheckoutData({...checkoutData, discount_amount: e.target.value});
+                    // Recalculate taxes with debounce
+                    const roomCharges = selectedCustomer?.room_charges || 0;
+                    const additionalAmount = parseFloat(checkoutData.additional_amount) || 0;
+                    const discountAmount = parseFloat(e.target.value) || 0;
+                    recalculateCheckoutTaxes(roomCharges, additionalAmount, discountAmount);
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0.00"
                 />
@@ -2445,20 +2482,20 @@ const Dashboard = () => {
                 </select>
               </div>
 
-              {/* Balance Payable - Real-time Display */}
+              {/* Balance Payable - Real-time Display with Taxes */}
               <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                 <div className="flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-sm font-medium text-green-700 mb-1">Balance Payable</p>
+                    <p className="text-sm font-medium text-green-700 mb-1">Total Amount Payable (incl. Taxes)</p>
                     <p className={`text-3xl font-bold ${
-                      calculateTotal() >= 0 ? 'text-green-800' : 'text-red-600'
+                      (calculateTotal() + (checkoutTaxPreview?.total_tax || 0)) >= 0 ? 'text-green-800' : 'text-red-600'
                     }`}>
-                      LKR {Math.abs(calculateTotal()).toFixed(2)}
+                      LKR {Math.abs(calculateTotal() + (checkoutTaxPreview?.total_tax || 0)).toFixed(2)}
                     </p>
-                    {calculateTotal() < 0 && (
+                    {(calculateTotal() + (checkoutTaxPreview?.total_tax || 0)) < 0 && (
                       <p className="text-xs text-red-600 mt-1">Refund Due to Customer</p>
                     )}
-                    {calculateTotal() >= 0 && (
+                    {(calculateTotal() + (checkoutTaxPreview?.total_tax || 0)) >= 0 && (
                       <p className="text-xs text-green-600 mt-1">Amount to Collect</p>
                     )}
                   </div>
