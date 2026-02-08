@@ -3161,13 +3161,28 @@ async def checkout_customer(checkout: CheckoutRequest):
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
-    # Calculate total amount
+    # Calculate base amounts
     base_room_charges = customer.get('room_charges', 500.0)  # Default room charge
     restaurant_charges = customer.get('restaurant_charges', 0.0)  # Restaurant charges
     advance_amount = customer.get('advance_amount', 0.0)
     additional_amount = checkout.additional_amount
     discount_amount = checkout.discount_amount
-    total_amount = base_room_charges + restaurant_charges + additional_amount - advance_amount - discount_amount
+    
+    # Calculate subtotal before taxes
+    subtotal = base_room_charges + restaurant_charges + additional_amount - discount_amount
+    
+    # Calculate taxes on room charges
+    room_tax_result = await calculate_taxes(base_room_charges, "room")
+    restaurant_tax_result = await calculate_taxes(restaurant_charges, "restaurant") if restaurant_charges > 0 else {"total_tax": 0, "tax_breakdown": []}
+    
+    # Total taxes
+    total_taxes = room_tax_result["total_tax"] + restaurant_tax_result.get("total_tax", 0)
+    
+    # Final total (subtotal + taxes - advance)
+    total_amount = subtotal + total_taxes - advance_amount
+    
+    # Combined tax breakdown
+    all_taxes = room_tax_result["tax_breakdown"] + restaurant_tax_result.get("tax_breakdown", [])
     
     # Create daily sales record
     daily_sale = DailySale(
@@ -3185,6 +3200,8 @@ async def checkout_customer(checkout: CheckoutRequest):
     # Store the daily sale record
     daily_sale_dict = daily_sale.dict()
     daily_sale_dict['date'] = datetime.combine(daily_sale_dict['date'], datetime.min.time())
+    daily_sale_dict['taxes'] = total_taxes  # Store tax amount
+    daily_sale_dict['tax_breakdown'] = all_taxes  # Store tax details
     await db.daily_sales.insert_one(daily_sale_dict)
     
     # Update customer with final billing details and mark as checked out
@@ -3194,6 +3211,8 @@ async def checkout_customer(checkout: CheckoutRequest):
             "additional_charges": additional_amount,
             "restaurant_charges": restaurant_charges,
             "discount_amount": discount_amount,
+            "taxes": total_taxes,
+            "tax_breakdown": all_taxes,
             "total_amount": total_amount,
             "is_checked_out": True,  # Mark as checked out
             "actual_checkout_date": datetime.now()  # Set actual checkout date
@@ -3231,6 +3250,7 @@ async def checkout_customer(checkout: CheckoutRequest):
             "guest_name": customer.get("name"),
             "room_number": customer["current_room"],
             "total_amount": total_amount,
+            "taxes": total_taxes,
             "payment_method": checkout.payment_method
         }
     )
@@ -3260,6 +3280,9 @@ async def checkout_customer(checkout: CheckoutRequest):
             "advance_amount": advance_amount,
             "additional_charges": additional_amount,
             "discount_amount": discount_amount,
+            "subtotal": subtotal,
+            "taxes": total_taxes,
+            "tax_breakdown": all_taxes,
             "total_amount": total_amount,
             "payment_method": checkout.payment_method
         }
