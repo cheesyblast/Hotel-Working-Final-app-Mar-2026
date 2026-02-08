@@ -6221,6 +6221,84 @@ async def update_payroll_settings(
         updated_settings = await db.payroll_settings.find_one({}, {"_id": 0})
         return updated_settings
 
+# ==================== TAX CONFIGURATION ====================
+
+@api_router.get("/taxes")
+async def get_tax_configs():
+    """Get all tax configurations"""
+    taxes = await db.tax_configs.find({}, {"_id": 0}).to_list(100)
+    return taxes
+
+@api_router.post("/taxes")
+async def create_tax_config(
+    name: str,
+    rate: float,
+    type: str = "percentage",
+    apply_to: str = "room",
+    is_optional: bool = False
+):
+    """Create a new tax/levy configuration"""
+    tax = TaxConfig(
+        name=name,
+        rate=rate,
+        type=type,
+        apply_to=apply_to,
+        is_optional=is_optional
+    )
+    await db.tax_configs.insert_one(tax.dict())
+    return {"message": "Tax configuration created", "tax": tax.dict()}
+
+@api_router.put("/taxes/{tax_id}")
+async def update_tax_config(tax_id: str, updates: dict):
+    """Update a tax configuration"""
+    result = await db.tax_configs.update_one(
+        {"id": tax_id},
+        {"$set": updates}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Tax config not found")
+    return {"message": "Tax configuration updated"}
+
+@api_router.delete("/taxes/{tax_id}")
+async def delete_tax_config(tax_id: str):
+    """Delete a tax configuration"""
+    result = await db.tax_configs.delete_one({"id": tax_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tax config not found")
+    return {"message": "Tax configuration deleted"}
+
+@api_router.post("/taxes/calculate")
+async def calculate_taxes(base_amount: float, apply_to: str = "room"):
+    """Calculate taxes for a given amount"""
+    taxes = await db.tax_configs.find(
+        {"is_active": True, "apply_to": {"$in": [apply_to, "all"]}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    total_tax = 0
+    breakdown = []
+    
+    for tax in taxes:
+        if tax["type"] == "percentage":
+            tax_amount = base_amount * (tax["rate"] / 100)
+        else:
+            tax_amount = tax["rate"]
+        
+        total_tax += tax_amount
+        breakdown.append({
+            "name": tax["name"],
+            "rate": tax["rate"],
+            "type": tax["type"],
+            "amount": tax_amount
+        })
+    
+    return {
+        "base_amount": base_amount,
+        "total_tax": total_tax,
+        "total_with_tax": base_amount + total_tax,
+        "breakdown": breakdown
+    }
+
 # ==================== COMMISSION EXPORT ====================
 
 @api_router.get("/commissions/export")
