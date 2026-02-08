@@ -2911,6 +2911,25 @@ async def create_booking(booking: BookingCreate, current_user: UserResponse = De
         }
     )
     
+    # Send SMS notification for reservation (non-blocking)
+    try:
+        sms_data = {
+            "guest_name": booking.guest_name,
+            "guest_phone": booking.guest_phone,
+            "room_number": booking.room_number,
+            "check_in_date": booking_dict['check_in_date'],
+            "check_out_date": booking_dict['check_out_date'],
+            "booking_amount": booking.booking_amount
+        }
+        # Determine which SMS occasion to use based on status
+        if final_status == "Checked In":
+            await send_booking_notification_sms(sms_data, "checkin")
+        else:
+            await send_booking_notification_sms(sms_data, "reservation")
+    except Exception as e:
+        # Don't fail the booking if SMS fails
+        print(f"SMS notification error (non-critical): {str(e)}")
+    
     return booking_obj
 
 @api_router.put("/bookings/{booking_id}")
