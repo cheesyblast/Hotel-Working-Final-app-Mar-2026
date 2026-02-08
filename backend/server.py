@@ -961,6 +961,27 @@ class SettingsUpdate(BaseModel):
     cash_balance: Optional[float] = None
     bank_balance: Optional[float] = None
 
+class PayrollSettings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    enable_epf: bool = True
+    epf_employee_rate: float = 8.0  # Employee contribution percentage
+    epf_employer_rate: float = 12.0  # Employer contribution percentage
+    enable_etf: bool = True
+    etf_rate: float = 3.0  # ETF rate percentage
+    tax_enabled: bool = False
+    tax_rate: float = 0.0  # Tax rate percentage
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: str = "Admin"
+
+class PayrollSettingsUpdate(BaseModel):
+    enable_epf: Optional[bool] = None
+    epf_employee_rate: Optional[float] = None
+    epf_employer_rate: Optional[float] = None
+    enable_etf: Optional[bool] = None
+    etf_rate: Optional[float] = None
+    tax_enabled: Optional[bool] = None
+    tax_rate: Optional[float] = None
+
 class ActivityLog(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     action: str  # "created_booking", "checked_in", "checked_out", "added_expense", etc.
