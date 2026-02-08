@@ -5183,6 +5183,83 @@ const Guests = () => {
     }
   };
 
+  // Open SMS Modal with pre-filled data
+  const openSMSModal = (guest) => {
+    setSmsData({
+      phone_number: guest.phone || '',
+      message: '',
+      guest_id: guest.id || ''
+    });
+    setShowSMSModal(true);
+    setActiveDropdown(null);
+  };
+
+  // Open Email Modal with pre-filled data
+  const openEmailModal = (guest) => {
+    setEmailData({
+      email: guest.email || '',
+      subject: '',
+      body: '',
+      guest_id: guest.id || ''
+    });
+    setShowEmailModal(true);
+    setActiveDropdown(null);
+  };
+
+  // Send custom SMS
+  const handleSendSMS = async () => {
+    if (!smsData.phone_number || !smsData.message) {
+      alert('Please enter phone number and message');
+      return;
+    }
+    setSendingMessage(true);
+    try {
+      await axios.post(`${API}/send-custom-sms`, smsData);
+      alert('SMS sent successfully!');
+      setShowSMSModal(false);
+      setSmsData({ phone_number: '', message: '', guest_id: '' });
+    } catch (error) {
+      console.error('Error sending SMS:', error);
+      alert('Error sending SMS: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Send custom Email
+  const handleSendEmail = async () => {
+    if (!emailData.email || !emailData.subject || !emailData.body) {
+      alert('Please fill in all fields');
+      return;
+    }
+    setSendingMessage(true);
+    try {
+      await axios.post(`${API}/send-custom-email`, emailData);
+      alert('Email sent successfully!');
+      setShowEmailModal(false);
+      setEmailData({ email: '', subject: '', body: '', guest_id: '' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('Error sending email: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Toggle dropdown menu
+  const toggleDropdown = (guestId) => {
+    setActiveDropdown(activeDropdown === guestId ? null : guestId);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveDropdown(null);
+    if (activeDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [activeDropdown]);
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Upcoming':
