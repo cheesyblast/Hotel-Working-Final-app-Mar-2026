@@ -5556,27 +5556,31 @@ async def pay_restaurant_order(
         {"$set": {
             "payment_status": "Paid",
             "payment_method": payment_method,
-            "order_status": "Completed"
+            "order_status": "Completed",
+            "paid_at": datetime.utcnow()
         }}
     )
     
-    # Handle room service billing
+    # Handle room service billing - only add to room bill if explicitly requested
     if order["order_type"] == "room_service" and add_to_room_bill:
-        # Add to customer's room charges
-        customer = await db.customers.find_one({"current_room": order["room_number"]})
+        # Add to customer's room charges - will be collected at checkout
+        customer = await db.customers.find_one({
+            "current_room": order["room_number"],
+            "is_checked_out": False
+        })
         if customer:
             current_charges = customer.get("restaurant_charges", 0.0)
             new_charges = current_charges + order["total_amount"]
             await db.customers.update_one(
-                {"current_room": order["room_number"]},
+                {"id": customer["id"]},
                 {"$set": {"restaurant_charges": new_charges}}
             )
         
-        # Log activity
+        # Log activity - added to room bill (no immediate income record)
         await db.activity_logs.insert_one({
             "id": str(uuid.uuid4()),
-            "action": "restaurant_bill_added",
-            "description": f"Added restaurant bill LKR {order['total_amount']:.2f} to Room {order['room_number']}",
+            "action": "restaurant_bill_added_to_room",
+            "description": f"Added restaurant bill LKR {order['total_amount']:.2f} to Room {order['room_number']} (will be collected at checkout)",
             "user_name": current_user.username,
             "user_id": current_user.username,
             "entity_type": "restaurant_order",
@@ -5585,42 +5589,33 @@ async def pay_restaurant_order(
                 "order_number": order["order_number"],
                 "room_number": order["room_number"],
                 "amount": order["total_amount"],
-                "customer_name": order["customer_name"]
+                "customer_name": order.get("customer_name", "")
             },
             "timestamp": datetime.utcnow()
         })
     else:
-        # Process immediate payment - add to daily sales
-        await db.daily_sales.insert_one({
-            "id": str(uuid.uuid4()),
-            "sale_date": datetime.utcnow().date(),
-            "description": f"Restaurant Order {order['order_number']}",
-            "amount": order["total_amount"],
-            "category": "Restaurant",
-            "payment_method": payment_method,
-            "guest_name": order["customer_name"],
-            "created_by": current_user.username,
-            "created_at": datetime.utcnow()
-        })
+        # Process immediate payment - create income record for financial tracking
+        today = datetime.utcnow()
+        today_date = datetime.combine(today.date(), datetime.min.time())
         
-        # Add to income records
+        # Add to income records for financial reporting
         await db.incomes.insert_one({
             "id": str(uuid.uuid4()),
             "description": f"Restaurant Order {order['order_number']}",
             "amount": order["total_amount"],
             "category": "Restaurant",
             "payment_method": payment_method,
-            "income_date": datetime.utcnow().date(),
-            "guest_name": order["customer_name"],
+            "income_date": today_date,
+            "guest_name": order.get("customer_name", "Walk-in"),
             "created_by": current_user.username,
-            "created_at": datetime.utcnow()
+            "created_at": today
         })
         
-        # Log activity
+        # Log activity - paid directly
         await db.activity_logs.insert_one({
             "id": str(uuid.uuid4()),
             "action": "restaurant_payment_processed",
-            "description": f"Processed restaurant payment LKR {order['total_amount']:.2f} for Order {order['order_number']}",
+            "description": f"Processed restaurant payment LKR {order['total_amount']:.2f} via {payment_method} for Order {order['order_number']}",
             "user_name": current_user.username,
             "user_id": current_user.username,
             "entity_type": "restaurant_order",
@@ -5629,19 +5624,19 @@ async def pay_restaurant_order(
                 "order_number": order["order_number"],
                 "amount": order["total_amount"],
                 "payment_method": payment_method,
-                "customer_name": order["customer_name"]
+                "customer_name": order.get("customer_name", "Walk-in")
             },
             "timestamp": datetime.utcnow()
         })
     
     # Free up table if it was a table order
-    if order["table_id"]:
+    if order.get("table_id"):
         await db.restaurant_tables.update_one(
             {"id": order["table_id"]},
             {"$set": {"status": "Available"}}
         )
     
-    return {"message": "Payment processed successfully"}
+    return {"message": "Payment processed successfully", "payment_method": payment_method, "added_to_room_bill": add_to_room_bill}
 
 # ==================== RESTAURANT EXPENSES ====================
 
