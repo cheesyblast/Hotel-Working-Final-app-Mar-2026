@@ -5435,22 +5435,23 @@ async def create_restaurant_order(
     order: RestaurantOrderCreate,
     current_user: UserResponse = Depends(get_current_user)
 ):
-    """Create a new restaurant order"""
+    """Create a new restaurant order with applicable taxes"""
     # Generate order number
     order_count = await db.restaurant_orders.count_documents({})
     order_number = f"R{str(order_count + 1).zfill(4)}"
     
-    # Get hotel settings for tax calculation
-    settings = await db.settings.find_one({})
-    if not settings:
-        tax_rate = 0.0
-    else:
-        tax_rate = settings.get("tax_rate", 0.0)
-    
-    # Calculate totals
+    # Calculate subtotal
     subtotal = sum(item.total_price for item in order.items)
-    tax_amount = subtotal * (tax_rate / 100)  # Tax from hotel settings
-    service_charge = subtotal * (order.service_charge_rate / 100)  # Configurable service charge rate
+    
+    # Calculate restaurant taxes using the new tax system
+    tax_result = await calculate_restaurant_taxes(subtotal)
+    tax_amount = tax_result["total_tax"]
+    tax_breakdown = tax_result["tax_breakdown"]
+    
+    # Service charge (configurable rate from order)
+    service_charge = subtotal * (order.service_charge_rate / 100)
+    
+    # Total = subtotal + taxes + service charge
     total_amount = subtotal + tax_amount + service_charge
     
     # Get table/staff details
@@ -5493,7 +5494,11 @@ async def create_restaurant_order(
         created_by=current_user.username
     )
     
-    await db.restaurant_orders.insert_one(new_order.dict())
+    # Add tax breakdown to order
+    order_dict = new_order.dict()
+    order_dict["tax_breakdown"] = tax_breakdown
+    
+    await db.restaurant_orders.insert_one(order_dict)
     
     # For room service orders, automatically add to customer's restaurant charges
     if order.order_type == "room_service" and order.room_number:
@@ -5506,7 +5511,10 @@ async def create_restaurant_order(
                 {"$set": {"restaurant_charges": new_charges}}
             )
     
-    return new_order
+    # Return order with tax breakdown
+    response = new_order.dict()
+    response["tax_breakdown"] = tax_breakdown
+    return response
 
 @api_router.put("/restaurant/orders/{order_id}/status")
 async def update_order_status(
