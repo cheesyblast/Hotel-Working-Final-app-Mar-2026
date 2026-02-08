@@ -9952,6 +9952,13 @@ const Settings = () => {
     name: '', occasion: 'custom', subject: '', body_html: '', body_text: '', body: '', variables: []
   });
   
+  // Custom Message Sending state
+  const [showCustomSMSModal, setShowCustomSMSModal] = useState(false);
+  const [showCustomEmailModal, setShowCustomEmailModal] = useState(false);
+  const [customSmsData, setCustomSmsData] = useState({ phone_number: '', message: '' });
+  const [customEmailData, setCustomEmailData] = useState({ email: '', subject: '', body: '' });
+  const [sendingCustomMessage, setSendingCustomMessage] = useState(false);
+  
   // Tax/Levy Configuration state
   const [taxConfigs, setTaxConfigs] = useState([]);
   const [showAddTaxModal, setShowAddTaxModal] = useState(false);
