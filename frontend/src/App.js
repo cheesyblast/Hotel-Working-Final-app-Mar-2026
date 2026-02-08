@@ -11322,6 +11322,40 @@ const Settings = () => {
       {/* Templates Tab */}
       {activeTab === 'templates' && (
         <div className="space-y-6">
+          {/* Send Custom Message Section */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow p-6 text-white">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold">Send Custom Message</h2>
+                <p className="text-indigo-200 mt-1">
+                  Send SMS or Email to any phone number or email address
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowCustomSMSModal(true)}
+                  className="bg-white text-indigo-600 px-4 py-2 rounded-md hover:bg-indigo-50 flex items-center font-medium"
+                  data-testid="send-custom-sms-btn"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  Send SMS
+                </button>
+                <button
+                  onClick={() => setShowCustomEmailModal(true)}
+                  className="bg-white text-purple-600 px-4 py-2 rounded-md hover:bg-purple-50 flex items-center font-medium"
+                  data-testid="send-custom-email-btn"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Send Email
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-6">
               <div>
