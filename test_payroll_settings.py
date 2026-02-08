@@ -5,7 +5,7 @@ import json
 import sys
 
 # Test the payroll settings functionality
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8001"
 
 def test_payroll_settings():
     """Test payroll settings endpoints"""
