@@ -33,6 +33,42 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Changelog
 
+### 2026-02-08 - SMS/Email Notification System Complete
+**Features Implemented**:
+
+1. **Automated SMS/Email Notifications on All Occasions**
+   - **Reservation**: SMS + Email sent when booking is created
+   - **Check-in**: SMS + Email sent when guest checks in
+   - **Checkout**: SMS + Email sent when guest checks out
+   - **Cleaning Assignment**: SMS sent to staff when room assigned for cleaning
+   - Helper functions: `send_booking_notification_sms()`, `send_booking_notification_email()`, `send_notifications()`
+   - Template variable substitution: {guest_name}, {hotel_name}, {room_number}, {check_in_date}, etc.
+
+2. **Custom Message Sending (Guests Page)**
+   - Actions dropdown menu for each guest: View Details, Edit, Send SMS, Send Email
+   - SMS modal pre-fills phone number from guest data
+   - Email modal pre-fills email address from guest data
+   - Message logs stored in database
+
+3. **Custom Message Sending (Settings > Templates)**
+   - New "Send Custom Message" section with gradient header
+   - "Send SMS" button opens modal to send to any phone number
+   - "Send Email" button opens modal to send to any email address
+   - Supports message logging for audit
+
+**API Endpoints Added**:
+- `POST /api/send-custom-sms` - Send SMS to any phone number
+- `POST /api/send-custom-email` - Send email to any address
+- `GET /api/message-logs` - View sent message history
+
+**Files Modified**:
+- `/app/backend/server.py`: Added notification helpers, custom message endpoints, integrated SMS/Email triggers into booking, checkin, checkout, cleaning assignment
+- `/app/frontend/src/App.js`: Updated Guests component with Actions dropdown and modals, updated Settings Templates tab with custom message section
+
+**Tests**: All 13 backend tests pass, 7 frontend features verified - `/app/test_reports/iteration_6.json`
+
+---
+
 ### 2026-02-08 - P1 Features Implementation
 **Features Implemented**:
 
