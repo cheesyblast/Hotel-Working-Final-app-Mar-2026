@@ -6168,8 +6168,7 @@ async def update_payroll_settings(
         await log_activity(
             action="updated_payroll_settings",
             description="Created payroll settings",
-            user_name=current_user.full_name or current_user.username,
-            user_id=current_user.id
+            user_name=current_user.full_name or current_user.username
         )
         
         return new_settings.dict()
