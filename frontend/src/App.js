@@ -5469,19 +5469,71 @@ const Guests = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
+                      <div className="relative">
                         <button
-                          onClick={() => fetchGuestDetails(guest.email)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDropdown(guest.id);
+                          }}
+                          className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors flex items-center"
+                          data-testid={`guest-actions-${guest.id}`}
                         >
-                          View Details
+                          Actions
+                          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
                         </button>
-                        <button
-                          onClick={() => openEditGuestModal(guest)}
-                          className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors"
-                        >
-                          Edit
-                        </button>
+                        {activeDropdown === guest.id && (
+                          <div className="absolute right-0 mt-1 w-40 bg-gray-700 rounded-md shadow-lg z-20 border border-gray-600">
+                            <button
+                              onClick={() => {
+                                fetchGuestDetails(guest.email);
+                                setActiveDropdown(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600 flex items-center"
+                              data-testid={`view-details-${guest.id}`}
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              View Details
+                            </button>
+                            <button
+                              onClick={() => {
+                                openEditGuestModal(guest);
+                                setActiveDropdown(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600 flex items-center"
+                              data-testid={`edit-guest-${guest.id}`}
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => openSMSModal(guest)}
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600 flex items-center"
+                              data-testid={`send-sms-${guest.id}`}
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                              </svg>
+                              Send SMS
+                            </button>
+                            <button
+                              onClick={() => openEmailModal(guest)}
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600 flex items-center"
+                              data-testid={`send-email-${guest.id}`}
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              Send Email
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -5491,6 +5543,134 @@ const Guests = () => {
           </div>
         )}
       </div>
+
+      {/* SMS Modal */}
+      {showSMSModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Send SMS</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                <input
+                  type="text"
+                  value={smsData.phone_number}
+                  onChange={(e) => setSmsData({...smsData, phone_number: e.target.value})}
+                  placeholder="e.g., 94771234567"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  data-testid="sms-phone-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                <textarea
+                  value={smsData.message}
+                  onChange={(e) => setSmsData({...smsData, message: e.target.value})}
+                  rows={4}
+                  placeholder="Enter your message..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  data-testid="sms-message-input"
+                />
+                <p className="text-xs text-gray-500 mt-1">{smsData.message.length} characters</p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowSMSModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={sendingMessage}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendSMS}
+                disabled={sendingMessage}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                data-testid="send-sms-btn"
+              >
+                {sendingMessage ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Sending...
+                  </>
+                ) : 'Send SMS'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Send Email</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  value={emailData.email}
+                  onChange={(e) => setEmailData({...emailData, email: e.target.value})}
+                  placeholder="guest@example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  data-testid="email-address-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+                <input
+                  type="text"
+                  value={emailData.subject}
+                  onChange={(e) => setEmailData({...emailData, subject: e.target.value})}
+                  placeholder="Enter subject..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  data-testid="email-subject-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                <textarea
+                  value={emailData.body}
+                  onChange={(e) => setEmailData({...emailData, body: e.target.value})}
+                  rows={6}
+                  placeholder="Enter your message..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  data-testid="email-body-input"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={sendingMessage}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendEmail}
+                disabled={sendingMessage}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center"
+                data-testid="send-email-btn"
+              >
+                {sendingMessage ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Sending...
+                  </>
+                ) : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Guest Modal */}
       {showEditGuestModal && (
