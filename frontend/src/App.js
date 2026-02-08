@@ -9788,6 +9788,56 @@ const Settings = () => {
     }
   };
 
+  // Tax Configuration Functions
+  const fetchTaxConfigs = async () => {
+    try {
+      const response = await axios.get(`${API}/taxes`);
+      setTaxConfigs(response.data);
+    } catch (error) {
+      console.error('Error fetching tax configs:', error);
+    }
+  };
+
+  const handleAddTax = async () => {
+    try {
+      const params = new URLSearchParams({
+        name: newTax.name,
+        rate: newTax.rate.toString(),
+        type: newTax.type,
+        apply_to_bookings: newTax.apply_to_bookings.toString(),
+        apply_to_restaurant: newTax.apply_to_restaurant.toString(),
+        description: newTax.description || ''
+      });
+      await axios.post(`${API}/taxes?${params.toString()}`);
+      setShowAddTaxModal(false);
+      setNewTax({ name: '', rate: 0, type: 'percentage', apply_to_bookings: true, apply_to_restaurant: false, description: '' });
+      await fetchTaxConfigs();
+      alert('Tax/Levy added successfully!');
+    } catch (error) {
+      alert('Error adding tax: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleUpdateTax = async (taxId, updates) => {
+    try {
+      await axios.put(`${API}/taxes/${taxId}`, updates);
+      await fetchTaxConfigs();
+    } catch (error) {
+      alert('Error updating tax: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleDeleteTax = async (taxId) => {
+    if (!window.confirm('Are you sure you want to delete this tax/levy?')) return;
+    try {
+      await axios.delete(`${API}/taxes/${taxId}`);
+      await fetchTaxConfigs();
+      alert('Tax/Levy deleted successfully!');
+    } catch (error) {
+      alert('Error deleting tax: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const response = await axios.get(`${API}/users`);
