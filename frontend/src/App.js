@@ -6204,27 +6204,33 @@ const Rooms = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Rooms</h2>
-          <p className="text-gray-300">Manage hotel rooms and their details</p>
-        </div>
-        <div className="flex space-x-3">
-          <button 
-            onClick={() => setShowBulkAddModal(true)}
-            className="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 flex items-center space-x-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <span>Bulk Add</span>
-          </button>
-          <button 
-            onClick={() => setShowAddRoomModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center space-x-2"
-          >
-            <span>Add Room</span>
-          </button>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-slate-800 to-blue-800 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Rooms</h2>
+            <p className="text-slate-200">Manage hotel rooms and their details</p>
+          </div>
+          <div className="flex space-x-3">
+            <button 
+              onClick={() => setShowBulkAddModal(true)}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center font-medium"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Bulk Add
+            </button>
+            <button 
+              onClick={() => setShowAddRoomModal(true)}
+              className="bg-white text-slate-800 px-4 py-2 rounded-lg hover:bg-slate-100 flex items-center font-medium"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Room
+            </button>
+          </div>
         </div>
       </div>
 
