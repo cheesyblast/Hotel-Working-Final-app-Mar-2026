@@ -6143,6 +6143,90 @@ async def init_default_sms_templates():
     
     return {"message": f"Created {created} default SMS templates"}
 
+# ==================== CUSTOM MESSAGING ENDPOINTS ====================
+
+class CustomSMSRequest(BaseModel):
+    phone_number: str
+    message: str
+    guest_id: Optional[str] = None
+
+class CustomEmailRequest(BaseModel):
+    email: str
+    subject: str
+    body: str
+    guest_id: Optional[str] = None
+
+@api_router.post("/send-custom-sms")
+async def send_custom_sms_message(request: CustomSMSRequest, current_user: UserResponse = Depends(get_current_user)):
+    """Send a custom SMS message to any phone number"""
+    settings = await db.sms_settings.find_one()
+    if not settings or not settings.get("is_configured"):
+        raise HTTPException(status_code=400, detail="SMS settings not configured. Please configure SMS gateway in Settings.")
+    
+    result = await send_sms(request.phone_number, request.message)
+    
+    # Log the message
+    message_log = {
+        "id": str(uuid.uuid4()),
+        "type": "sms",
+        "recipient": request.phone_number,
+        "content": request.message,
+        "guest_id": request.guest_id,
+        "sent_by": current_user.username,
+        "status": "sent" if result else "failed",
+        "sent_at": datetime.now()
+    }
+    await db.message_logs.insert_one(message_log)
+    
+    if result:
+        return {"message": f"SMS sent successfully to {request.phone_number}", "success": True}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send SMS. Please check your gateway credentials.")
+
+@api_router.post("/send-custom-email")
+async def send_custom_email_message(request: CustomEmailRequest, current_user: UserResponse = Depends(get_current_user)):
+    """Send a custom email to any email address"""
+    email_settings = await get_email_settings()
+    if not email_settings or not email_settings.is_configured:
+        raise HTTPException(status_code=400, detail="Email settings not configured. Please configure email provider in Settings.")
+    
+    result = await send_email(request.email, request.subject, request.body)
+    
+    # Log the message
+    message_log = {
+        "id": str(uuid.uuid4()),
+        "type": "email",
+        "recipient": request.email,
+        "subject": request.subject,
+        "content": request.body,
+        "guest_id": request.guest_id,
+        "sent_by": current_user.username,
+        "status": "sent" if result else "failed",
+        "sent_at": datetime.now()
+    }
+    await db.message_logs.insert_one(message_log)
+    
+    if result:
+        return {"message": f"Email sent successfully to {request.email}", "success": True}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send email. Please check your email provider credentials.")
+
+@api_router.get("/message-logs")
+async def get_message_logs(
+    message_type: Optional[str] = None,
+    guest_id: Optional[str] = None,
+    limit: int = 50
+):
+    """Get message sending logs"""
+    query = {}
+    if message_type:
+        query["type"] = message_type
+    if guest_id:
+        query["guest_id"] = guest_id
+    
+    logs = await db.message_logs.find(query, {"_id": 0}).sort("sent_at", -1).limit(limit).to_list(limit)
+    return logs
+
 # ==================== MAINTENANCE TRACKING ====================
 
 @api_router.get("/maintenance/items")
