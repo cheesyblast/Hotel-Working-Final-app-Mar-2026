@@ -2595,6 +2595,19 @@ async def assign_cleaning_staff(room_number: str, staff_id: str):
         )
         await db.cleaning_assignments.insert_one(assignment.dict())
     
+    # Send SMS notification to cleaning staff
+    try:
+        if staff.get("phone"):
+            notification_data = {
+                "phone": staff.get("phone"),
+                "staff_name": staff.get("name"),
+                "room_number": room_number,
+                "guest_name": room.get("last_guest", "Unknown")
+            }
+            await send_booking_notification_sms(notification_data, "cleaning_assigned")
+    except Exception as e:
+        print(f"Cleaning assignment notification error (non-critical): {str(e)}")
+    
     return {"message": f"Room {room_number} assigned to {staff['name']}"}
 
 @api_router.post("/cleaning/complete/{room_number}")
