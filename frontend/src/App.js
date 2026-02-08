@@ -6720,32 +6720,6 @@ const Navigation = () => {
           </div>
 
           {navItems.slice(5).map((item) => (
-              Financial
-              <svg className={`w-4 h-4 ml-1 transform transition-transform ${financialDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {financialDropdownOpen && (
-              <div className="absolute left-0 mt-1 w-44 bg-gray-700 rounded-md shadow-lg border border-gray-600 z-50">
-                {financialItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setFinancialDropdownOpen(false)}
-                    className={`block px-4 py-2 text-sm ${
-                      isActive(item.path)
-                        ? 'bg-blue-800 text-blue-300'
-                        : 'text-gray-300 hover:bg-gray-600'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {navItems.slice(5).map((item) => (
             <Link 
               key={item.path}
               to={item.path} 
