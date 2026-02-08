@@ -8080,6 +8080,16 @@ const Payroll = () => {
   const [payrollRuns, setPayrollRuns] = useState([]);
   const [payslips, setPayslips] = useState([]);
   const [summary, setSummary] = useState({});
+  const [payrollSettings, setPayrollSettings] = useState({
+    epf_employee_rate: 8,
+    epf_employer_rate: 12,
+    etf_rate: 3,
+    enable_epf: true,
+    enable_etf: true,
+    tax_enabled: false,
+    tax_rate: 0,
+    custom_taxes: []
+  });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('employees');
   
@@ -8088,6 +8098,7 @@ const Payroll = () => {
   const [showAddComponentModal, setShowAddComponentModal] = useState(false);
   const [showAddLoanModal, setShowAddLoanModal] = useState(false);
   const [showProcessPayrollModal, setShowProcessPayrollModal] = useState(false);
+  const [showPayrollSettingsModal, setShowPayrollSettingsModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   
   // Form states
@@ -8118,22 +8129,34 @@ const Payroll = () => {
 
   const fetchAllData = async () => {
     try {
-      const [empRes, compRes, loanRes, runRes, summaryRes] = await Promise.all([
+      const [empRes, compRes, loanRes, runRes, summaryRes, settingsRes] = await Promise.all([
         axios.get(`${API}/payroll/employees`),
         axios.get(`${API}/payroll/salary-components`),
         axios.get(`${API}/payroll/loans`),
         axios.get(`${API}/payroll/runs`),
-        axios.get(`${API}/payroll/summary`)
+        axios.get(`${API}/payroll/summary`),
+        axios.get(`${API}/payroll/settings`).catch(() => ({ data: payrollSettings }))
       ]);
       setEmployees(empRes.data);
       setSalaryComponents(compRes.data);
       setLoans(loanRes.data);
       setPayrollRuns(runRes.data);
       setSummary(summaryRes.data);
+      if (settingsRes.data) setPayrollSettings(settingsRes.data);
     } catch (error) {
       console.error('Error fetching payroll data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSavePayrollSettings = async () => {
+    try {
+      await axios.put(`${API}/payroll/settings`, payrollSettings);
+      setShowPayrollSettingsModal(false);
+      alert('Payroll settings saved successfully!');
+    } catch (error) {
+      alert('Error saving settings');
     }
   };
 
