@@ -10137,6 +10137,44 @@ const Settings = () => {
     }
   };
 
+  // Send Custom SMS from Settings
+  const handleSendCustomSMS = async () => {
+    if (!customSmsData.phone_number || !customSmsData.message) {
+      alert('Please enter phone number and message');
+      return;
+    }
+    setSendingCustomMessage(true);
+    try {
+      await axios.post(`${API}/send-custom-sms`, customSmsData);
+      alert('SMS sent successfully!');
+      setShowCustomSMSModal(false);
+      setCustomSmsData({ phone_number: '', message: '' });
+    } catch (error) {
+      alert('Error sending SMS: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSendingCustomMessage(false);
+    }
+  };
+
+  // Send Custom Email from Settings
+  const handleSendCustomEmail = async () => {
+    if (!customEmailData.email || !customEmailData.subject || !customEmailData.body) {
+      alert('Please fill in all fields');
+      return;
+    }
+    setSendingCustomMessage(true);
+    try {
+      await axios.post(`${API}/send-custom-email`, customEmailData);
+      alert('Email sent successfully!');
+      setShowCustomEmailModal(false);
+      setCustomEmailData({ email: '', subject: '', body: '' });
+    } catch (error) {
+      alert('Error sending email: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSendingCustomMessage(false);
+    }
+  };
+
   const handleInitDefaultTemplates = async () => {
     try {
       await Promise.all([
