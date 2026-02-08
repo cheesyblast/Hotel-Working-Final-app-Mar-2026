@@ -1105,29 +1105,67 @@ async def send_sms(phone_number: str, message: str):
         return False
 
 # Tax Calculation Helper Functions
-async def get_active_taxes(apply_to: str = "room"):
-    """Get active tax configurations for a specific category"""
-    query = {
-        "is_active": True,
-        "$or": [
-            {"apply_to": apply_to},
-            {"apply_to": "all"}
-        ]
-    }
-    taxes = await db.tax_configs.find(query, {"_id": 0}).to_list(100)
+async def get_active_taxes_for_bookings():
+    """Get active tax configurations for bookings/checkout"""
+    taxes = await db.tax_configs.find(
+        {"is_active": True, "apply_to_bookings": True},
+        {"_id": 0}
+    ).to_list(100)
     return taxes
 
-async def calculate_taxes(subtotal: float, apply_to: str = "room"):
-    """Calculate taxes for a given subtotal amount
+async def get_active_taxes_for_restaurant():
+    """Get active tax configurations for restaurant bills"""
+    taxes = await db.tax_configs.find(
+        {"is_active": True, "apply_to_restaurant": True},
+        {"_id": 0}
+    ).to_list(100)
+    return taxes
+
+async def calculate_booking_taxes(subtotal: float):
+    """Calculate taxes for bookings/checkout
     
     Returns:
         dict: {
-            'tax_breakdown': [{name, rate, amount}],
+            'tax_breakdown': [{name, rate, type, amount}],
             'total_tax': float,
             'grand_total': float
         }
     """
-    taxes = await get_active_taxes(apply_to)
+    taxes = await get_active_taxes_for_bookings()
+    tax_breakdown = []
+    total_tax = 0.0
+    
+    for tax in taxes:
+        if tax.get("type") == "percentage":
+            tax_amount = subtotal * (tax.get("rate", 0) / 100)
+        else:  # fixed amount
+            tax_amount = tax.get("rate", 0)
+        
+        tax_breakdown.append({
+            "name": tax.get("name"),
+            "rate": tax.get("rate"),
+            "type": tax.get("type", "percentage"),
+            "amount": round(tax_amount, 2)
+        })
+        total_tax += tax_amount
+    
+    return {
+        "tax_breakdown": tax_breakdown,
+        "total_tax": round(total_tax, 2),
+        "grand_total": round(subtotal + total_tax, 2)
+    }
+
+async def calculate_restaurant_taxes(subtotal: float):
+    """Calculate taxes for restaurant bills
+    
+    Returns:
+        dict: {
+            'tax_breakdown': [{name, rate, type, amount}],
+            'total_tax': float,
+            'grand_total': float
+        }
+    """
+    taxes = await get_active_taxes_for_restaurant()
     tax_breakdown = []
     total_tax = 0.0
     
