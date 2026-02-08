@@ -9589,6 +9589,19 @@ const Settings = () => {
     name: '', occasion: 'custom', subject: '', body_html: '', body_text: '', body: '', variables: []
   });
   
+  // Tax/Levy Configuration state
+  const [taxConfigs, setTaxConfigs] = useState([]);
+  const [showAddTaxModal, setShowAddTaxModal] = useState(false);
+  const [editingTax, setEditingTax] = useState(null);
+  const [newTax, setNewTax] = useState({
+    name: '',
+    rate: 0,
+    type: 'percentage',
+    apply_to_bookings: true,
+    apply_to_restaurant: false,
+    description: ''
+  });
+  
   // Booking channels state
   const [bookingChannels, setBookingChannels] = useState([]);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
