@@ -33,6 +33,52 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 
 ## Changelog
 
+### 2026-02-08 - P1 Features Implementation
+**Features Implemented**:
+
+1. **UI Gradient Headers on All Pages**
+   - Dashboard: Blue-Cyan gradient (`from-blue-800 to-cyan-700`)
+   - Rooms: Slate-Blue gradient (`from-slate-800 to-blue-800`)
+   - Guests: Purple-Pink gradient (`from-purple-800 to-pink-700`)
+   - Bookings: Teal-Cyan gradient (`from-teal-800 to-cyan-600`)
+   - Settings: Gray-Zinc gradient (`from-gray-800 to-zinc-700`)
+   - Reports: Indigo-Violet gradient (`from-indigo-800 to-violet-700`)
+   - Income & Expenses: Green-Emerald gradient (`from-green-800 to-emerald-600`)
+
+2. **Brevo Email Integration (User Configurable)**
+   - Added Brevo as email provider option in Settings → Email Settings
+   - Users enter their own Brevo API key
+   - Uses Brevo's v3 SMTP API for sending
+   - Backend function: `send_email_brevo()` in server.py
+
+3. **Notify.lk SMS Gateway (User Configurable)**
+   - Added Notify.lk as SMS provider option in Settings → SMS Settings
+   - Fields: User ID, API Key, Sender ID
+   - Backend function: `send_sms_notify_lk()` in server.py
+   - Test SMS endpoint now actually sends SMS
+
+4. **Custom Tax Calculation in Bookings**
+   - Tax helper function: `calculate_taxes(subtotal, apply_to)`
+   - Taxes fetched from `tax_configs` collection
+   - Applied during checkout with breakdown
+   - Tax breakdown stored in `daily_sales` and `customers` collections
+
+5. **Payroll Processing with PayrollSettings**
+   - EPF/ETF rates now configurable via PayrollSettings
+   - Process Payroll uses database settings for calculations
+   - Tax deduction support (optional, configurable)
+   - Automatic loan installment processing
+
+**API Endpoints Added/Modified**:
+- `/api/sms-settings/test` - Now sends actual SMS via configured provider
+- `/api/checkout` - Now includes tax calculation and breakdown
+
+**Files Modified**:
+- `/app/backend/server.py`: Added send_email_brevo, send_sms_notify_lk, send_sms_twilio, send_sms_custom, calculate_taxes helper functions
+- `/app/frontend/src/App.js`: Updated headers for Dashboard, Rooms, Guests, Bookings, Settings, Reports, Income & Expenses
+
+**Tests**: All P1 tests pass (8/8) - `/app/test_reports/iteration_4.json`
+
 ### 2026-02-05 - Major Features Addition
 **Features Implemented**:
 
