@@ -9197,6 +9197,16 @@ const Settings = () => {
     }
   };
 
+  const fetchPayrollSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/payroll/settings`);
+      setPayrollSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching payroll settings:', error);
+      // Keep default settings if fetch fails
+    }
+  };
+
   const fetchTemplates = async () => {
     try {
       const [emailRes, smsRes] = await Promise.all([
