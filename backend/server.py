@@ -6598,16 +6598,18 @@ async def create_tax_config(
     name: str,
     rate: float,
     type: str = "percentage",
-    apply_to: str = "room",
-    is_optional: bool = False
+    apply_to_bookings: bool = True,
+    apply_to_restaurant: bool = False,
+    description: str = ""
 ):
     """Create a new tax/levy configuration"""
     tax = TaxConfig(
         name=name,
         rate=rate,
         type=type,
-        apply_to=apply_to,
-        is_optional=is_optional
+        apply_to_bookings=apply_to_bookings,
+        apply_to_restaurant=apply_to_restaurant,
+        description=description
     )
     await db.tax_configs.insert_one(tax.dict())
     return {"message": "Tax configuration created", "tax": tax.dict()}
@@ -6615,13 +6617,15 @@ async def create_tax_config(
 @api_router.put("/taxes/{tax_id}")
 async def update_tax_config(tax_id: str, updates: dict):
     """Update a tax configuration"""
+    updates["updated_at"] = datetime.utcnow()
     result = await db.tax_configs.update_one(
         {"id": tax_id},
         {"$set": updates}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Tax config not found")
-    return {"message": "Tax configuration updated"}
+    updated_tax = await db.tax_configs.find_one({"id": tax_id}, {"_id": 0})
+    return {"message": "Tax configuration updated", "tax": updated_tax}
 
 @api_router.delete("/taxes/{tax_id}")
 async def delete_tax_config(tax_id: str):
@@ -6631,13 +6635,27 @@ async def delete_tax_config(tax_id: str):
         raise HTTPException(status_code=404, detail="Tax config not found")
     return {"message": "Tax configuration deleted"}
 
-@api_router.post("/taxes/calculate")
-async def calculate_taxes(base_amount: float, apply_to: str = "room"):
-    """Calculate taxes for a given amount"""
-    taxes = await db.tax_configs.find(
-        {"is_active": True, "apply_to": {"$in": [apply_to, "all"]}},
-        {"_id": 0}
-    ).to_list(100)
+@api_router.post("/taxes/calculate-booking")
+async def api_calculate_booking_taxes(base_amount: float):
+    """Calculate booking taxes for a given amount (preview)"""
+    result = await calculate_booking_taxes(base_amount)
+    return {
+        "base_amount": base_amount,
+        "total_tax": result["total_tax"],
+        "total_with_tax": result["grand_total"],
+        "breakdown": result["tax_breakdown"]
+    }
+
+@api_router.post("/taxes/calculate-restaurant")
+async def api_calculate_restaurant_taxes(base_amount: float):
+    """Calculate restaurant taxes for a given amount (preview)"""
+    result = await calculate_restaurant_taxes(base_amount)
+    return {
+        "base_amount": base_amount,
+        "total_tax": result["total_tax"],
+        "total_with_tax": result["grand_total"],
+        "breakdown": result["tax_breakdown"]
+    }
     
     total_tax = 0
     breakdown = []
