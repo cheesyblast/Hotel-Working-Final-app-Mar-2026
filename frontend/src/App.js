@@ -7809,26 +7809,47 @@ const Restaurant = () => {
             <div className="mb-6">
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setNewOrder({...newOrder, order_type: 'table'})}
+                  onClick={() => {
+                    if (orderItems.length === 0) {
+                      setNewOrder({...newOrder, order_type: 'table', room_number: '', customer_name: ''});
+                    }
+                  }}
+                  disabled={orderItems.length > 0 && newOrder.order_type !== 'table'}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     newOrder.order_type === 'table' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : orderItems.length > 0 
+                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   }`}
+                  title={orderItems.length > 0 && newOrder.order_type !== 'table' ? 'Remove items from cart to switch order type' : ''}
                 >
                   Table Order
                 </button>
                 <button
-                  onClick={() => setNewOrder({...newOrder, order_type: 'room_service'})}
+                  onClick={() => {
+                    if (orderItems.length === 0) {
+                      setNewOrder({...newOrder, order_type: 'room_service', table_id: ''});
+                    }
+                  }}
+                  disabled={orderItems.length > 0 && newOrder.order_type !== 'room_service'}
                   className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                     newOrder.order_type === 'room_service' 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : orderItems.length > 0 
+                        ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   }`}
+                  title={orderItems.length > 0 && newOrder.order_type !== 'room_service' ? 'Remove items from cart to switch order type' : ''}
                 >
                   Room Service
                 </button>
               </div>
+              {orderItems.length > 0 && (
+                <p className="text-xs text-yellow-400 mt-2">
+                  ⚠️ Clear cart items to switch between Table Order and Room Service
+                </p>
+              )}
             </div>
 
             {/* Table/Room Selection */}
