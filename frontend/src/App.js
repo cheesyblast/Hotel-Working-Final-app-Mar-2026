@@ -9129,6 +9129,406 @@ const Maintenance = () => {
   );
 };
 
+// Expense Tracking Component (All Expenses)
+const ExpenseTracking = () => {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  
+  const [expenseForm, setExpenseForm] = useState({
+    category: 'General', description: '', amount: 0, payment_method: 'Cash',
+    vendor: '', expense_date: new Date().toISOString().split('T')[0]
+  });
+
+  const categories = ['General', 'Utilities', 'Supplies', 'Maintenance', 'Restaurant', 'Salaries', 'Marketing', 'Insurance', 'Rent', 'Other'];
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [filterCategory, dateRange]);
+
+  const fetchExpenses = async () => {
+    try {
+      let url = `${API}/expenses`;
+      const params = new URLSearchParams();
+      if (filterCategory) params.append('category', filterCategory);
+      if (dateRange.start) params.append('start_date', dateRange.start);
+      if (dateRange.end) params.append('end_date', dateRange.end);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await axios.get(url);
+      setExpenses(response.data);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddExpense = async () => {
+    try {
+      await axios.post(`${API}/expenses`, expenseForm);
+      setShowAddExpenseModal(false);
+      setExpenseForm({ category: 'General', description: '', amount: 0, payment_method: 'Cash', vendor: '', expense_date: new Date().toISOString().split('T')[0] });
+      fetchExpenses();
+    } catch (error) {
+      alert('Error adding expense');
+    }
+  };
+
+  const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-red-800 to-rose-700 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Expense Tracking</h2>
+            <p className="text-red-200">Track and manage all hotel expenses</p>
+          </div>
+          <button
+            onClick={() => setShowAddExpenseModal(true)}
+            className="bg-white text-red-800 px-4 py-2 rounded-lg hover:bg-red-100 flex items-center font-medium"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Expense
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Total Expenses</p>
+          <p className="text-2xl font-bold text-red-400">LKR {totalExpenses.toLocaleString()}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Records</p>
+          <p className="text-2xl font-bold text-white">{expenses.length}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Average per Record</p>
+          <p className="text-2xl font-bold text-yellow-400">LKR {expenses.length > 0 ? Math.round(totalExpenses / expenses.length).toLocaleString() : 0}</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gray-800 rounded-lg p-4 mb-6 flex flex-wrap gap-4 items-center border border-gray-700">
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Category</label>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+          >
+            <option value="">All Categories</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">From Date</label>
+          <input
+            type="date"
+            value={dateRange.start}
+            onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+            className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">To Date</label>
+          <input
+            type="date"
+            value={dateRange.end}
+            onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+            className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600"
+          />
+        </div>
+      </div>
+
+      {/* Expenses Table */}
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-700">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Category</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Description</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Vendor</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Amount</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Payment</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {expenses.map((expense) => (
+              <tr key={expense.id} className="hover:bg-gray-700">
+                <td className="px-4 py-3 text-sm text-gray-300">{expense.expense_date}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 text-xs rounded ${
+                    expense.category === 'Restaurant' ? 'bg-orange-900 text-orange-300' :
+                    expense.category === 'Maintenance' ? 'bg-yellow-900 text-yellow-300' :
+                    expense.category === 'Salaries' ? 'bg-blue-900 text-blue-300' :
+                    'bg-gray-600 text-gray-300'
+                  }`}>{expense.category}</span>
+                </td>
+                <td className="px-4 py-3 text-sm text-white max-w-xs truncate">{expense.description}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{expense.vendor || '-'}</td>
+                <td className="px-4 py-3 text-sm text-red-400 font-medium">LKR {expense.amount?.toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{expense.payment_method}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add Expense Modal */}
+      {showAddExpenseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Expense</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select value={expenseForm.category} onChange={(e) => setExpenseForm({...expenseForm, category: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <input type="text" value={expenseForm.description} onChange={(e) => setExpenseForm({...expenseForm, description: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="Expense description" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (LKR)</label>
+                <input type="number" value={expenseForm.amount} onChange={(e) => setExpenseForm({...expenseForm, amount: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" value={expenseForm.expense_date} onChange={(e) => setExpenseForm({...expenseForm, expense_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                <input type="text" value={expenseForm.vendor} onChange={(e) => setExpenseForm({...expenseForm, vendor: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="Vendor name" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select value={expenseForm.payment_method} onChange={(e) => setExpenseForm({...expenseForm, payment_method: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="Cash">Cash</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Card">Card</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddExpenseModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddExpense} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Add Expense</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Restaurant Expenses Component
+const RestaurantExpenses = () => {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
+  
+  const [expenseForm, setExpenseForm] = useState({
+    item_name: '', category: 'Ingredients', description: '', quantity: 1, unit_price: 0,
+    vendor: '', expense_date: new Date().toISOString().split('T')[0]
+  });
+
+  const categories = ['Ingredients', 'Beverages', 'Kitchen Equipment', 'Utensils', 'Cleaning Supplies', 'Gas/Fuel', 'Staff Meals', 'Other'];
+
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = async () => {
+    try {
+      const response = await axios.get(`${API}/restaurant/expenses`);
+      setExpenses(response.data);
+    } catch (error) {
+      console.error('Error fetching restaurant expenses:', error);
+      setExpenses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddExpense = async () => {
+    try {
+      const expenseData = {
+        ...expenseForm,
+        total_price: expenseForm.quantity * expenseForm.unit_price
+      };
+      await axios.post(`${API}/restaurant/expenses`, expenseData);
+      setShowAddExpenseModal(false);
+      setExpenseForm({ item_name: '', category: 'Ingredients', description: '', quantity: 1, unit_price: 0, vendor: '', expense_date: new Date().toISOString().split('T')[0] });
+      fetchExpenses();
+    } catch (error) {
+      alert('Error adding expense');
+    }
+  };
+
+  const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.total_price || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-yellow-700 to-orange-600 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Restaurant Expenses</h2>
+            <p className="text-yellow-200">Track kitchen supplies, ingredients and restaurant costs</p>
+          </div>
+          <button
+            onClick={() => setShowAddExpenseModal(true)}
+            className="bg-white text-orange-800 px-4 py-2 rounded-lg hover:bg-orange-100 flex items-center font-medium"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Expense
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Total Restaurant Expenses</p>
+          <p className="text-2xl font-bold text-orange-400">LKR {totalExpenses.toLocaleString()}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">Purchase Records</p>
+          <p className="text-2xl font-bold text-white">{expenses.length}</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <p className="text-gray-400 text-sm">This Month</p>
+          <p className="text-2xl font-bold text-yellow-400">LKR {expenses.filter(e => {
+            const expDate = new Date(e.expense_date);
+            const now = new Date();
+            return expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear();
+          }).reduce((sum, e) => sum + (e.total_price || 0), 0).toLocaleString()}</p>
+        </div>
+      </div>
+
+      {/* Expenses Table */}
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-700">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Item</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Category</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Qty</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Unit Price</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Total</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Vendor</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {expenses.map((expense) => (
+              <tr key={expense.id} className="hover:bg-gray-700">
+                <td className="px-4 py-3 text-sm text-gray-300">{expense.expense_date}</td>
+                <td className="px-4 py-3 text-sm text-white">{expense.item_name}</td>
+                <td className="px-4 py-3">
+                  <span className="px-2 py-1 text-xs rounded bg-orange-900 text-orange-300">{expense.category}</span>
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-300">{expense.quantity}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">LKR {expense.unit_price?.toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm text-orange-400 font-medium">LKR {expense.total_price?.toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm text-gray-300">{expense.vendor || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add Expense Modal */}
+      {showAddExpenseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Restaurant Expense</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
+                <input type="text" value={expenseForm.item_name} onChange={(e) => setExpenseForm({...expenseForm, item_name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="e.g. Rice, Chicken, Oil" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select value={expenseForm.category} onChange={(e) => setExpenseForm({...expenseForm, category: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md">
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <input type="number" value={expenseForm.quantity} onChange={(e) => setExpenseForm({...expenseForm, quantity: parseInt(e.target.value) || 1})}
+                    className="w-full px-3 py-2 border rounded-md" min="1" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price (LKR)</label>
+                  <input type="number" value={expenseForm.unit_price} onChange={(e) => setExpenseForm({...expenseForm, unit_price: parseFloat(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border rounded-md" />
+                </div>
+              </div>
+              <div className="bg-gray-50 p-3 rounded">
+                <p className="text-sm">Total: <strong className="text-orange-600">LKR {(expenseForm.quantity * expenseForm.unit_price).toLocaleString()}</strong></p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" value={expenseForm.expense_date} onChange={(e) => setExpenseForm({...expenseForm, expense_date: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                <input type="text" value={expenseForm.vendor} onChange={(e) => setExpenseForm({...expenseForm, vendor: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-md" placeholder="Supplier name" />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowAddExpenseModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleAddExpense} className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700">Add Expense</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Settings Component
 const Settings = () => {
   // State for different sections
