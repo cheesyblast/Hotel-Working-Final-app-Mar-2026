@@ -329,18 +329,26 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
 - [x] Early Checkout rate calculation fix (COMPLETED)
 - [x] UI number formatting improvements (COMPLETED)
 - [x] Financial double-counting bug fix (COMPLETED - 2026-02-05)
+- [x] Bulk room creation (COMPLETED - 2026-02-05)
+- [x] Room cleaning workflow (COMPLETED - 2026-02-05)
+- [x] UI Gradient Headers on all pages (COMPLETED - 2026-02-08)
+- [x] Brevo Email Integration - User Configurable (COMPLETED - 2026-02-08)
+- [x] Notify.lk SMS Gateway - User Configurable (COMPLETED - 2026-02-08)
+- [x] Custom Tax Calculation in Bookings (COMPLETED - 2026-02-08)
+- [x] Payroll Processing with PayrollSettings (COMPLETED - 2026-02-08)
 
 ### P1 - Upcoming Tasks
-- [ ] Export commission reports to Excel/PDF
+- [ ] Export commission reports to PDF (CSV done)
+- [ ] Automated email/SMS sending using templates on events (check-in, checkout, cleaning assignment)
 - [ ] User verification of previously completed features
 - [ ] Make application mobile responsive (starting with Restaurant component)
-- [ ] Email notifications for commission due dates
 
 ### P2 - Future Enhancements
 - [ ] Guest feedback/review system
-- [ ] Room maintenance tracking
+- [ ] Email notifications for commission due dates
 - [ ] Advanced reporting and analytics
-- [ ] Refactor App.js into smaller components
+- [ ] Refactor App.js into smaller components (11,000+ lines)
+- [ ] Refactor server.py into smaller routers (6,500+ lines)
 
 ---
 
