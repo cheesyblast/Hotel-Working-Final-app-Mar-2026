@@ -8779,10 +8779,22 @@ const Maintenance = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Maintenance Tracking</h2>
-          <p className="text-gray-400">Track room maintenance items and tasks</p>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-orange-700 to-amber-600 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Maintenance Tracking</h2>
+            <p className="text-orange-200">Track room maintenance items, tasks and expenses</p>
+          </div>
+          <button
+            onClick={() => setShowAddItemModal(true)}
+            className="bg-white text-orange-800 px-4 py-2 rounded-lg hover:bg-orange-100 flex items-center font-medium"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Purchase
+          </button>
         </div>
       </div>
 
