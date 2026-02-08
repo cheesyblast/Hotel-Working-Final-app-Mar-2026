@@ -6226,7 +6226,21 @@ async def process_payroll(
     payment_date: str,
     current_user: UserResponse = Depends(get_current_user)
 ):
-    """Process payroll for a period"""
+    """Process payroll for a period using PayrollSettings from database"""
+    # Get payroll settings from database
+    payroll_settings = await db.payroll_settings.find_one({}, {"_id": 0})
+    if not payroll_settings:
+        # Use defaults if not configured
+        payroll_settings = {
+            "enable_epf": True,
+            "epf_employee_rate": 8.0,
+            "epf_employer_rate": 12.0,
+            "enable_etf": True,
+            "etf_rate": 3.0,
+            "tax_enabled": False,
+            "tax_rate": 0.0
+        }
+    
     # Get all active employees
     employees = await db.employees.find({"status": "Active"}, {"_id": 0}).to_list(500)
     
@@ -6262,6 +6276,7 @@ async def process_payroll(
     total_epf_employee = 0
     total_epf_employer = 0
     total_etf = 0
+    total_tax = 0
     
     payslips = []
     
@@ -6282,7 +6297,7 @@ async def process_payroll(
         
         gross_salary = basic_salary + total_allowances
         
-        # Calculate deductions
+        # Calculate deductions from salary components
         emp_deductions = []
         total_emp_deductions = 0
         for deduction in deductions:
@@ -6295,23 +6310,45 @@ async def process_payroll(
                 emp_deductions.append({"name": deduction["name"], "amount": amt})
                 total_emp_deductions += amt
         
-        # EPF/ETF calculations (Sri Lanka specific)
-        epf_employee_rate = emp.get("epf_contribution_employee", 8) / 100
-        epf_employer_rate = emp.get("epf_contribution_employer", 12) / 100
-        etf_rate = emp.get("etf_contribution", 3) / 100
+        # EPF calculations using PayrollSettings (Sri Lanka specific)
+        epf_employee = 0
+        epf_employer = 0
+        if payroll_settings.get("enable_epf", True):
+            epf_employee_rate = payroll_settings.get("epf_employee_rate", 8.0) / 100
+            epf_employer_rate = payroll_settings.get("epf_employer_rate", 12.0) / 100
+            epf_employee = gross_salary * epf_employee_rate
+            epf_employer = gross_salary * epf_employer_rate
+            emp_deductions.append({"name": "EPF (Employee)", "amount": epf_employee})
         
-        epf_employee = gross_salary * epf_employee_rate
-        epf_employer = gross_salary * epf_employer_rate
-        etf_employer = gross_salary * etf_rate
+        # ETF calculations using PayrollSettings
+        etf_employer = 0
+        if payroll_settings.get("enable_etf", True):
+            etf_rate = payroll_settings.get("etf_rate", 3.0) / 100
+            etf_employer = gross_salary * etf_rate
+        
+        # Tax calculations using PayrollSettings
+        tax_amount = 0
+        if payroll_settings.get("tax_enabled", False):
+            tax_rate = payroll_settings.get("tax_rate", 0) / 100
+            tax_amount = gross_salary * tax_rate
+            emp_deductions.append({"name": "Income Tax", "amount": tax_amount})
         
         # Loan deductions
         loan_deduction = 0
         emp_loans = loan_by_employee.get(emp["id"], [])
         for loan in emp_loans:
             loan_deduction += loan.get("installment_amount", 0)
+            # Update loan paid installments
+            await db.loans.update_one(
+                {"id": loan["id"]},
+                {"$inc": {"paid_installments": 1}, "$set": {"remaining_balance": max(0, loan["remaining_balance"] - loan.get("installment_amount", 0))}}
+            )
         
-        # Total deductions
-        all_deductions = total_emp_deductions + epf_employee + loan_deduction
+        if loan_deduction > 0:
+            emp_deductions.append({"name": "Loan Repayment", "amount": loan_deduction})
+        
+        # Total deductions (EPF already added to emp_deductions, so just sum)
+        all_deductions = sum([d["amount"] for d in emp_deductions])
         
         # Net salary
         net_salary = gross_salary - all_deductions
@@ -6339,6 +6376,7 @@ async def process_payroll(
         
         # Convert dates to datetime for MongoDB
         payslip_dict = payslip.dict()
+        payslip_dict["tax_amount"] = tax_amount
         for field in ["pay_period_start", "pay_period_end", "payment_date"]:
             if isinstance(payslip_dict.get(field), date):
                 payslip_dict[field] = datetime.combine(payslip_dict[field], datetime.min.time())
@@ -6353,6 +6391,7 @@ async def process_payroll(
         total_epf_employee += epf_employee
         total_epf_employer += epf_employer
         total_etf += etf_employer
+        total_tax += tax_amount
     
     # Update payroll run with totals
     payroll_run_dict = payroll_run.dict()
