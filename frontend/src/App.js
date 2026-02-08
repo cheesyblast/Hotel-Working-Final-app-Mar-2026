@@ -10768,6 +10768,33 @@ const Settings = () => {
             </div>
 
             <div className="space-y-6">
+              {/* Payroll Settings Section */}
+              <div className="border border-emerald-200 dark:border-emerald-800 rounded-lg p-6 bg-emerald-50 dark:bg-emerald-900/20">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center">
+                      <span className="text-emerald-600 dark:text-emerald-400 text-lg">💰</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-emerald-800 dark:text-emerald-200 mb-2">
+                      Payroll Settings
+                    </h3>
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300 mb-4">
+                      Configure EPF, ETF, and tax settings for payroll calculations. These settings will be used 
+                      when processing employee salaries and generating payslips.
+                    </p>
+                    
+                    <button
+                      onClick={() => setShowPayrollSettingsModal(true)}
+                      className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 font-medium transition-colors"
+                    >
+                      ⚙️ Configure Payroll Settings
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Complete Database Reset Section */}
               <div className="border border-red-200 dark:border-red-800 rounded-lg p-6 bg-red-50 dark:bg-red-900/20">
                 <div className="flex items-start space-x-4">
