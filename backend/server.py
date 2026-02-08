@@ -365,7 +365,7 @@ class SetupWizardRequest(BaseModel):
 
 class EmailSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    provider: str = "smtp"  # sendgrid, gmail, ses, smtp
+    provider: str = "smtp"  # smtp, sendgrid, ses, brevo
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
@@ -374,6 +374,8 @@ class EmailSettings(BaseModel):
     aws_access_key: str = ""
     aws_secret_key: str = ""
     aws_region: str = "us-east-1"
+    # Brevo settings
+    brevo_api_key: str = ""
     from_email: str = ""
     from_name: str = ""
     is_configured: bool = False
@@ -389,8 +391,33 @@ class EmailSettingsUpdate(BaseModel):
     aws_access_key: Optional[str] = None
     aws_secret_key: Optional[str] = None
     aws_region: Optional[str] = None
+    brevo_api_key: Optional[str] = None
     from_email: Optional[str] = None
     from_name: Optional[str] = None
+
+class PayrollSettings(BaseModel):
+    """Payroll configuration settings"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    epf_employee_rate: float = 8  # Employee EPF contribution %
+    epf_employer_rate: float = 12  # Employer EPF contribution %
+    etf_rate: float = 3  # ETF contribution %
+    enable_epf: bool = True
+    enable_etf: bool = True
+    tax_enabled: bool = False
+    tax_rate: float = 0
+    custom_taxes: List[dict] = []  # [{name, rate, type}]
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class TaxConfig(BaseModel):
+    """Customizable tax/levy configuration for hotel bookings"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # e.g., "Service Tax", "Tourism Levy", "VAT"
+    rate: float  # Percentage
+    type: str = "percentage"  # percentage or fixed
+    apply_to: str = "room"  # room, restaurant, all
+    is_active: bool = True
+    is_optional: bool = False  # If true, user can toggle for each booking
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class ForgotPasswordRequest(BaseModel):
     username_or_email: str
