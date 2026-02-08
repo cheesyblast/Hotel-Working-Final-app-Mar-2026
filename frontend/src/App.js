@@ -11558,6 +11558,118 @@ const Settings = () => {
         </div>
       )}
 
+      {/* Custom SMS Modal */}
+      {showCustomSMSModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Send Custom SMS</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                <input
+                  type="text"
+                  value={customSmsData.phone_number}
+                  onChange={(e) => setCustomSmsData({...customSmsData, phone_number: e.target.value})}
+                  placeholder="e.g., 94771234567"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                  data-testid="custom-sms-phone"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                <textarea
+                  value={customSmsData.message}
+                  onChange={(e) => setCustomSmsData({...customSmsData, message: e.target.value})}
+                  rows={4}
+                  placeholder="Enter your message..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                  data-testid="custom-sms-message"
+                />
+                <p className="text-xs text-gray-500 mt-1">{customSmsData.message.length} characters</p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => { setShowCustomSMSModal(false); setCustomSmsData({ phone_number: '', message: '' }); }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={sendingCustomMessage}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendCustomSMS}
+                disabled={sendingCustomMessage}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 flex items-center"
+                data-testid="send-custom-sms-submit"
+              >
+                {sendingCustomMessage ? 'Sending...' : 'Send SMS'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Email Modal */}
+      {showCustomEmailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Send Custom Email</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  value={customEmailData.email}
+                  onChange={(e) => setCustomEmailData({...customEmailData, email: e.target.value})}
+                  placeholder="recipient@example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                  data-testid="custom-email-address"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+                <input
+                  type="text"
+                  value={customEmailData.subject}
+                  onChange={(e) => setCustomEmailData({...customEmailData, subject: e.target.value})}
+                  placeholder="Enter subject..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                  data-testid="custom-email-subject"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                <textarea
+                  value={customEmailData.body}
+                  onChange={(e) => setCustomEmailData({...customEmailData, body: e.target.value})}
+                  rows={6}
+                  placeholder="Enter your message..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                  data-testid="custom-email-body"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => { setShowCustomEmailModal(false); setCustomEmailData({ email: '', subject: '', body: '' }); }}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={sendingCustomMessage}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendCustomEmail}
+                disabled={sendingCustomMessage}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center"
+                data-testid="send-custom-email-submit"
+              >
+                {sendingCustomMessage ? 'Sending...' : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Taxes & Levies Tab */}
       {activeTab === 'taxes' && (
         <div className="space-y-6">
