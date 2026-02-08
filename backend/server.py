@@ -3208,21 +3208,24 @@ async def checkout_customer(checkout: CheckoutRequest):
     additional_amount = checkout.additional_amount
     discount_amount = checkout.discount_amount
     
-    # Calculate subtotal before taxes
+    # Calculate subtotal before taxes (room charges + restaurant + additional - discount)
     subtotal = base_room_charges + restaurant_charges + additional_amount - discount_amount
     
-    # Calculate taxes on room charges
-    room_tax_result = await calculate_taxes(base_room_charges, "room")
-    restaurant_tax_result = await calculate_taxes(restaurant_charges, "restaurant") if restaurant_charges > 0 else {"total_tax": 0, "tax_breakdown": []}
+    # Calculate booking taxes (applied to room charges + additional charges)
+    booking_taxable = base_room_charges + additional_amount - discount_amount
+    booking_tax_result = await calculate_booking_taxes(booking_taxable) if booking_taxable > 0 else {"total_tax": 0, "tax_breakdown": []}
     
-    # Total taxes
-    total_taxes = room_tax_result["total_tax"] + restaurant_tax_result.get("total_tax", 0)
+    # Restaurant taxes are calculated separately when restaurant orders are paid
+    # Here we just include the pre-calculated restaurant charges (taxes already applied at order time)
+    
+    # Total taxes (only booking taxes at checkout - restaurant taxes applied at order time)
+    total_taxes = booking_tax_result.get("total_tax", 0)
     
     # Final total (subtotal + taxes - advance)
     total_amount = subtotal + total_taxes - advance_amount
     
-    # Combined tax breakdown
-    all_taxes = room_tax_result["tax_breakdown"] + restaurant_tax_result.get("tax_breakdown", [])
+    # Tax breakdown
+    all_taxes = booking_tax_result.get("tax_breakdown", [])
     
     # Create daily sales record
     daily_sale = DailySale(
