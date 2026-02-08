@@ -57,11 +57,14 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
    - Backend function: `send_sms_notify_lk()` in server.py
    - Test SMS endpoint now actually sends SMS
 
-4. **Custom Tax Calculation in Bookings**
-   - Tax helper function: `calculate_taxes(subtotal, apply_to)`
-   - Taxes fetched from `tax_configs` collection
-   - Applied during checkout with breakdown
-   - Tax breakdown stored in `daily_sales` and `customers` collections
+4. **Taxes & Levies Configuration (NEW)**
+   - New "Taxes & Levies" tab in Settings
+   - Create custom taxes/levies with name, rate (% or fixed), description
+   - Toggle "Apply to Bookings" - Tax added to room charges during checkout
+   - Toggle "Apply to Restaurant" - Tax added to restaurant order totals
+   - Toggle "None" (both off) - For hotels that don't collect taxes separately
+   - Tax breakdown shown in billing details
+   - Taxes recorded in daily_sales and financial statements
 
 5. **Payroll Processing with PayrollSettings**
    - EPF/ETF rates now configurable via PayrollSettings
@@ -70,14 +73,18 @@ Build a comprehensive hotel management system for managing rooms, bookings, cust
    - Automatic loan installment processing
 
 **API Endpoints Added/Modified**:
-- `/api/sms-settings/test` - Now sends actual SMS via configured provider
+- `/api/taxes` - CRUD for tax configurations
+- `/api/taxes/calculate-booking` - Preview booking tax calculation
+- `/api/taxes/calculate-restaurant` - Preview restaurant tax calculation
 - `/api/checkout` - Now includes tax calculation and breakdown
+- `/api/restaurant/orders` - Now applies restaurant taxes automatically
+- `/api/sms-settings/test` - Now sends actual SMS via configured provider
 
 **Files Modified**:
-- `/app/backend/server.py`: Added send_email_brevo, send_sms_notify_lk, send_sms_twilio, send_sms_custom, calculate_taxes helper functions
-- `/app/frontend/src/App.js`: Updated headers for Dashboard, Rooms, Guests, Bookings, Settings, Reports, Income & Expenses
+- `/app/backend/server.py`: Added TaxConfig model with apply_to_bookings/apply_to_restaurant flags, calculate_booking_taxes(), calculate_restaurant_taxes() helpers
+- `/app/frontend/src/App.js`: Added Taxes & Levies tab in Settings with full CRUD UI
 
-**Tests**: All P1 tests pass (8/8) - `/app/test_reports/iteration_4.json`
+**Tests**: All tests pass - `/app/test_reports/iteration_5.json`
 
 ### 2026-02-05 - Major Features Addition
 **Features Implemented**:
