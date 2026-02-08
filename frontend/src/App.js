@@ -1012,7 +1012,34 @@ const Dashboard = () => {
   const handleCheckout = async (customer) => {
     setSelectedCustomer(customer);
     setCheckoutData({ additional_amount: '', discount_amount: '', payment_method: 'Cash' });
+    setCheckoutTaxPreview(null);
+    
+    // Fetch tax preview for room charges
+    try {
+      const roomCharges = customer.room_charges || 0;
+      const response = await axios.post(`${API}/taxes/calculate-booking?base_amount=${roomCharges}`);
+      setCheckoutTaxPreview(response.data);
+    } catch (error) {
+      console.error('Error fetching tax preview:', error);
+      setCheckoutTaxPreview({ total_tax: 0, breakdown: [] });
+    }
+    
     setShowCheckoutModal(true);
+  };
+
+  // Recalculate taxes when additional charges or discount changes
+  const recalculateCheckoutTaxes = async (roomCharges, additionalAmount, discountAmount) => {
+    try {
+      const taxableAmount = (roomCharges || 0) + (additionalAmount || 0) - (discountAmount || 0);
+      if (taxableAmount > 0) {
+        const response = await axios.post(`${API}/taxes/calculate-booking?base_amount=${taxableAmount}`);
+        setCheckoutTaxPreview(response.data);
+      } else {
+        setCheckoutTaxPreview({ total_tax: 0, breakdown: [] });
+      }
+    } catch (error) {
+      console.error('Error recalculating taxes:', error);
+    }
   };
 
   const confirmCheckout = async () => {
