@@ -6886,6 +6886,7 @@ const Restaurant = () => {
   const [orders, setOrders] = useState([]);
   const [checkedInCustomers, setCheckedInCustomers] = useState([]);
   const [hotelSettings, setHotelSettings] = useState({});
+  const [restaurantTaxes, setRestaurantTaxes] = useState([]); // Taxes configured for restaurant
   const [loading, setLoading] = useState(true);
   
   // Get current user context
@@ -6914,7 +6915,7 @@ const Restaurant = () => {
   const [newStaff, setNewStaff] = useState({ name: '', role: 'Waiter', phone: '' });
   const [newOrder, setNewOrder] = useState({
     order_type: 'table', table_id: '', room_number: '', customer_name: '',
-    items: [], waiter_id: '', notes: '', service_charge_rate: 10
+    items: [], waiter_id: '', notes: '', service_charge_rate: 0  // Default to 0, will use tax system
   });
   const [orderItems, setOrderItems] = useState([]);
   const [paymentData, setPaymentData] = useState({
@@ -6935,7 +6936,8 @@ const Restaurant = () => {
         fetchStaff(),
         fetchOrders(),
         fetchCheckedInCustomers(),
-        fetchHotelSettings()
+        fetchHotelSettings(),
+        fetchRestaurantTaxes()
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);
