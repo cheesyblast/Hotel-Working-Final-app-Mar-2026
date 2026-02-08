@@ -9180,6 +9180,7 @@ const Settings = () => {
         fetchSmsSettings(),
         fetchTemplates(),
         fetchBookingChannels(),
+        fetchPayrollSettings(),
         fetchActivityLogs()
       ]);
     } catch (error) {
