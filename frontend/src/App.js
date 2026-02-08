@@ -9682,7 +9682,8 @@ const Settings = () => {
         fetchTemplates(),
         fetchBookingChannels(),
         fetchPayrollSettings(),
-        fetchActivityLogs()
+        fetchActivityLogs(),
+        fetchTaxConfigs()
       ]);
     } catch (error) {
       console.error('Error fetching settings data:', error);
