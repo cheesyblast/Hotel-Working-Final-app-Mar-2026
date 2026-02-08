@@ -6137,6 +6137,65 @@ async def get_payroll_summary():
         "total_loan_balance": total_loan_balance
     }
 
+# Payroll Settings Endpoints
+@api_router.get("/payroll/settings")
+async def get_payroll_settings(current_user: UserResponse = Depends(get_current_user)):
+    """Get payroll settings"""
+    settings = await db.payroll_settings.find_one({}, {"_id": 0})
+    if not settings:
+        # Create default settings if none exist
+        default_settings = PayrollSettings()
+        await db.payroll_settings.insert_one(default_settings.dict())
+        return default_settings.dict()
+    return settings
+
+@api_router.put("/payroll/settings")
+async def update_payroll_settings(
+    settings: PayrollSettingsUpdate,
+    current_user: UserResponse = Depends(get_current_active_admin)
+):
+    """Update payroll settings (Admin only)"""
+    # Get existing settings
+    existing = await db.payroll_settings.find_one({})
+    
+    if not existing:
+        # Create new settings if none exist
+        new_settings = PayrollSettings(**settings.dict(exclude_unset=True))
+        new_settings.updated_by = current_user.username
+        await db.payroll_settings.insert_one(new_settings.dict())
+        
+        # Log activity
+        await log_activity(
+            action="updated_payroll_settings",
+            description="Created payroll settings",
+            user_name=current_user.full_name or current_user.username,
+            user_id=current_user.id
+        )
+        
+        return new_settings.dict()
+    else:
+        # Update existing settings
+        update_data = settings.dict(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_by"] = current_user.username
+        
+        await db.payroll_settings.update_one(
+            {"id": existing["id"]},
+            {"$set": update_data}
+        )
+        
+        # Log activity
+        await log_activity(
+            action="updated_payroll_settings",
+            description="Updated payroll settings",
+            user_name=current_user.full_name or current_user.username,
+            user_id=current_user.id
+        )
+        
+        # Return updated settings
+        updated_settings = await db.payroll_settings.find_one({}, {"_id": 0})
+        return updated_settings
+
 # ==================== COMMISSION EXPORT ====================
 
 @api_router.get("/commissions/export")
