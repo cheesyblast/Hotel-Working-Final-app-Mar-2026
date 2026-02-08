@@ -9396,6 +9396,16 @@ const Settings = () => {
     setTestingEmail(false);
   };
 
+  const handleSavePayrollSettings = async () => {
+    try {
+      await axios.put(`${API}/payroll/settings`, payrollSettings);
+      setShowPayrollSettingsModal(false);
+      alert('Payroll settings saved successfully!');
+    } catch (error) {
+      alert('Error saving payroll settings: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const handleCreateChannel = async (e) => {
     e.preventDefault();
     try {
