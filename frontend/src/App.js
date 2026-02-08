@@ -3977,62 +3977,65 @@ const Reports = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Reports & Analytics</h2>
-          <p className="text-gray-300">Financial performance and business insights</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          {/* View Toggle */}
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setSelectedView('daily')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                selectedView === 'daily' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              Daily View
-            </button>
-            <button
-              onClick={() => setSelectedView('monthly')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                selectedView === 'monthly' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              Monthly View
-            </button>
-            <button
-              onClick={() => setSelectedView('comparison')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                selectedView === 'comparison' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              Comparison
-            </button>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-indigo-800 to-violet-700 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Reports & Analytics</h2>
+            <p className="text-indigo-200">Financial performance and business insights</p>
           </div>
-          
-          {/* Download Buttons */}
-          <div className="flex space-x-2">
-            <button
-              onClick={handleDownloadDailyReport}
-              className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 flex items-center space-x-2"
-            >
-              <span>📊</span>
-              <span>Daily Report</span>
-            </button>
-            <button
-              onClick={handleDownloadMonthlyReport}
-              className="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 flex items-center space-x-2"
-            >
-              <span>📈</span>
-              <span>Monthly Report</span>
-            </button>
+          <div className="flex items-center space-x-4 flex-wrap gap-2">
+            {/* View Toggle */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setSelectedView('daily')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  selectedView === 'daily' 
+                    ? 'bg-white text-indigo-800' 
+                    : 'bg-indigo-700 text-white hover:bg-indigo-600'
+                }`}
+              >
+                Daily View
+              </button>
+              <button
+                onClick={() => setSelectedView('monthly')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  selectedView === 'monthly' 
+                    ? 'bg-white text-indigo-800' 
+                    : 'bg-indigo-700 text-white hover:bg-indigo-600'
+                }`}
+              >
+                Monthly View
+              </button>
+              <button
+                onClick={() => setSelectedView('comparison')}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  selectedView === 'comparison' 
+                    ? 'bg-white text-indigo-800' 
+                    : 'bg-indigo-700 text-white hover:bg-indigo-600'
+                }`}
+              >
+                Comparison
+              </button>
+            </div>
+            
+            {/* Download Buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={handleDownloadDailyReport}
+                className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 flex items-center space-x-2"
+              >
+                <span>📊</span>
+                <span>Daily Report</span>
+              </button>
+              <button
+                onClick={handleDownloadMonthlyReport}
+                className="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700 flex items-center space-x-2"
+              >
+                <span>📈</span>
+                <span>Monthly Report</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
