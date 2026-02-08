@@ -1699,17 +1699,23 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
-        <div className="mb-4 sm:mb-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Dashboard</h2>
-          <p className="text-sm sm:text-base text-gray-600">Overview of hotel operations and current status</p>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-blue-800 to-cyan-700 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Dashboard</h2>
+            <p className="text-blue-200">Overview of hotel operations and current status</p>
+          </div>
+          <button
+            onClick={openNewBookingModal}
+            className="bg-white text-blue-800 px-4 py-2 rounded-lg hover:bg-blue-100 flex items-center font-medium"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            New Booking
+          </button>
         </div>
-        <button
-          onClick={openNewBookingModal}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm sm:text-base"
-        >
-          New Booking
-        </button>
       </div>
 
       {/* Room Status - Quick View */}
