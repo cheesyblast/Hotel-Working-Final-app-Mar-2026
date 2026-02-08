@@ -1114,7 +1114,7 @@ async def send_booking_notification_sms(booking_data: dict, occasion: str = "res
             return False
         
         # Get the phone number from booking
-        phone_number = booking_data.get("guest_phone")
+        phone_number = booking_data.get("guest_phone") or booking_data.get("phone")
         if not phone_number:
             print("No phone number provided, skipping SMS")
             return False
@@ -1130,14 +1130,16 @@ async def send_booking_notification_sms(booking_data: dict, occasion: str = "res
         
         # Prepare template variables
         template_vars = {
-            "guest_name": booking_data.get("guest_name", "Guest"),
+            "guest_name": booking_data.get("guest_name") or booking_data.get("name", "Guest"),
             "hotel_name": hotel_settings.get("hotel_name", "Our Hotel"),
-            "room_number": booking_data.get("room_number", ""),
+            "room_number": booking_data.get("room_number") or booking_data.get("current_room", ""),
             "check_in_date": str(booking_data.get("check_in_date", ""))[:10],
             "check_out_date": str(booking_data.get("check_out_date", ""))[:10],
             "hotel_phone": hotel_settings.get("phone", ""),
             "wifi_password": hotel_settings.get("wifi_password", ""),
             "total_amount": str(booking_data.get("total_amount", booking_data.get("booking_amount", 0))),
+            # For cleaning staff notifications
+            "staff_name": booking_data.get("staff_name", ""),
         }
         
         # Replace variables in template body
@@ -1155,6 +1157,72 @@ async def send_booking_notification_sms(booking_data: dict, occasion: str = "res
     except Exception as e:
         print(f"Error sending booking notification SMS: {str(e)}")
         return False
+
+async def send_booking_notification_email(booking_data: dict, occasion: str = "reservation"):
+    """Send Email notification for booking events (reservation, checkin, checkout)"""
+    try:
+        # Get the email from booking
+        email_address = booking_data.get("guest_email") or booking_data.get("email")
+        if not email_address:
+            print("No email address provided, skipping email notification")
+            return False
+        
+        # Get the template for this occasion
+        template = await db.email_templates.find_one({"occasion": occasion})
+        if not template:
+            print(f"No email template found for occasion: {occasion}")
+            return False
+        
+        # Get hotel settings for template variables
+        hotel_settings = await db.settings.find_one() or {}
+        
+        # Prepare template variables
+        template_vars = {
+            "guest_name": booking_data.get("guest_name") or booking_data.get("name", "Guest"),
+            "hotel_name": hotel_settings.get("hotel_name", "Our Hotel"),
+            "room_number": booking_data.get("room_number") or booking_data.get("current_room", ""),
+            "check_in_date": str(booking_data.get("check_in_date", ""))[:10],
+            "check_out_date": str(booking_data.get("check_out_date", ""))[:10],
+            "hotel_phone": hotel_settings.get("phone", ""),
+            "wifi_password": hotel_settings.get("wifi_password", ""),
+            "total_amount": str(booking_data.get("total_amount", booking_data.get("booking_amount", 0))),
+        }
+        
+        # Replace variables in subject and body
+        subject = template.get("subject", "Hotel Notification")
+        body_html = template.get("body_html", "")
+        body_text = template.get("body_text", "")
+        
+        for var_name, var_value in template_vars.items():
+            subject = subject.replace(f"{{{var_name}}}", str(var_value))
+            body_html = body_html.replace(f"{{{var_name}}}", str(var_value))
+            body_text = body_text.replace(f"{{{var_name}}}", str(var_value))
+        
+        # Send the email (prefer HTML, fallback to text)
+        body = body_html if body_html.strip() else body_text
+        result = await send_email(email_address, subject, body)
+        if result:
+            print(f"Email notification sent successfully to {email_address} for {occasion}")
+        else:
+            print(f"Failed to send email notification to {email_address}")
+        return result
+    except Exception as e:
+        print(f"Error sending booking notification email: {str(e)}")
+        return False
+
+async def send_notifications(data: dict, occasion: str):
+    """Send both SMS and Email notifications for an occasion (non-blocking)"""
+    try:
+        # Send SMS notification
+        await send_booking_notification_sms(data, occasion)
+    except Exception as e:
+        print(f"SMS notification error (non-critical): {str(e)}")
+    
+    try:
+        # Send Email notification
+        await send_booking_notification_email(data, occasion)
+    except Exception as e:
+        print(f"Email notification error (non-critical): {str(e)}")
 
 # Tax Calculation Helper Functions
 async def get_active_taxes_for_bookings():
