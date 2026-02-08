@@ -938,6 +938,38 @@ async def send_email_ses(email_settings: EmailSettings, to_email: str, subject: 
         print(f"SES Error: {str(e)}")
         return False
 
+async def send_email_brevo(email_settings: EmailSettings, to_email: str, subject: str, body: str):
+    """Send email via Brevo (formerly Sendinblue) API"""
+    import httpx
+    
+    try:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": email_settings.brevo_api_key,
+            "content-type": "application/json"
+        }
+        payload = {
+            "sender": {
+                "name": email_settings.from_name or "Hotel Management",
+                "email": email_settings.from_email
+            },
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "textContent": body
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, headers=headers, timeout=30.0)
+            if response.status_code in [200, 201]:
+                return True
+            else:
+                print(f"Brevo Error: {response.status_code} - {response.text}")
+                return False
+    except Exception as e:
+        print(f"Brevo Error: {str(e)}")
+        return False
+
 async def send_email(to_email: str, subject: str, body: str):
     """Send email using configured provider"""
     email_settings = await get_email_settings()
@@ -950,6 +982,8 @@ async def send_email(to_email: str, subject: str, body: str):
         return await send_email_sendgrid(email_settings, to_email, subject, body)
     elif email_settings.provider == "ses":
         return await send_email_ses(email_settings, to_email, subject, body)
+    elif email_settings.provider == "brevo":
+        return await send_email_brevo(email_settings, to_email, subject, body)
     else:
         return False
 
