@@ -11017,6 +11017,119 @@ const Settings = () => {
           </div>
         </div>
       )}
+
+      {/* Payroll Settings Modal */}
+      {showPayrollSettingsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Payroll Settings</h3>
+            <p className="text-sm text-gray-600 mb-6">Configure EPF, ETF, and tax settings for payroll calculations</p>
+            
+            <div className="space-y-6">
+              {/* EPF Settings */}
+              <div className="border-b pb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-800">EPF (Employees' Provident Fund)</h4>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={payrollSettings.enable_epf}
+                      onChange={(e) => setPayrollSettings({...payrollSettings, enable_epf: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Enable</span>
+                  </label>
+                </div>
+                {payrollSettings.enable_epf && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Employee Contribution (%)</label>
+                      <input
+                        type="number"
+                        value={payrollSettings.epf_employee_rate}
+                        onChange={(e) => setPayrollSettings({...payrollSettings, epf_employee_rate: parseFloat(e.target.value) || 0})}
+                        className="w-full px-3 py-2 border rounded-md"
+                        step="0.1"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Employer Contribution (%)</label>
+                      <input
+                        type="number"
+                        value={payrollSettings.epf_employer_rate}
+                        onChange={(e) => setPayrollSettings({...payrollSettings, epf_employer_rate: parseFloat(e.target.value) || 0})}
+                        className="w-full px-3 py-2 border rounded-md"
+                        step="0.1"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ETF Settings */}
+              <div className="border-b pb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-800">ETF (Employees' Trust Fund)</h4>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={payrollSettings.enable_etf}
+                      onChange={(e) => setPayrollSettings({...payrollSettings, enable_etf: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Enable</span>
+                  </label>
+                </div>
+                {payrollSettings.enable_etf && (
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">ETF Rate (%)</label>
+                    <input
+                      type="number"
+                      value={payrollSettings.etf_rate}
+                      onChange={(e) => setPayrollSettings({...payrollSettings, etf_rate: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border rounded-md"
+                      step="0.1"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Tax Settings */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-800">Payroll Tax</h4>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={payrollSettings.tax_enabled}
+                      onChange={(e) => setPayrollSettings({...payrollSettings, tax_enabled: e.target.checked})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Enable</span>
+                  </label>
+                </div>
+                {payrollSettings.tax_enabled && (
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Tax Rate (%)</label>
+                    <input
+                      type="number"
+                      value={payrollSettings.tax_rate}
+                      onChange={(e) => setPayrollSettings({...payrollSettings, tax_rate: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border rounded-md"
+                      step="0.1"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button onClick={() => setShowPayrollSettingsModal(false)} className="px-4 py-2 border rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={handleSavePayrollSettings} className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">Save Settings</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
