@@ -6955,6 +6955,18 @@ const Restaurant = () => {
     }
   };
 
+  const fetchRestaurantTaxes = async () => {
+    try {
+      const response = await axios.get(`${API}/taxes`);
+      // Filter to only show taxes applicable to restaurant
+      const restaurantTaxes = response.data.filter(tax => tax.is_active && tax.apply_to_restaurant);
+      setRestaurantTaxes(restaurantTaxes);
+    } catch (error) {
+      console.error('Error fetching restaurant taxes:', error);
+      setRestaurantTaxes([]);
+    }
+  };
+
   const fetchCategories = async () => {
     try {
       const response = await axios.get(`${API}/restaurant/categories`);
