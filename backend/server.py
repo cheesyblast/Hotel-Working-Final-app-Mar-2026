@@ -409,15 +409,17 @@ class PayrollSettings(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class TaxConfig(BaseModel):
-    """Customizable tax/levy configuration for hotel bookings"""
+    """Customizable tax/levy configuration for hotel bookings and restaurant bills"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str  # e.g., "Service Tax", "Tourism Levy", "VAT"
-    rate: float  # Percentage
+    name: str  # e.g., "Service Tax", "Tourism Levy", "VAT", "NBT"
+    rate: float  # Percentage or fixed amount
     type: str = "percentage"  # percentage or fixed
-    apply_to: str = "room"  # room, restaurant, all
+    apply_to_bookings: bool = True  # Apply to room bookings/checkout
+    apply_to_restaurant: bool = False  # Apply to restaurant bills
     is_active: bool = True
-    is_optional: bool = False  # If true, user can toggle for each booking
+    description: str = ""  # Optional description
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class ForgotPasswordRequest(BaseModel):
     username_or_email: str
