@@ -4562,11 +4562,33 @@ const Expenses = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Income & Expenses</h2>
-          <p className="text-gray-300">Financial management and balance tracking</p>
+      {/* Header - Gradient Style */}
+      <div className="bg-gradient-to-r from-green-800 to-emerald-600 rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Income & Expenses</h2>
+            <p className="text-green-200">Financial management and balance tracking</p>
+          </div>
+          <div className="flex space-x-3">
+            <button 
+              onClick={() => setShowAddIncomeModal(true)}
+              className="bg-white text-green-800 px-4 py-2 rounded-lg hover:bg-green-100 flex items-center font-medium"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Income
+            </button>
+            <button 
+              onClick={() => setShowAddExpenseModal(true)}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center font-medium"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Expense
+            </button>
+          </div>
         </div>
       </div>
 
@@ -4595,24 +4617,6 @@ const Expenses = () => {
           </div>
         </div>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex justify-center space-x-4 mb-8">
-        <button 
-          onClick={() => setShowAddIncomeModal(true)}
-          className="bg-green-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-green-700 flex items-center space-x-2"
-        >
-          <span>+</span>
-          <span>Add Income</span>
-        </button>
-        <button 
-          onClick={() => setShowAddExpenseModal(true)}
-          className="bg-red-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-red-700 flex items-center space-x-2"
-        >
-          <span>+</span>
-          <span>Add Expense</span>
-        </button>
-      </div>
 
       {/* Expenses Table */}
       <div className="bg-gray-800 rounded-lg shadow-sm border border-gray-700 mb-8">
