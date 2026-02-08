@@ -10470,11 +10470,32 @@ const Settings = () => {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="smtp">Custom SMTP</option>
+                  <option value="brevo">Brevo (Sendinblue)</option>
                   <option value="sendgrid">SendGrid</option>
                   <option value="ses">AWS SES</option>
                   <option value="gmail">Gmail SMTP</option>
                 </select>
               </div>
+
+              {/* Brevo Settings */}
+              {emailSettings.provider === 'brevo' && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-3">Brevo (Sendinblue) Configuration</h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Brevo API Key
+                    </label>
+                    <input
+                      type="password"
+                      value={emailSettings.brevo_api_key || ''}
+                      onChange={(e) => setEmailSettings({...emailSettings, brevo_api_key: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="xkeysib-xxxxxxxx"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Get your API key from Brevo dashboard → SMTP & API</p>
+                  </div>
+                </div>
+              )}
 
               {/* Common Fields */}
               <div>
