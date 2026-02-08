@@ -5745,9 +5745,13 @@ async def test_sms(phone_number: str, message: str = "Test message from Hotel Ma
     if not settings or not settings.get("is_configured"):
         raise HTTPException(status_code=400, detail="SMS settings not configured")
     
-    # TODO: Implement actual SMS sending based on provider
-    # For now, return success to indicate the endpoint works
-    return {"message": f"Test SMS would be sent to {phone_number}", "provider": settings.get("provider")}
+    # Send actual SMS using configured provider
+    result = await send_sms(phone_number, message)
+    
+    if result:
+        return {"message": f"Test SMS sent successfully to {phone_number}", "provider": settings.get("provider")}
+    else:
+        return {"message": f"SMS sending failed. Please check your {settings.get('provider')} credentials.", "provider": settings.get("provider"), "success": False}
 
 # SMS Templates Endpoints
 @api_router.get("/sms-templates")
