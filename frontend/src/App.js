@@ -714,6 +714,7 @@ const Dashboard = () => {
     discount_amount: '',
     payment_method: 'Cash'
   });
+  const [checkoutTaxPreview, setCheckoutTaxPreview] = useState(null);
   const [showPrintInvoiceDialog, setShowPrintInvoiceDialog] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
   const [availableRoomsForBooking, setAvailableRoomsForBooking] = useState([]);
