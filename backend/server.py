@@ -5907,16 +5907,42 @@ async def update_sms_settings(settings: SMSSettingsUpdate):
     """Update SMS settings"""
     update_data = {k: v for k, v in settings.dict().items() if v is not None}
     update_data["updated_at"] = datetime.utcnow()
-    update_data["is_configured"] = True
     
+    # Get existing settings to merge with updates
     existing = await db.sms_settings.find_one()
+    merged_settings = {**existing, **update_data} if existing else update_data
+    
+    # Validate configuration based on provider
+    provider = merged_settings.get("provider", "notify_lk")
+    is_configured = False
+    
+    if provider == "notify_lk":
+        is_configured = all([
+            merged_settings.get("notify_lk_user_id"),
+            merged_settings.get("notify_lk_api_key"),
+            merged_settings.get("notify_lk_sender_id")
+        ])
+    elif provider == "twilio":
+        is_configured = all([
+            merged_settings.get("twilio_account_sid"),
+            merged_settings.get("twilio_auth_token"),
+            merged_settings.get("twilio_phone_number")
+        ])
+    elif provider == "custom":
+        is_configured = all([
+            merged_settings.get("custom_api_url"),
+            merged_settings.get("custom_api_key")
+        ])
+    
+    update_data["is_configured"] = is_configured
+    
     if existing:
         await db.sms_settings.update_one({}, {"$set": update_data})
     else:
         new_settings = SMSSettings(**update_data)
         await db.sms_settings.insert_one(new_settings.dict())
     
-    return {"message": "SMS settings updated"}
+    return {"message": "SMS settings updated", "is_configured": is_configured}
 
 @api_router.post("/sms-settings/test")
 async def test_sms(phone_number: str, message: str = "Test message from Hotel Management System"):
