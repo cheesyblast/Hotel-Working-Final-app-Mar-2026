@@ -1104,6 +1104,58 @@ async def send_sms(phone_number: str, message: str):
     else:
         return False
 
+async def send_booking_notification_sms(booking_data: dict, occasion: str = "reservation"):
+    """Send SMS notification for booking events (reservation, checkin, checkout)"""
+    try:
+        # Check if SMS is configured
+        sms_settings = await get_sms_settings_helper()
+        if not sms_settings or not sms_settings.get("is_configured"):
+            print("SMS settings not configured, skipping notification")
+            return False
+        
+        # Get the phone number from booking
+        phone_number = booking_data.get("guest_phone")
+        if not phone_number:
+            print("No phone number provided, skipping SMS")
+            return False
+        
+        # Get the template for this occasion
+        template = await db.sms_templates.find_one({"occasion": occasion})
+        if not template:
+            print(f"No SMS template found for occasion: {occasion}")
+            return False
+        
+        # Get hotel settings for template variables
+        hotel_settings = await db.settings.find_one() or {}
+        
+        # Prepare template variables
+        template_vars = {
+            "guest_name": booking_data.get("guest_name", "Guest"),
+            "hotel_name": hotel_settings.get("hotel_name", "Our Hotel"),
+            "room_number": booking_data.get("room_number", ""),
+            "check_in_date": str(booking_data.get("check_in_date", ""))[:10],
+            "check_out_date": str(booking_data.get("check_out_date", ""))[:10],
+            "hotel_phone": hotel_settings.get("phone", ""),
+            "wifi_password": hotel_settings.get("wifi_password", ""),
+            "total_amount": str(booking_data.get("total_amount", booking_data.get("booking_amount", 0))),
+        }
+        
+        # Replace variables in template body
+        message = template.get("body", "")
+        for var_name, var_value in template_vars.items():
+            message = message.replace(f"{{{var_name}}}", str(var_value))
+        
+        # Send the SMS
+        result = await send_sms(phone_number, message)
+        if result:
+            print(f"SMS notification sent successfully to {phone_number} for {occasion}")
+        else:
+            print(f"Failed to send SMS notification to {phone_number}")
+        return result
+    except Exception as e:
+        print(f"Error sending booking notification SMS: {str(e)}")
+        return False
+
 # Tax Calculation Helper Functions
 async def get_active_taxes_for_bookings():
     """Get active tax configurations for bookings/checkout"""
