@@ -11347,7 +11347,9 @@ function AppContent() {
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/guests" element={<Guests />} />
             <Route path="/bookings" element={<Bookings />} />
-            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/income-expense" element={<Expenses />} />
+            <Route path="/expenses" element={<ExpenseTracking />} />
+            <Route path="/restaurant-expenses" element={<RestaurantExpenses />} />
             <Route path="/commissions" element={<Commissions />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/payroll" element={<Payroll />} />
