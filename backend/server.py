@@ -4012,6 +4012,20 @@ async def checkin_customer(checkin: CheckinRequest):
         }
     )
     
+    # Send check-in notifications (SMS + Email)
+    try:
+        notification_data = {
+            "guest_name": booking["guest_name"],
+            "guest_email": booking["guest_email"],
+            "guest_phone": booking["guest_phone"],
+            "room_number": booking["room_number"],
+            "check_in_date": booking["check_in_date"],
+            "check_out_date": booking["check_out_date"]
+        }
+        await send_notifications(notification_data, "checkin")
+    except Exception as e:
+        print(f"Check-in notification error (non-critical): {str(e)}")
+    
     return {"message": "Customer checked in successfully", "customer": customer}
 
 @api_router.post("/cancel/{booking_id}")
