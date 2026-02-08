@@ -6559,13 +6559,18 @@ const Navigation = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [financialDropdownOpen, setFinancialDropdownOpen] = useState(false);
+  const [expensesDropdownOpen, setExpensesDropdownOpen] = useState(false);
   
   const isActive = (path) => {
     return location.pathname === path;
   };
 
   const isFinancialActive = () => {
-    return ['/expenses', '/commissions', '/reports'].includes(location.pathname);
+    return ['/income-expense', '/commissions', '/reports'].includes(location.pathname);
+  };
+
+  const isExpensesActive = () => {
+    return ['/expenses', '/restaurant-expenses', '/maintenance'].includes(location.pathname);
   };
 
   const navItems = [
@@ -6575,14 +6580,19 @@ const Navigation = () => {
     { path: '/guests', label: 'Guests' },
     { path: '/bookings', label: 'Bookings' },
     { path: '/payroll', label: 'Payroll' },
-    { path: '/maintenance', label: 'Maintenance' },
     { path: '/settings', label: 'Settings' }
   ];
 
   const financialItems = [
-    { path: '/expenses', label: 'Inc & Exp' },
+    { path: '/income-expense', label: 'Income & Expense' },
     { path: '/commissions', label: 'Commissions' },
     { path: '/reports', label: 'Reports' }
+  ];
+
+  const expenseItems = [
+    { path: '/expenses', label: 'All Expenses' },
+    { path: '/restaurant-expenses', label: 'Restaurant Expenses' },
+    { path: '/maintenance', label: 'Maintenance' }
   ];
 
   return (
@@ -6607,7 +6617,7 @@ const Navigation = () => {
           {/* Financial Dropdown */}
           <div className="relative">
             <button
-              onClick={() => setFinancialDropdownOpen(!financialDropdownOpen)}
+              onClick={() => { setFinancialDropdownOpen(!financialDropdownOpen); setExpensesDropdownOpen(false); }}
               onBlur={() => setTimeout(() => setFinancialDropdownOpen(false), 150)}
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
                 isFinancialActive() 
@@ -6618,6 +6628,71 @@ const Navigation = () => {
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
+              Financial
+              <svg className={`w-4 h-4 ml-1 transform transition-transform ${financialDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {financialDropdownOpen && (
+              <div className="absolute left-0 mt-1 w-44 bg-gray-700 rounded-md shadow-lg border border-gray-600 z-50">
+                {financialItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setFinancialDropdownOpen(false)}
+                    className={`block px-4 py-2 text-sm ${
+                      isActive(item.path)
+                        ? 'bg-blue-800 text-blue-300'
+                        : 'text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Expenses Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => { setExpensesDropdownOpen(!expensesDropdownOpen); setFinancialDropdownOpen(false); }}
+              onBlur={() => setTimeout(() => setExpensesDropdownOpen(false), 150)}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center ${
+                isExpensesActive() 
+                  ? 'bg-blue-900 text-blue-300 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Expenses
+              <svg className={`w-4 h-4 ml-1 transform transition-transform ${expensesDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {expensesDropdownOpen && (
+              <div className="absolute left-0 mt-1 w-48 bg-gray-700 rounded-md shadow-lg border border-gray-600 z-50">
+                {expenseItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setExpensesDropdownOpen(false)}
+                    className={`block px-4 py-2 text-sm ${
+                      isActive(item.path)
+                        ? 'bg-blue-800 text-blue-300'
+                        : 'text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {navItems.slice(5).map((item) => (
               Financial
               <svg className={`w-4 h-4 ml-1 transform transition-transform ${financialDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
