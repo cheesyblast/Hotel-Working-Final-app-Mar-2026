@@ -6656,30 +6656,6 @@ async def api_calculate_restaurant_taxes(base_amount: float):
         "total_with_tax": result["grand_total"],
         "breakdown": result["tax_breakdown"]
     }
-    
-    total_tax = 0
-    breakdown = []
-    
-    for tax in taxes:
-        if tax["type"] == "percentage":
-            tax_amount = base_amount * (tax["rate"] / 100)
-        else:
-            tax_amount = tax["rate"]
-        
-        total_tax += tax_amount
-        breakdown.append({
-            "name": tax["name"],
-            "rate": tax["rate"],
-            "type": tax["type"],
-            "amount": tax_amount
-        })
-    
-    return {
-        "base_amount": base_amount,
-        "total_tax": total_tax,
-        "total_with_tax": base_amount + total_tax,
-        "breakdown": breakdown
-    }
 
 # ==================== COMMISSION EXPORT ====================
 
